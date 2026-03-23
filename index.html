@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Dochádzka</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+body { background: #f2f2f7; min-height: 100vh; }
+body.dark { background: #1c1c1e; color: #fff; }
+
+/* USER SCREEN */
+.user-screen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 20px; }
+.user-logo { font-size: 48px; margin-bottom: 16px; }
+.user-title { font-size: 32px; font-weight: 700; color: #1c1c1e; margin-bottom: 8px; }
+body.dark .user-title { color: #fff; }
+.user-sub { font-size: 17px; color: #8e8e93; margin-bottom: 40px; }
+.user-btns { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 340px; }
+.user-btn { padding: 22px; border-radius: 16px; font-size: 22px; font-weight: 700; text-align: center; cursor: pointer; border: none; }
+.user-btn.filip { background: #007AFF; color: #fff; }
+.user-btn.beny { background: #34C759; color: #fff; }
+.user-btn.mirka { background: #FF2D55; color: #fff; }
+
+/* PIN SCREEN */
+.pin-screen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 60px 20px 20px; }
+.pin-name { font-size: 28px; font-weight: 700; color: #1c1c1e; margin-bottom: 8px; }
+body.dark .pin-name { color: #fff; }
+.pin-sub { font-size: 16px; color: #8e8e93; margin-bottom: 40px; text-align: center; }
+.pin-dots { display: flex; gap: 20px; margin-bottom: 50px; }
+.pin-dot { width: 18px; height: 18px; border-radius: 50%; background: #d1d1d6; }
+body.dark .pin-dot { background: #48484a; }
+.pin-dot.filled { background: #007AFF; }
+.pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 320px; }
+.pin-key { height: 80px; border-radius: 16px; background: #fff; font-size: 28px; font-weight: 500; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; color: #1c1c1e; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+body.dark .pin-key { background: #2c2c2e; color: #fff; }
+.pin-key:active { opacity: 0.6; }
+.pin-ok { width: 100%; max-width: 320px; margin-top: 16px; height: 60px; border-radius: 16px; background: #007AFF; color: #fff; font-size: 20px; font-weight: 700; border: none; cursor: pointer; }
+.pin-ok:active { opacity: 0.8; }
+.pin-error { color: #FF3B30; font-size: 15px; margin-top: 14px; min-height: 20px; font-weight: 500; }
+.pin-back { background: none; border: none; color: #007AFF; font-size: 17px; cursor: pointer; margin-top: 20px; padding: 10px; }
+
+/* MAIN APP */
+.app { max-width: 430px; margin: 0 auto; padding-bottom: 100px; }
+.app-header { background: #fff; padding: 16px 20px 0; position: sticky; top: 0; z-index: 10; }
+body.dark .app-header { background: #1c1c1e; border-bottom-color: #38383a; }
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.header-user { display: flex; align-items: center; gap: 8px; }
+.user-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; }
+.dot-filip { background: #007AFF; }
+.dot-beny { background: #34C759; }
+.dot-mirka { background: #FF2D55; }
+.header-name { font-size: 17px; font-weight: 600; color: #1c1c1e; }
+body.dark .header-name { color: #fff; }
+.header-btns { display: flex; gap: 8px; }
+.hbtn { background: #f2f2f7; border: none; border-radius: 20px; padding: 6px 14px; font-size: 14px; cursor: pointer; color: #007AFF; font-weight: 500; }
+body.dark .hbtn { background: #2c2c2e; color: #0a84ff; }
+.month-nav { display: flex; align-items: center; justify-content: space-between; padding: 8px 0 14px; }
+.mnav-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: #007AFF; padding: 4px 8px; }
+.mnav-title { font-size: 17px; font-weight: 600; color: #1c1c1e; }
+body.dark .mnav-title { color: #fff; }
+
+/* SUMMARY CARDS */
+.summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 16px 20px; }
+.scard { background: #fff; border-radius: 14px; padding: 14px 16px; }
+body.dark .scard { background: #2c2c2e; }
+.scard-label { font-size: 12px; color: #8e8e93; margin-bottom: 4px; font-weight: 500; }
+.scard-val { font-size: 22px; font-weight: 700; }
+.green { color: #34C759; } .red { color: #FF3B30; } .blue { color: #007AFF; } .gray { color: #8e8e93; }
+
+/* CALENDAR */
+.cal-wrap { padding: 0 20px 16px; }
+.cal-days-header { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 4px; }
+.cal-dh { text-align: center; font-size: 12px; color: #8e8e93; font-weight: 500; padding: 4px 0; }
+.calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal-day { border-radius: 10px; padding: 6px 2px; text-align: center; min-height: 56px; cursor: pointer; background: #fff; position: relative; }
+body.dark .cal-day { background: #2c2c2e; }
+.cal-day:active { opacity: 0.7; }
+.cal-day.empty { background: transparent; cursor: default; }
+.cal-day.today { border: 2px solid #007AFF; }
+.cal-day.has-data { background: #d1f2d8; }
+body.dark .cal-day.has-data { background: #1a3a23; }
+.cal-day.incomplete { background: #ffd6d6; }
+body.dark .cal-day.incomplete { background: #3a1a1a; }
+.cal-day.dovol { background: #d6eaff; }
+.cal-day.pn { background: #fff3d6; }
+.cal-day.meeting { background: #ead6ff; }
+.cal-day.cd { background: #e8e8e8; }
+.cal-day.weekend { opacity: 0.4; }
+.day-num { font-size: 14px; font-weight: 600; color: #1c1c1e; }
+body.dark .day-num { color: #fff; }
+.day-sub { font-size: 9px; color: #8e8e93; margin-top: 2px; line-height: 1.2; }
+
+/* DETAIL */
+.detail { background: #fff; border-radius: 20px; margin: 0 20px 16px; padding: 20px; }
+body.dark .detail { background: #2c2c2e; }
+.detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.detail-title { font-size: 17px; font-weight: 700; color: #1c1c1e; }
+body.dark .detail-title { color: #fff; }
+.close-x { background: #f2f2f7; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 16px; cursor: pointer; color: #8e8e93; display: flex; align-items: center; justify-content: center; }
+body.dark .close-x { background: #3a3a3c; }
+.slabel { font-size: 12px; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; margin-top: 16px; }
+.time-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px; }
+.fg { display: flex; flex-direction: column; gap: 5px; }
+.fg label { font-size: 13px; color: #8e8e93; }
+input[type="time"] { border: 1px solid #e5e5ea; border-radius: 12px; padding: 12px 14px; font-size: 18px; width: 100%; background: #f2f2f7; color: #1c1c1e; }
+body.dark input[type="time"] { background: #3a3a3c; border-color: #48484a; color: #fff; }
+.end-hint { font-size: 13px; color: #007AFF; margin-top: 4px; font-weight: 500; }
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f2f2f7; font-size: 15px; }
+body.dark .stat-row { border-bottom-color: #3a3a3c; }
+.stat-row:last-child { border-bottom: none; }
+.stat-l { color: #8e8e93; }
+.stat-r { font-weight: 600; }
+.stat-r.ok { color: #34C759; }
+.stat-r.bad { color: #FF3B30; }
+.visit-row { display: grid; grid-template-columns: 30px 1fr 36px; gap: 8px; align-items: center; margin-bottom: 8px; }
+.vnum { font-size: 14px; font-weight: 600; color: #8e8e93; text-align: center; }
+input[type="number"] { border: 1px solid #e5e5ea; border-radius: 12px; padding: 12px 14px; font-size: 18px; width: 100%; background: #f2f2f7; color: #1c1c1e; }
+body.dark input[type="number"] { background: #3a3a3c; border-color: #48484a; color: #fff; }
+.del-v { background: none; border: none; color: #FF3B30; font-size: 22px; cursor: pointer; }
+.quick-btns { display: flex; gap: 8px; margin: 8px 0; }
+.qbtn { flex: 1; padding: 12px 6px; background: #f2f2f7; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; color: #007AFF; }
+body.dark .qbtn { background: #3a3a3c; color: #0a84ff; }
+.add-v-btn { width: 100%; padding: 12px; background: #f2f2f7; border: none; border-radius: 12px; font-size: 15px; color: #007AFF; cursor: pointer; margin-top: 4px; font-weight: 500; }
+body.dark .add-v-btn { background: #3a3a3c; color: #0a84ff; }
+.day-types { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.dtype-btn { padding: 10px 4px; border-radius: 12px; border: 1px solid #e5e5ea; background: #f2f2f7; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; color: #8e8e93; }
+body.dark .dtype-btn { background: #3a3a3c; border-color: #48484a; color: #8e8e93; }
+.dtype-btn.active-dovol { background: #d6eaff; border-color: #007AFF; color: #007AFF; }
+.dtype-btn.active-pn { background: #fff3d6; border-color: #FF9500; color: #FF9500; }
+.dtype-btn.active-meeting { background: #ead6ff; border-color: #AF52DE; color: #AF52DE; }
+.dtype-btn.active-cd { background: #e8e8e8; border-color: #8e8e93; color: #3a3a3c; }
+textarea.note-input { border: 1px solid #e5e5ea; border-radius: 12px; padding: 12px 14px; font-size: 16px; width: 100%; background: #f2f2f7; color: #1c1c1e; resize: none; height: 80px; font-family: -apple-system, Arial, sans-serif; }
+body.dark textarea.note-input { background: #3a3a3c; border-color: #48484a; color: #fff; }
+.save-day-btn { width: 100%; padding: 16px; background: #007AFF; color: #fff; border: none; border-radius: 14px; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 16px; }
+.del-day-btn { width: 100%; padding: 14px; background: none; color: #FF3B30; border: 1px solid #FF3B30; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+
+/* SETTINGS MODAL */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: flex-end; }
+.modal-box { background: #fff; border-radius: 20px 20px 0 0; padding: 24px 20px 40px; width: 100%; }
+body.dark .modal-box { background: #2c2c2e; }
+.modal-title { font-size: 20px; font-weight: 700; color: #1c1c1e; margin-bottom: 20px; }
+body.dark .modal-title { color: #fff; }
+.modal-field { margin-bottom: 14px; }
+.modal-label { font-size: 14px; color: #8e8e93; margin-bottom: 6px; }
+.modal-input { border: 1px solid #e5e5ea; border-radius: 12px; padding: 12px 14px; font-size: 18px; width: 100%; background: #f2f2f7; color: #1c1c1e; }
+body.dark .modal-input { background: #3a3a3c; border-color: #48484a; color: #fff; }
+.modal-save { width: 100%; padding: 16px; background: #007AFF; color: #fff; border: none; border-radius: 14px; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+.modal-cancel { width: 100%; padding: 14px; background: none; color: #8e8e93; border: none; font-size: 16px; cursor: pointer; margin-top: 8px; }
+
+.status-bar { text-align: center; font-size: 14px; color: #34C759; padding: 8px; min-height: 24px; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<!-- USER SCREEN -->
+<div id="userScreen">
+  <div class="user-screen">
+    <div class="user-logo">📋</div>
+    <div class="user-title">Dochádzka</div>
+    <div class="user-sub">Vyber kto si</div>
+    <div class="user-btns">
+      <div class="user-btn filip" onclick="startLogin('Filip')">Filip</div>
+      <div class="user-btn beny" onclick="startLogin('Beny')">Beny</div>
+      <div class="user-btn mirka" onclick="startLogin('Mirka')">Mirka</div>
+    </div>
+  </div>
+</div>
+
+<!-- PIN SCREEN -->
+<div id="pinScreen" style="display:none;">
+  <div class="pin-screen">
+    <div class="pin-name" id="pinName"></div>
+    <div class="pin-sub" id="pinSub">Zadaj PIN</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-grid">
+      <div class="pin-key" onclick="pp('1')">1</div>
+      <div class="pin-key" onclick="pp('2')">2</div>
+      <div class="pin-key" onclick="pp('3')">3</div>
+      <div class="pin-key" onclick="pp('4')">4</div>
+      <div class="pin-key" onclick="pp('5')">5</div>
+      <div class="pin-key" onclick="pp('6')">6</div>
+      <div class="pin-key" onclick="pp('7')">7</div>
+      <div class="pin-key" onclick="pp('8')">8</div>
+      <div class="pin-key" onclick="pp('9')">9</div>
+      <div class="pin-key" style="font-size:18px;" onclick="pc()">C</div>
+      <div class="pin-key" onclick="pp('0')">0</div>
+      <div class="pin-key" onclick="pd()">⌫</div>
+    </div>
+    <button class="pin-ok" onclick="checkPin()">OK</button>
+    <div class="pin-error" id="pinError"></div>
+    <button class="pin-back" onclick="backToUsers()">← Späť</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" style="display:none;">
+  <div class="app">
+    <div class="app-header">
+      <div class="header-top">
+        <div class="header-user">
+          <div class="user-dot" id="userDot"></div>
+          <div class="header-name" id="headerName"></div>
+        </div>
+        <div class="header-btns">
+          <button class="hbtn" onclick="showSettings()">Ciele</button>
+          <button class="hbtn" onclick="switchUser()">Zmeniť</button>
+          <button class="hbtn" id="darkBtn" onclick="toggleDark()">🌙</button>
+        </div>
+      </div>
+      <div class="month-nav">
+        <button class="mnav-btn" onclick="changeMonth(-1)">‹</button>
+        <div class="mnav-title" id="monthTitle"></div>
+        <button class="mnav-btn" onclick="changeMonth(1)">›</button>
+      </div>
+    </div>
+
+    <div class="summary" id="summary"></div>
+    <div class="cal-wrap">
+      <div class="cal-days-header">
+        <div class="cal-dh">Po</div><div class="cal-dh">Ut</div><div class="cal-dh">St</div>
+        <div class="cal-dh">Št</div><div class="cal-dh">Pi</div><div class="cal-dh">So</div>
+        <div class="cal-dh">Ne</div>
+      </div>
+      <div class="calendar" id="calendar"></div>
+    </div>
+    <div id="dayDetail"></div>
+    <div class="status-bar" id="statusBar"></div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div id="settingsModal" style="display:none;"></div>
+
+<script>
+var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
+var PINS = { 'Filip': '1234', 'Beny': '2345', 'Mirka': '3456' };
+var MASTER = '1234';
+var MONTHS = ['Január','Február','Marec','Apríl','Máj','Jún','Júl','August','September','Október','November','December'];
+var TYPES = { dovol:'Dovolenka', pn:'PN', meeting:'Meeting', cd:'CD' };
+
+var data = {};
+var currentUser = '';
+var currentYear = new Date().getFullYear();
+var currentMonth = new Date().getMonth();
+var selectedDay = null;
+var darkMode = false;
+var pinInput = '';
+var firstPin = '';
+var pendingUser = '';
+var userGoals = {
+  Filip: { pracovna:8.5, navstevy:5, pocet:11 },
+  Beny:  { pracovna:8.5, navstevy:5, pocet:11 },
+  Mirka: { pracovna:8.5, navstevy:5, pocet:11 }
+};
+var CIEL_P = 8.5*60, CIEL_V = 5*60, CIEL_N = 11;
+
+function applyGoals(){ var g=userGoals[currentUser]||{pracovna:8.5,navstevy:5,pocet:11}; CIEL_P=g.pracovna*60; CIEL_V=g.navstevy*60; CIEL_N=g.pocet; }
+
+function toggleDark(){
+  darkMode=!darkMode;
+  document.body.classList.toggle('dark',darkMode);
+  document.getElementById('darkBtn').textContent=darkMode?'☀️':'🌙';
+  apiSet('settings_dark', darkMode?'1':'0');
+}
+
+function setStatus(msg){ var s=document.getElementById('statusBar'); if(s){ s.textContent=msg; setTimeout(function(){ s.textContent=''; },2500); } }
+
+function apiGet(cb){
+  fetch(API_URL)
+    .then(function(r){ return r.json(); })
+    .then(cb)
+    .catch(function(){ setStatus('Chyba'); renderCalendar(); });
+}
+
+function apiSet(key, value){
+  var url = API_URL+'?key='+encodeURIComponent(key)+'&value='+encodeURIComponent(value);
+  fetch(url).catch(function(){});
+}
+
+// PIN
+function startLogin(name){
+  pendingUser=name; pinInput=''; firstPin='';
+  document.getElementById('userScreen').style.display='none';
+  document.getElementById('pinScreen').style.display='block';
+  document.getElementById('pinName').textContent=name;
+  document.getElementById('pinSub').textContent='Zadaj PIN';
+  document.getElementById('pinError').textContent='';
+  updateDots();
+}
+function pp(d){ if(pinInput.length>=4) return; pinInput+=d; updateDots(); }
+function pd(){ if(pinInput.length>0){ pinInput=pinInput.slice(0,-1); updateDots(); } }
+function pc(){ pinInput=''; updateDots(); }
+function updateDots(){ for(var i=0;i<4;i++) document.getElementById('pd'+i).className='pin-dot'+(i<pinInput.length?' filled':''); }
+function backToUsers(){ document.getElementById('pinScreen').style.display='none'; document.getElementById('userScreen').style.display='block'; }
+function checkPin(){
+  var saved=PINS[pendingUser];
+  if(pinInput===saved||pinInput===MASTER){
+    document.getElementById('pinScreen').style.display='none';
+    setUser(pendingUser);
+  } else {
+    document.getElementById('pinError').textContent='Nesprávny PIN';
+    pinInput=''; updateDots();
+  }
+}
+
+function setUser(name){
+  currentUser=name;
+  applyGoals();
+  document.getElementById('mainApp').style.display='block';
+  var dot=document.getElementById('userDot');
+  dot.textContent=name[0];
+  dot.className='user-dot dot-'+name.toLowerCase();
+  document.getElementById('headerName').textContent=name;
+  document.getElementById('monthTitle').textContent=MONTHS[currentMonth]+' '+currentYear;
+  loadData();
+}
+
+function switchUser(){
+  currentUser=''; data={};
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('userScreen').style.display='block';
+  document.getElementById('dayDetail').innerHTML='';
+}
+
+function loadData(){
+  setStatus('Načítavam...');
+  apiGet(function(result){
+    data={};
+    for(var k in result){
+      try{
+        if(k.startsWith(currentUser+'_')){ data[k]=JSON.parse(result[k]); }
+        if(k==='settings_dark'){ darkMode=result[k]==='1'; document.body.classList.toggle('dark',darkMode); document.getElementById('darkBtn').textContent=darkMode?'☀️':'🌙'; }
+        if(k==='goals_'+currentUser){ var g=JSON.parse(result[k]); userGoals[currentUser]=g; applyGoals(); }
+      }catch(e){}
+    }
+    setStatus(''); renderCalendar();
+  });
+}
+
+function key(y,m,d){ return currentUser+'_'+y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
+function getDay(y,m,d){ var k=key(y,m,d); if(!data[k]) data[k]={start:'',end:'',visits:[],note:'',type:''}; return data[k]; }
+function tMin(t){ if(!t) return 0; var p=t.split(':').map(Number); return p[0]*60+p[1]; }
+function mToT(m){ var h=Math.floor(m/60)%24; var min=m%60; return String(h).padStart(2,'0')+':'+String(min).padStart(2,'0'); }
+function mToH(m){ var a=Math.abs(m); var h=Math.floor(a/60); var min=a%60; return (m<0?'-':'+')+h+'h'+(min>0?min+'m':''); }
+
+function getDayStats(d, useDef){
+  var s=d.start||(useDef?'':'' ); var e=d.end||(useDef?'':'');
+  var tw=(s&&e)?tMin(e)-tMin(s):0;
+  var vm=d.visits.reduce(function(sum,v){ return sum+(parseInt(v.mins)||0); },0);
+  var saved=!!(d.start||d.end||d.visits.length||d.type);
+  return {tw:tw, vm:vm, vc:d.visits.length, saved:saved};
+}
+
+function renderCalendar(){
+  var fd=new Date(currentYear,currentMonth,1).getDay();
+  var dim=new Date(currentYear,currentMonth+1,0).getDate();
+  var off=(fd+6)%7;
+  var today=new Date();
+  var html='';
+  for(var i=0;i<off;i++) html+='<div class="cal-day empty"></div>';
+  for(var d=1;d<=dim;d++){
+    var k=key(currentYear,currentMonth,d);
+    var dd=data[k];
+    var dow=new Date(currentYear,currentMonth,d).getDay();
+    var isWE=dow===0||dow===6;
+    var isToday=today.getDate()===d&&today.getMonth()===currentMonth&&today.getFullYear()===currentYear;
+    var s=dd?getDayStats(dd,false):null;
+    var hasData=s&&s.saved;
+    var dtype=dd&&dd.type?dd.type:'';
+    var incomplete=hasData&&!dtype&&(s.tw<CIEL_P||s.vm<CIEL_V||s.vc<CIEL_N);
+    var cls='cal-day';
+    if(isWE) cls+=' weekend';
+    if(isToday) cls+=' today';
+    if(dtype) cls+=' '+dtype;
+    else if(hasData&&!incomplete) cls+=' has-data';
+    else if(incomplete) cls+=' incomplete';
+    var sub=dtype?(TYPES[dtype]||''):(hasData?s.vc+'n/'+Math.round(s.vm)+'m':'');
+    html+='<div class="'+cls+'" onclick="selectDay('+d+')"><div class="day-num">'+d+'</div><div class="day-sub">'+sub+'</div></div>';
+  }
+  document.getElementById('calendar').innerHTML=html;
+  renderSummary();
+}
+
+function renderSummary(){
+  var days=Object.keys(data).filter(function(k){
+    if(!k.startsWith(currentUser+'_')) return false;
+    var parts=k.replace(currentUser+'_','').split('-').map(Number);
+    return parts[0]===currentYear&&parts[1]===currentMonth+1;
+  });
+  var wDiff=0,vDiff=0,cDiff=0,wDays=0,totalW=0,totalC=0;
+  days.forEach(function(k){
+    var s=getDayStats(data[k],false);
+    if(s.saved&&!data[k].type){ wDays++; wDiff+=s.tw-CIEL_P; vDiff+=s.vm-CIEL_V; cDiff+=s.vc-CIEL_N; totalW+=s.tw; totalC+=s.vc; }
+  });
+  var avgV=wDays?(totalC/wDays).toFixed(1):'—';
+  var avgW=wDays?Math.round(totalW/wDays):0;
+  var avgWH=wDays?Math.floor(avgW/60)+'h'+(avgW%60>0?avgW%60+'m':''):'—';
+  document.getElementById('summary').innerHTML=[
+    {l:'Pracovná doba',v:wDays?mToH(wDiff):'—',c:wDiff>=0?'green':'red'},
+    {l:'Čas návštev',v:wDays?mToH(vDiff):'—',c:vDiff>=0?'green':'red'},
+    {l:'Počet návštev',v:wDays?(cDiff>=0?'+':'')+cDiff:'—',c:cDiff>=0?'green':'red'},
+    {l:'Priemer návštev',v:avgV,c:'blue'},
+    {l:'Priemer prac.',v:avgWH,c:'blue'},
+    {l:'Dni',v:wDays,c:'gray'},
+  ].map(function(c){ return '<div class="scard"><div class="scard-label">'+c.l+'</div><div class="scard-val '+c.c+'">'+c.v+'</div></div>'; }).join('');
+}
+
+function selectDay(d){ selectedDay=d; renderDetail(); document.getElementById('dayDetail').scrollIntoView({behavior:'smooth',block:'start'}); }
+
+function renderDetail(){
+  var d=selectedDay;
+  var dd=getDay(currentYear,currentMonth,d);
+  var s=getDayStats(dd,true);
+  var date=new Date(currentYear,currentMonth,d);
+  var dows=['Nedeľa','Pondelok','Utorok','Streda','Štvrtok','Piatok','Sobota'];
+  var title=dows[date.getDay()]+', '+d+'. '+MONTHS[currentMonth];
+  var wOk=s.tw>=CIEL_P; var vOk=s.vm>=CIEL_V; var nOk=s.vc>=CIEL_N;
+  var wH=s.tw?Math.floor(s.tw/60)+'h '+(s.tw%60)+'m':'—';
+  var vH=s.vm?Math.floor(s.vm/60)+'h '+(s.vm%60)+'m':'—';
+  var hint=dd.start?'Koniec o '+mToT(tMin(dd.start)+CIEL_P):'';
+
+  var typeBtns=Object.keys(TYPES).map(function(t){
+    return '<div class="dtype-btn'+(dd.type===t?' active-'+t:'')+'" onclick="setType(\''+t+'\')">'+TYPES[t]+'</div>';
+  }).join('');
+
+  var visits=dd.visits.map(function(v,i){
+    return '<div class="visit-row"><div class="vnum">'+(i+1)+'.</div>'
+      +'<input type="number" min="1" max="999" value="'+(v.mins||'')+'" placeholder="min" onchange="updateVisit('+i+',this.value)" onkeydown="if(event.key===\'Enter\'){updateVisit('+i+',this.value);this.blur();}">'
+      +'<button class="del-v" onclick="removeVisit('+i+')">×</button></div>';
+  }).join('');
+
+  document.getElementById('dayDetail').innerHTML='<div class="detail">'
+    +'<div class="detail-header"><div class="detail-title">'+title+'</div><button class="close-x" onclick="closeDetail()">×</button></div>'
+    +'<div class="slabel">Typ dňa</div><div class="day-types">'+typeBtns+'</div>'
+    +'<div class="slabel">Pracovná doba</div>'
+    +'<div class="time-row">'
+    +'<div class="fg"><label>Začiatok</label><input type="time" value="'+(dd.start||'')+'" onblur="updateWork(\'start\',this.value)" oninput="updateHint(this.value)"></div>'
+    +'<div class="fg"><label>Koniec</label><input type="time" value="'+(dd.end||'')+'" onblur="updateWork(\'end\',this.value)"></div>'
+    +'</div>'
+    +'<div class="end-hint" id="endHint">'+hint+'</div>'
+    +'<div class="stat-row"><span class="stat-l">Celkom</span><span class="stat-r '+(wOk?'ok':'bad')+'">'+wH+' / cieľ '+Math.floor(CIEL_P/60)+'h'+(CIEL_P%60>0?CIEL_P%60+'m':'')+'</span></div>'
+    +'<div class="slabel">Návštevy (min)</div>'
+    +'<div id="visitsList">'+visits+'</div>'
+    +'<div class="quick-btns">'
+    +'<div class="qbtn" onclick="addQuick(20)">+20 min</div>'
+    +'<div class="qbtn" onclick="addQuick(30)">+30 min</div>'
+    +'<div class="qbtn" onclick="addQuick(45)">+45 min</div>'
+    +'</div>'
+    +'<div class="add-v-btn" onclick="addVisit()">+ Vlastný čas</div>'
+    +'<div class="stat-row" style="margin-top:10px;"><span class="stat-l">Čas návštev</span><span class="stat-r '+(vOk?'ok':'bad')+'">'+vH+' / cieľ '+Math.floor(CIEL_V/60)+'h'+(CIEL_V%60>0?CIEL_V%60+'m':'')+'</span></div>'
+    +'<div class="stat-row"><span class="stat-l">Počet návštev</span><span class="stat-r '+(nOk?'ok':'bad')+'">'+s.vc+' / cieľ '+CIEL_N+'</span></div>'
+    +'<div class="slabel">Poznámka</div>'
+    +'<textarea class="note-input" placeholder="Voliteľná poznámka..." onblur="updateNote(this.value)">'+(dd.note||'')+'</textarea>'
+    +'<button class="save-day-btn" onclick="saveDay()">Uložiť deň</button>'
+    +'<button class="del-day-btn" onclick="deleteDay()">Vymazať deň</button>'
+    +'</div>';
+}
+
+function updateHint(v){ var h=document.getElementById('endHint'); if(h&&v) h.textContent='Koniec o '+mToT(tMin(v)+CIEL_P); }
+
+function updateWork(f,v){ var dd=getDay(currentYear,currentMonth,selectedDay); dd[f]=v; renderDetail(); renderCalendar(); autoSave(); }
+function updateVisit(i,v){ var n=parseInt(v)||0; if(n>0){ getDay(currentYear,currentMonth,selectedDay).visits[i].mins=n; renderDetail(); renderCalendar(); autoSave(); } }
+function addQuick(m){ getDay(currentYear,currentMonth,selectedDay).visits.push({mins:m}); renderDetail(); renderCalendar(); autoSave(); }
+function addVisit(){ getDay(currentYear,currentMonth,selectedDay).visits.push({mins:''}); renderDetail(); setTimeout(function(){ var ii=document.querySelectorAll('#visitsList input'); if(ii.length) ii[ii.length-1].focus(); },50); }
+function removeVisit(i){ getDay(currentYear,currentMonth,selectedDay).visits.splice(i,1); renderDetail(); renderCalendar(); autoSave(); }
+function updateNote(v){ getDay(currentUser,currentMonth,selectedDay); getDay(currentYear,currentMonth,selectedDay).note=v; autoSave(); }
+function setType(t){ var dd=getDay(currentYear,currentMonth,selectedDay); dd.type=dd.type===t?'':t; autoSave(); renderDetail(); renderCalendar(); }
+
+function autoSave(){ var k=key(currentYear,currentMonth,selectedDay); apiSet(k,JSON.stringify(data[k]||{})); setStatus('Uložené'); }
+function saveDay(){ autoSave(); }
+function deleteDay(){ var k=key(currentYear,currentMonth,selectedDay); delete data[k]; apiSet(k,''); closeDetail(); renderCalendar(); }
+function closeDetail(){ document.getElementById('dayDetail').innerHTML=''; selectedDay=null; }
+
+function changeMonth(dir){
+  currentMonth+=dir;
+  if(currentMonth>11){currentMonth=0;currentYear++;}
+  if(currentMonth<0){currentMonth=11;currentYear--;}
+  closeDetail(); renderCalendar();
+  document.getElementById('monthTitle').textContent=MONTHS[currentMonth]+' '+currentYear;
+}
+
+function showSettings(){
+  var g=userGoals[currentUser]||{pracovna:8.5,navstevy:5,pocet:11};
+  document.getElementById('settingsModal').style.display='block';
+  document.getElementById('settingsModal').innerHTML='<div class="modal-overlay" onclick="closeSettings()">'
+    +'<div class="modal-box" onclick="event.stopPropagation()">'
+    +'<div class="modal-title">Ciele — '+currentUser+'</div>'
+    +'<div class="modal-field"><div class="modal-label">Pracovná doba (h)</div><input type="number" class="modal-input" id="gP" value="'+g.pracovna+'" step="0.5"></div>'
+    +'<div class="modal-field"><div class="modal-label">Min. čas návštev (h)</div><input type="number" class="modal-input" id="gV" value="'+g.navstevy+'" step="0.5"></div>'
+    +'<div class="modal-field"><div class="modal-label">Min. počet návštev</div><input type="number" class="modal-input" id="gN" value="'+g.pocet+'" step="1"></div>'
+    +'<button class="modal-save" onclick="saveSettings()">Uložiť</button>'
+    +'<button class="modal-cancel" onclick="closeSettings()">Zrušiť</button>'
+    +'</div></div>';
+}
+
+function saveSettings(){
+  var g={pracovna:parseFloat(document.getElementById('gP').value)||8.5,navstevy:parseFloat(document.getElementById('gV').value)||5,pocet:parseInt(document.getElementById('gN').value)||11};
+  userGoals[currentUser]=g; CIEL_P=g.pracovna*60; CIEL_V=g.navstevy*60; CIEL_N=g.pocet;
+  apiSet('goals_'+currentUser,JSON.stringify(g));
+  closeSettings(); renderCalendar(); if(selectedDay) renderDetail(); setStatus('Ciele uložené!');
+}
+function closeSettings(){ document.getElementById('settingsModal').style.display='none'; }
+</script>
+</body>
+</html>

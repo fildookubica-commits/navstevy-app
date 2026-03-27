@@ -407,6 +407,10 @@ function loadData(){
   PRODUKTY=JSON.parse(JSON.stringify(DEFAULT_PRODUKTY));
   apiGet(function(result){
     data={}; zasoby={}; historia=[];
+    console.log('=== RAW DATA ZO SHEETS ===', JSON.stringify(result).slice(0,2000));
+    var keys = Object.keys(result);
+    console.log('Počet kľúčov:', keys.length);
+    console.log('Všetky kľúče:', keys.join(', '));
     for(var k in result){
       try{
         if(!result[k]) continue;

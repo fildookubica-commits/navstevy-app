@@ -1,6 +1,6 @@
 // ⚠️ VERZIA — zmeň toto číslo pri každom nasadení novej verzie (napr. v4, v5...)
 // Appka automaticky zobrazí "Dostupná aktualizácia" banner
-const CACHE_NAME = 'dochadzka-mars-v3';
+const CACHE_NAME = 'dochadzka-mars-v4';
 
 const urlsToCache = [
   '/navstevy-app/',
@@ -96,12 +96,15 @@ self.addEventListener('fetch', function(event) {
 
 // ── SPRÁVY OD KLIENTA ────────────────────────────────────────────
 self.addEventListener('message', function(event) {
+  // ⚡ SKIP_WAITING — klient žiada okamžitú aktiváciu novej verzie
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
   if (event.data && event.data.type === 'DO_SYNC') {
     self.clients.matchAll({ type: 'window' }).then(function(clients) {
       clients.forEach(function(c) { c.postMessage({ type: 'DO_SYNC' }); });
     });
   }
-  // Klient žiada o manuálny update check
   if (event.data && event.data.type === 'CHECK_UPDATE') {
     self.clients.matchAll({ type: 'window' }).then(function(clients) {
       clients.forEach(function(c) {

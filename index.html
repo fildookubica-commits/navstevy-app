@@ -511,7 +511,7 @@ body.dark .stat-header-title{color:#fff}
 var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v3';
+var APP_VERSION = 'dochadzka-mars-v4';
 var swRegistration = null;
 var updateWaiting = false;
 
@@ -577,10 +577,11 @@ function showUpdateBanner() {
 function applyUpdate() {
   document.getElementById('updateBanner').classList.remove('show');
   if (swRegistration && swRegistration.waiting) {
-    // Pošli správu waiting SW aby prevzal kontrolu
+    // Pošli SKIP_WAITING — SW sa aktivuje, controllerchange spustí reload
     swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    // Bezpečnostný fallback: ak controllerchange nepríde do 2s, reload sám
+    setTimeout(function() { window.location.reload(); }, 2000);
   } else {
-    // Fallback — tvrdý reload
     window.location.reload(true);
   }
 }

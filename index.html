@@ -833,9 +833,19 @@ function renderCalendar(){
 }
 function renderSummary(){
   var days=Object.keys(data).filter(function(k){ if(!k.startsWith(currentUser+'_d_')) return false; var p=k.replace(currentUser+'_d_','').split('-').map(Number); return p[0]===currentYear&&p[1]===currentMonth+1; });
-  var wDiff=0,vDiff=0,cDiff=0,wDays=0,totalW=0,totalC=0;
-  days.forEach(function(k){ var s=getDayStats(data[k]); if(s.saved&&!data[k].type){wDays++;wDiff+=s.tw-CIEL_P;vDiff+=s.vm-CIEL_V;cDiff+=s.vc-CIEL_N;totalW+=s.tw;totalC+=s.vc;} });
-  var avgV=wDays?(totalC/wDays).toFixed(1):'—',avgW=wDays?Math.round(totalW/wDays):0,avgWH=wDays?Math.floor(avgW/60)+'h'+(avgW%60>0?avgW%60+'m':''):'—';
+  var EXCL_TYPES=['dovol','pn'];
+  var SKIP_TIME_TYPES=['cd','meeting'];
+  var wDiff=0,vDiff=0,cDiff=0,wDays=0,timeDays=0,totalW=0,totalC=0;
+  days.forEach(function(k){
+    var d=data[k],s=getDayStats(d),t=d.type||'';
+    if(!s.saved) return;
+    if(EXCL_TYPES.indexOf(t)>=0) return;
+    wDays++;
+    if(SKIP_TIME_TYPES.indexOf(t)>=0) return;
+    timeDays++;
+    wDiff+=s.tw-CIEL_P;vDiff+=s.vm-CIEL_V;cDiff+=s.vc-CIEL_N;totalW+=s.tw;totalC+=s.vc;
+  });
+  var avgV=timeDays?(totalC/timeDays).toFixed(1):'—',avgW=timeDays?Math.round(totalW/timeDays):0,avgWH=timeDays?Math.floor(avgW/60)+'h'+(avgW%60>0?avgW%60+'m':''):'—';
   document.getElementById('summary').innerHTML=[{l:'Pracovná doba',v:wDays?mToH(wDiff):'—',c:wDiff>=0?'green':'red'},{l:'Čas návštev',v:wDays?mToH(vDiff):'—',c:vDiff>=0?'green':'red'},{l:'Počet návštev',v:wDays?(cDiff>=0?'+':'')+cDiff:'—',c:cDiff>=0?'green':'red'},{l:'Priemer návštev',v:avgV,c:'blue'},{l:'Priemer prac.',v:avgWH,c:'blue'},{l:'Dni',v:wDays,c:'gray'}].map(function(c){return '<div class="scard"><div class="scard-label">'+c.l+'</div><div class="scard-val '+c.c+'">'+c.v+'</div></div>';}).join('');
 }
 function selectDay(d){ selectedDay=d; renderDetail(); document.getElementById('dayDetail').scrollIntoView({behavior:'smooth',block:'start'}); }
@@ -883,18 +893,28 @@ function closeSettings(){ document.getElementById('settingsModal').style.display
 var QUARTERS={'Q1':[0,1,2],'Q2':[3,4,5],'Q3':[6,7,8],'Q4':[9,10,11],'Rok':[0,1,2,3,4,5,6,7,8,9,10,11]};
 function getMonthStats(year,month){
   var days=Object.keys(data).filter(function(k){ if(!k.startsWith(currentUser+'_d_')) return false; var p=k.replace(currentUser+'_d_','').split('-').map(Number); return p[0]===year&&p[1]===month+1; });
-  var wDiff=0,vDiff=0,cDiff=0,wDays=0,totalW=0,totalC=0;
-  days.forEach(function(k){ var s=getDayStats(data[k]); if(s.saved&&!data[k].type){wDays++;wDiff+=s.tw-CIEL_P;vDiff+=s.vm-CIEL_V;cDiff+=s.vc-CIEL_N;totalW+=s.tw;totalC+=s.vc;} });
-  return {wDays:wDays,wDiff:wDiff,vDiff:vDiff,cDiff:cDiff,totalW:totalW,totalC:totalC};
+  var EXCL_TYPES=['dovol','pn'];
+  var SKIP_TIME_TYPES=['cd','meeting'];
+  var wDiff=0,vDiff=0,cDiff=0,wDays=0,timeDays=0,totalW=0,totalC=0;
+  days.forEach(function(k){
+    var d=data[k],s=getDayStats(d),t=d.type||'';
+    if(!s.saved) return;
+    if(EXCL_TYPES.indexOf(t)>=0) return;
+    wDays++;
+    if(SKIP_TIME_TYPES.indexOf(t)>=0) return;
+    timeDays++;
+    wDiff+=s.tw-CIEL_P;vDiff+=s.vm-CIEL_V;cDiff+=s.vc-CIEL_N;totalW+=s.tw;totalC+=s.vc;
+  });
+  return {wDays:wDays,timeDays:timeDays,wDiff:wDiff,vDiff:vDiff,cDiff:cDiff,totalW:totalW,totalC:totalC};
 }
 function renderStat(){
   var months=QUARTERS[statPeriod]||QUARTERS['Q1'];
-  var totalDays=0,totalWDiff=0,totalVDiff=0,totalCDiff=0,totalW=0,totalC=0;
-  months.forEach(function(m){ var s=getMonthStats(statYear,m); totalDays+=s.wDays;totalWDiff+=s.wDiff;totalVDiff+=s.vDiff;totalCDiff+=s.cDiff;totalW+=s.totalW;totalC+=s.totalC; });
-  var avgV=totalDays?(totalC/totalDays).toFixed(1):'—',avgWMin=totalDays?Math.round(totalW/totalDays):0,avgWH=totalDays?Math.floor(avgWMin/60)+'h'+(avgWMin%60>0?avgWMin%60+'m':''):'—';
+  var totalDays=0,totalTimeDays=0,totalWDiff=0,totalVDiff=0,totalCDiff=0,totalW=0,totalC=0;
+  months.forEach(function(m){ var s=getMonthStats(statYear,m); totalDays+=s.wDays;totalTimeDays+=(s.timeDays||0);totalWDiff+=s.wDiff;totalVDiff+=s.vDiff;totalCDiff+=s.cDiff;totalW+=s.totalW;totalC+=s.totalC; });
+  var avgV=totalTimeDays?(totalC/totalTimeDays).toFixed(1):'—',avgWMin=totalTimeDays?Math.round(totalW/totalTimeDays):0,avgWH=totalTimeDays?Math.floor(avgWMin/60)+'h'+(avgWMin%60>0?avgWMin%60+'m':''):'—';
   var periodBtns=['Q1','Q2','Q3','Q4','Rok'].map(function(p){ return '<button class="spbtn'+(statPeriod===p?' active':'')+'" onclick="statSetPeriod(\''+p+'\')">'+p+'</button>'; }).join('');
   var yearRow='<div class="stat-year-row"><button class="stat-year-btn" onclick="statChangeYear(-1)">‹</button><div class="stat-year-val">'+statYear+'</div><button class="stat-year-btn" onclick="statChangeYear(1)">›</button></div>';
-  var summaryCards=[{l:'Pracovná doba',v:totalDays?mToH(totalWDiff):'—',c:totalWDiff>=0?'green':'red'},{l:'Čas návštev',v:totalDays?mToH(totalVDiff):'—',c:totalVDiff>=0?'green':'red'},{l:'Počet návštev',v:totalDays?(totalCDiff>=0?'+':'')+totalCDiff:'—',c:totalCDiff>=0?'green':'red'},{l:'Priemer návštev',v:avgV,c:'blue'},{l:'Priemer prac.',v:avgWH,c:'blue'},{l:'Pracovné dni',v:totalDays,c:'gray'}].map(function(c){return '<div class="stat-card"><div class="stat-card-label">'+c.l+'</div><div class="stat-card-val '+c.c+'">'+c.v+'</div></div>';}).join('');
+  var summaryCards=[{l:'Pracovná doba',v:totalTimeDays?mToH(totalWDiff):'—',c:totalWDiff>=0?'green':'red'},{l:'Čas návštev',v:totalTimeDays?mToH(totalVDiff):'—',c:totalVDiff>=0?'green':'red'},{l:'Počet návštev',v:totalTimeDays?(totalCDiff>=0?'+':'')+totalCDiff:'—',c:totalCDiff>=0?'green':'red'},{l:'Priemer návštev',v:avgV,c:'blue'},{l:'Priemer prac.',v:avgWH,c:'blue'},{l:'Pracovné dni',v:totalDays,c:'gray'}].map(function(c){return '<div class="stat-card"><div class="stat-card-label">'+c.l+'</div><div class="stat-card-val '+c.c+'">'+c.v+'</div></div>';}).join('');
   var maxC=1,maxW2=1;
   months.forEach(function(m){ var s=getMonthStats(statYear,m); if(s.totalC>maxC) maxC=s.totalC; if(s.totalW/60>maxW2) maxW2=s.totalW/60; });
   var bars=months.map(function(m){ var s=getMonthStats(statYear,m),pct=maxC>0?Math.round(s.totalC/maxC*100):0,col=s.wDays>0?'#007AFF':'#e5e5ea'; return '<div class="bar-col"><div style="flex:1;display:flex;align-items:flex-end;width:100%"><div class="bar-col-inner" style="height:'+pct+'%;background:'+col+'"></div></div><div class="bar-label">'+MONTHS[m].slice(0,3)+'</div><div class="bar-val">'+(s.totalC||'')+'</div></div>'; }).join('');

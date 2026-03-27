@@ -522,7 +522,7 @@ body.dark .stat-header-title{color:#fff}
 var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v5';
+var APP_VERSION = 'dochadzka-mars-v6';
 var swRegistration = null;
 var updateWaiting = false;
 
@@ -747,6 +747,8 @@ function checkRememberMe(){ var users=['Filip','Beny','Mirka']; for(var i=0;i<us
 function startLogin(user){
   // Ak je zapamätaný — priamo prihlásiť bez PIN
   if(isRemembered(user)){
+    document.getElementById('userScreen').style.display='none';
+    document.getElementById('pinScreen').style.display='none';
     completeLogin(user);
     return;
   }
@@ -788,7 +790,12 @@ async function checkPin(){
     completeLogin(pendingUser);
   } else { document.getElementById('pinError').textContent='Nesprávny PIN'; pinInput=''; updateDots(); }
 }
-function completeLogin(name){ setUser(name); }
+function completeLogin(name){
+  // Skry VŠETKY prihlásenie obrazovky pred zobrazením appky
+  document.getElementById('userScreen').style.display='none';
+  document.getElementById('pinScreen').style.display='none';
+  setUser(name);
+}
 
 // ── USER ─────────────────────────────────────────────────────────
 function setUser(name){
@@ -803,9 +810,11 @@ function switchUser(){
   currentUser=''; data={}; zasoby={}; historia=[];
   // NEmazeme remember me -- len prepíname usera, zapamätanie zostáva
   document.getElementById('mainApp').style.display='none';
+  document.getElementById('pinScreen').style.display='none';
   document.getElementById('userScreen').style.display='block';
   document.getElementById('dayDetail').innerHTML='';
   switchMainTab('dochadzka');
+  updateFaceIdBtns();
 }
 
 // ── LOAD ─────────────────────────────────────────────────────────

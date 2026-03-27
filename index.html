@@ -305,6 +305,8 @@ body.dark .stat-header-title{color:#fff}
 .stat-header-title span{color:#007AFF}
 /* VERZIA INFO */
 .ver-info{font-size:11px;color:#c7c7cc;text-align:center;padding:8px 0 4px}
+.forget-btn{width:100%;margin-top:-8px;padding:8px;background:none;border:none;color:#8e8e93;font-size:13px;cursor:pointer;font-family:-apple-system,Arial,sans-serif}
+.forget-btn:active{opacity:0.6}
 </style>
 </head>
 <body>
@@ -324,9 +326,18 @@ body.dark .stat-header-title{color:#fff}
     <div class="user-title">Dochádzka & Sklad</div>
     <div class="user-sub">Vyber kto si</div>
     <div class="user-btns">
-      <div class="user-btn filip" onclick="startLogin('Filip')">Filip<span class="faceid-badge" id="faceBtn-Filip" style="display:none">🔒</span></div>
-      <div class="user-btn beny" onclick="startLogin('Beny')">Beny<span class="faceid-badge" id="faceBtn-Beny" style="display:none">🔒</span></div>
-      <div class="user-btn mirka" onclick="startLogin('Mirka')">Mirka<span class="faceid-badge" id="faceBtn-Mirka" style="display:none">🔒</span></div>
+      <div style="position:relative">
+        <div class="user-btn filip" onclick="startLogin('Filip')">Filip<span class="faceid-badge" id="faceBtn-Filip" style="display:none">🔒</span><span class="faceid-badge" id="remBtn-Filip" style="display:none;right:44px">✅</span></div>
+        <button class="forget-btn" id="forgetBtn-Filip" onclick="forgetUser('Filip')" style="display:none">Zabudnúť</button>
+      </div>
+      <div style="position:relative">
+        <div class="user-btn beny" onclick="startLogin('Beny')">Beny<span class="faceid-badge" id="faceBtn-Beny" style="display:none">🔒</span><span class="faceid-badge" id="remBtn-Beny" style="display:none;right:44px">✅</span></div>
+        <button class="forget-btn" id="forgetBtn-Beny" onclick="forgetUser('Beny')" style="display:none">Zabudnúť</button>
+      </div>
+      <div style="position:relative">
+        <div class="user-btn mirka" onclick="startLogin('Mirka')">Mirka<span class="faceid-badge" id="faceBtn-Mirka" style="display:none">🔒</span><span class="faceid-badge" id="remBtn-Mirka" style="display:none;right:44px">✅</span></div>
+        <button class="forget-btn" id="forgetBtn-Mirka" onclick="forgetUser('Mirka')" style="display:none">Zabudnúť</button>
+      </div>
     </div>
   </div>
 </div>
@@ -511,7 +522,7 @@ body.dark .stat-header-title{color:#fff}
 var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v4';
+var APP_VERSION = 'dochadzka-mars-v5';
 var swRegistration = null;
 var updateWaiting = false;
 
@@ -682,7 +693,21 @@ function allDarkBtns(){ ['darkBtn','darkBtn2','darkBtn3','darkBtn4'].forEach(fun
 // ── FACE ID ──────────────────────────────────────────────────────
 function faceIdKey(user){ return 'faceid_cred_'+user; }
 function isFaceIdRegistered(user){ return !!localStorage.getItem(faceIdKey(user)); }
-function updateFaceIdBtns(){ ['Filip','Beny','Mirka'].forEach(function(u){ var b=document.getElementById('faceBtn-'+u); if(b) b.style.display=isFaceIdRegistered(u)?'inline':'none'; }); }
+function updateFaceIdBtns(){
+  ['Filip','Beny','Mirka'].forEach(function(u){
+    var fb=document.getElementById('faceBtn-'+u);
+    var rb=document.getElementById('remBtn-'+u);
+    var gb=document.getElementById('forgetBtn-'+u);
+    if(fb) fb.style.display=isFaceIdRegistered(u)?'inline':'none';
+    if(rb) rb.style.display=isRemembered(u)?'inline':'none';
+    if(gb) gb.style.display=isRemembered(u)?'block':'none';
+  });
+}
+function forgetUser(user){
+  clearRememberMe(user);
+  updateFaceIdBtns();
+  setStatus('Zapamätanie zrušené pre '+user);
+}
 async function registerFaceId(user){
   if(!window.PublicKeyCredential) return false;
   try {
@@ -713,12 +738,18 @@ async function doFaceId(){
 }
 
 // ── ZAPAMÄTAJ MA ─────────────────────────────────────────────────
-function saveRememberMe(user){ localStorage.setItem('rememberedUser',user); localStorage.setItem('rememberedUntil',Date.now()+30*24*60*60*1000); }
-function clearRememberMe(){ localStorage.removeItem('rememberedUser'); localStorage.removeItem('rememberedUntil'); }
-function checkRememberMe(){ var u=localStorage.getItem('rememberedUser'),t=parseInt(localStorage.getItem('rememberedUntil')||'0'); return u&&Date.now()<t?u:null; }
+function saveRememberMe(user){ localStorage.setItem('remember_'+user,'1'); localStorage.setItem('rememberUntil_'+user,Date.now()+30*24*60*60*1000); }
+function clearRememberMe(user){ if(user){ localStorage.removeItem('remember_'+user); localStorage.removeItem('rememberUntil_'+user); } }
+function isRemembered(user){ var v=localStorage.getItem('remember_'+user),t=parseInt(localStorage.getItem('rememberUntil_'+user)||'0'); return v==='1'&&Date.now()<t; }
+function checkRememberMe(){ var users=['Filip','Beny','Mirka']; for(var i=0;i<users.length;i++){ if(isRemembered(users[i])) return users[i]; } return null; }
 
 // ── PIN ──────────────────────────────────────────────────────────
 function startLogin(user){
+  // Ak je zapamätaný — priamo prihlásiť bez PIN
+  if(isRemembered(user)){
+    completeLogin(user);
+    return;
+  }
   if(isFaceIdRegistered(user)){
     pendingUser=user; pinInput='';
     document.getElementById('userScreen').style.display='none';
@@ -769,7 +800,8 @@ function setUser(name){
   loadData();
 }
 function switchUser(){
-  currentUser=''; data={}; zasoby={}; historia=[]; clearRememberMe();
+  currentUser=''; data={}; zasoby={}; historia=[];
+  // NEmazeme remember me -- len prepíname usera, zapamätanie zostáva
   document.getElementById('mainApp').style.display='none';
   document.getElementById('userScreen').style.display='block';
   document.getElementById('dayDetail').innerHTML='';
@@ -990,8 +1022,12 @@ function switchSkTab(tab){ currentSkTab=tab; ['sklad','prijem','vydaj','historia
 // ── INIT ─────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', function(){
   updateFaceIdBtns();
+  // Auto-login: ak je práve 1 zapamätaný user -> prihlás ho
   var remembered=checkRememberMe();
-  if(remembered){ document.getElementById('userScreen').style.display='none'; completeLogin(remembered); }
+  if(remembered){
+    document.getElementById('userScreen').style.display='none';
+    completeLogin(remembered);
+  }
 });
 </script>
 </body>

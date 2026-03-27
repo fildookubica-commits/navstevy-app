@@ -1,6 +1,6 @@
 // ⚠️ VERZIA — zmeň toto číslo pri každom nasadení novej verzie (napr. v4, v5...)
 // Appka automaticky zobrazí "Dostupná aktualizácia" banner
-const CACHE_NAME = 'dochadzka-mars-v4';
+const CACHE_NAME = 'dochadzka-mars-v5';
 
 const urlsToCache = [
   '/navstevy-app/',

@@ -343,7 +343,7 @@ body.dark .sk-hist-item { border-bottom-color: #3a3a3c; }
 <div id="settingsModal" style="display:none;"></div>
 
 <script>
-var API_URL = 'https://script.google.com/macros/s/AKfycbwa8rhuhbGA9F9ldVvVLmZLinLDTpypcPamLwm-nCBay_V1gqJOG8cXqXL8E7MHA8g4/exec';
+var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
 var PINS = {'Filip':'1234','Beny':'2345','Mirka':'3456'};
 var MASTER = '1234';
 var MONTHS = ['Január','Február','Marec','Apríl','Máj','Jún','Júl','August','September','Október','November','December'];
@@ -366,8 +366,15 @@ var zasoby={}, historia=[], selPrijem='', selVydaj='', histFilter='prijem';
 var currentSkTab='sklad';
 
 // ── API ───────────────────────────────────────────────────────
-function apiGet(cb){ fetch(API_URL).then(function(r){return r.json();}).then(cb).catch(function(){setStatus('Chyba načítania');renderCalendar();}); }
-function apiSet(k,v){ fetch(API_URL+'?key='+encodeURIComponent(k)+'&value='+encodeURIComponent(v)).catch(function(){}); }
+function apiGet(cb){
+  var script = document.createElement('script');
+  var cbName = 'gs_cb_'+Date.now();
+  window[cbName] = function(data){ cb(data); delete window[cbName]; document.body.removeChild(script); };
+  script.src = API_URL+'?callback='+cbName;
+  script.onerror = function(){ setStatus('Chyba načítania'); renderCalendar(); };
+  document.body.appendChild(script);
+}
+function apiSet(k,v){ fetch(API_URL+'?key='+encodeURIComponent(k)+'&value='+encodeURIComponent(v),{mode:'no-cors'}).catch(function(){}); }
 function setStatus(msg){ var s=document.getElementById('statusBar'); if(s){s.textContent=msg; setTimeout(function(){s.textContent='';},2500);} }
 function applyGoals(){ var g=userGoals[currentUser]||{pracovna:8.5,navstevy:5,pocet:11}; CIEL_P=g.pracovna*60; CIEL_V=g.navstevy*60; CIEL_N=g.pocet; }
 function toggleDark(){

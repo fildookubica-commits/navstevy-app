@@ -410,14 +410,49 @@ function loadData(){
     for(var k in result){
       try{
         if(!result[k]) continue;
-        // Dochádzka kľúče: user_d_
-        if(k.startsWith(currentUser+'_d_')){ data[k]=JSON.parse(result[k]); }
-        // Sklad kľúče: user_zasoba_ a user_historia_
-        else if(k.startsWith(currentUser+'_zasoba_')){ zasoby[k.replace(currentUser+'_zasoba_','')]=JSON.parse(result[k]); }
-        else if(k.startsWith(currentUser+'_historia_')){ var h=JSON.parse(result[k]); h._key=k; historia.push(h); }
-        else if(k==='settings_dark'){ darkMode=result[k]==='1'; document.body.classList.toggle('dark',darkMode); document.getElementById('darkBtn').textContent=darkMode?'☀️':'🌙'; document.getElementById('darkBtn2').textContent=darkMode?'☀️':'🌙'; }
-        else if(k==='goals_'+currentUser){ var g=JSON.parse(result[k]); userGoals[currentUser]=g; applyGoals(); }
-        else if(k===currentUser+'_produkty'){ var extra=JSON.parse(result[k]); extra.forEach(function(p){ if(!PRODUKTY.find(function(x){return x.ean===p.ean;})) PRODUKTY.push(p); }); }
+        var val = result[k];
+
+        // Dochádzka – nový formát: Filip_d_2026-03-27
+        if(k.startsWith(currentUser+'_d_')){
+          data[k]=JSON.parse(val);
+        }
+        // Dochádzka – starý formát: Filip_2026-03-27 (migrujeme na nový kľúč)
+        else if(/^[A-Za-z]+_\d{4}-\d{2}-\d{2}$/.test(k) && k.startsWith(currentUser+'_')){
+          var newKey = currentUser+'_d_'+k.slice(currentUser.length+1);
+          data[newKey]=JSON.parse(val);
+        }
+        // Sklad – nový formát: Filip_zasoba_ean
+        else if(k.startsWith(currentUser+'_zasoba_')){
+          zasoby[k.replace(currentUser+'_zasoba_','')]=JSON.parse(val);
+        }
+        // Sklad – starý formát: zasoba_ean (zdieľaný, berieme ak nemáme vlastný)
+        else if(k.startsWith('zasoba_')){
+          var ean=k.replace('zasoba_','');
+          if(zasoby[ean]===undefined) zasoby[ean]=JSON.parse(val);
+        }
+        // História – nový formát: Filip_historia_timestamp
+        else if(k.startsWith(currentUser+'_historia_')){
+          var h=JSON.parse(val); h._key=k; historia.push(h);
+        }
+        // História – starý formát: historia_timestamp (zdieľaná)
+        else if(k.startsWith('historia_')){
+          var h=JSON.parse(val); h._key=k; historia.push(h);
+        }
+        else if(k==='settings_dark'){
+          darkMode=result[k]==='1'; document.body.classList.toggle('dark',darkMode);
+          document.getElementById('darkBtn').textContent=darkMode?'☀️':'🌙';
+          document.getElementById('darkBtn2').textContent=darkMode?'☀️':'🌙';
+        }
+        else if(k==='goals_'+currentUser){
+          var g=JSON.parse(val); userGoals[currentUser]=g; applyGoals();
+        }
+        else if(k===currentUser+'_produkty'){
+          var extra=JSON.parse(val); extra.forEach(function(p){ if(!PRODUKTY.find(function(x){return x.ean===p.ean;})) PRODUKTY.push(p); });
+        }
+        // Starý formát produktov (zdieľaný)
+        else if(k==='settings_produkty'){
+          var extra=JSON.parse(val); extra.forEach(function(p){ if(!PRODUKTY.find(function(x){return x.ean===p.ean;})) PRODUKTY.push(p); });
+        }
       }catch(e){}
     }
     historia.sort(function(a,b){return new Date(b.datum)-new Date(a.datum);});

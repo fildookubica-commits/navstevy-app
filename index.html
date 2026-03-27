@@ -423,14 +423,15 @@ function loadData(){
         if(!result[k]) continue;
         var val = result[k];
 
-        // Dochádzka – nový formát: Filip_d_2026-03-27
-        if(k.startsWith(currentUser+'_d_')){
-          data[k]=JSON.parse(val);
-        }
-        // Dochádzka – starý formát: Filip_2026-03-27 (migrujeme na nový kľúč)
-        else if(/^[A-Za-z]+_\d{4}-\d{2}-\d{2}$/.test(k) && k.startsWith(currentUser+'_')){
+        // Dochádzka – formát: Filip_2026-03-27
+        if(k.startsWith(currentUser+'_') && /\d{4}-\d{2}-\d{2}$/.test(k)){
+          // uložíme pod novým kľúčom s _d_ pre interné použitie
           var newKey = currentUser+'_d_'+k.slice(currentUser.length+1);
           data[newKey]=JSON.parse(val);
+        }
+        // Dochádzka – nový formát: Filip_d_2026-03-27
+        else if(k.startsWith(currentUser+'_d_')){
+          data[k]=JSON.parse(val);
         }
         // Sklad – nový formát: Filip_zasoba_ean
         else if(k.startsWith(currentUser+'_zasoba_')){
@@ -472,8 +473,9 @@ function loadData(){
 }
 
 // ── DOCHÁDZKA ─────────────────────────────────────────────────
-function key(y,m,d){ return currentUser+'_d_'+y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
-function getDay(y,m,d){ var k=key(y,m,d); if(!data[k]) data[k]={start:'',end:'',visits:[],note:'',type:''}; return data[k]; }
+function key(y,m,d){ return currentUser+'_'+y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
+function dKey(y,m,d){ return currentUser+'_d_'+y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
+function getDay(y,m,d){ var k=dKey(y,m,d); if(!data[k]) data[k]={start:'',end:'',visits:[],note:'',type:''}; return data[k]; }
 function tMin(t){ if(!t) return 0; var p=t.split(':').map(Number); return p[0]*60+p[1]; }
 function mToT(m){ var h=Math.floor(m/60)%24; var min=m%60; return String(h).padStart(2,'0')+':'+String(min).padStart(2,'0'); }
 function mToH(m){ var a=Math.abs(m); var h=Math.floor(a/60); var min=a%60; return (m<0?'-':'+')+h+'h'+(min>0?min+'m':''); }
@@ -483,7 +485,7 @@ function renderCalendar(){
   var fd=new Date(currentYear,currentMonth,1).getDay(); var dim=new Date(currentYear,currentMonth+1,0).getDate(); var off=(fd+6)%7; var today=new Date(); var html='';
   for(var i=0;i<off;i++) html+='<div class="cal-day empty"></div>';
   for(var d=1;d<=dim;d++){
-    var k=key(currentYear,currentMonth,d); var dd=data[k]; var dow=new Date(currentYear,currentMonth,d).getDay();
+    var k=dKey(currentYear,currentMonth,d); var dd=data[k]; var dow=new Date(currentYear,currentMonth,d).getDay();
     var isWE=dow===0||dow===6; var isToday=today.getDate()===d&&today.getMonth()===currentMonth&&today.getFullYear()===currentYear;
     var s=dd?getDayStats(dd):null; var hasData=s&&s.saved; var dtype=dd&&dd.type?dd.type:'';
     var incomplete=hasData&&!dtype&&(s.tw<CIEL_P||s.vm<CIEL_V||s.vc<CIEL_N);
@@ -521,9 +523,9 @@ function addVisit(){ getDay(currentYear,currentMonth,selectedDay).visits.push({m
 function removeVisit(i){ getDay(currentYear,currentMonth,selectedDay).visits.splice(i,1); renderDetail(); renderCalendar(); autoSave(); }
 function updateNote(v){ getDay(currentYear,currentMonth,selectedDay).note=v; autoSave(); }
 function setType(t){ var dd=getDay(currentYear,currentMonth,selectedDay); dd.type=dd.type===t?'':t; autoSave(); renderDetail(); renderCalendar(); }
-function autoSave(){ var k=key(currentYear,currentMonth,selectedDay); apiSet(k,JSON.stringify(data[k]||{})); setStatus('Uložené'); }
+function autoSave(){ var k=key(currentYear,currentMonth,selectedDay); var dk=dKey(currentYear,currentMonth,selectedDay); apiSet(k,JSON.stringify(data[dk]||{})); setStatus('Uložené'); }
 function saveDay(){ autoSave(); }
-function deleteDay(){ var k=key(currentYear,currentMonth,selectedDay); delete data[k]; apiSet(k,''); closeDetail(); renderCalendar(); }
+function deleteDay(){ var k=key(currentYear,currentMonth,selectedDay); var dk=dKey(currentYear,currentMonth,selectedDay); delete data[dk]; apiSet(k,''); closeDetail(); renderCalendar(); }
 function closeDetail(){ document.getElementById('dayDetail').innerHTML=''; selectedDay=null; }
 function changeMonth(dir){ currentMonth+=dir; if(currentMonth>11){currentMonth=0;currentYear++;} if(currentMonth<0){currentMonth=11;currentYear--;} closeDetail(); renderCalendar(); document.getElementById('monthTitle').textContent=MONTHS[currentMonth]+' '+currentYear; }
 function showSettings(){

@@ -616,7 +616,7 @@ body.dark .druh-foto-btn{background:#2c2c2e;border-color:#48484a}
 var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v7';
+var APP_VERSION = 'dochadzka-mars-v8';
 var swRegistration = null;
 var updateWaiting = false;
 
@@ -1214,9 +1214,10 @@ function renderDruhotky(){
     // Kvartálny filter bar
     var curQ='Q'+(Math.ceil((new Date().getMonth()+1)/3));
     var qBar=['Q1','Q2','Q3','Q4'].map(function(q){
-      return '<button class="druh-qbtn'+(druhQPeriod===q?' active':'')+'" onclick="druhSetQ(''+q+'')">'+q+'</button>';
+      var cls='druh-qbtn'+(druhQPeriod===q?' active':'');
+      return '<button class="'+cls+'" onclick="druhSetQ(\''+q+'\')">'+q+'</button>';
     }).join('');
-    qBar+='<button class="druh-qbtn" onclick="druhSetYear(-1)">‹</button><span style="padding:8px 4px;font-size:13px;font-weight:600;color:#1c1c1e;white-space:nowrap;">'+druhQYear+'</span><button class="druh-qbtn" onclick="druhSetYear(1)">›</button>';
+    qBar+='<button class="druh-qbtn" onclick="druhSetYear(-1)">&#8249;</button><span style="padding:8px 4px;font-size:13px;font-weight:600;color:#1c1c1e;white-space:nowrap;">'+druhQYear+'</span><button class="druh-qbtn" onclick="druhSetYear(1)">&#8250;</button>';
     var qBarEl=document.getElementById('druhQBar');
     if(qBarEl) qBarEl.innerHTML=qBar;
 

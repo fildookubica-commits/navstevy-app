@@ -305,6 +305,18 @@ body.dark .stat-header-title{color:#fff}
 .stat-header-title span{color:#007AFF}
 /* VERZIA INFO */
 .ver-info{font-size:11px;color:#c7c7cc;text-align:center;padding:8px 0 4px}
+/* ── AUTOCOMPLETE ── */
+.autocomplete-wrap{position:relative;margin-bottom:10px}
+.autocomplete-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e5e5ea;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.12);z-index:999;max-height:220px;overflow-y:auto;display:none}
+body.dark .autocomplete-list{background:#2c2c2e;border-color:#48484a}
+.autocomplete-list.show{display:block}
+.autocomplete-item{padding:12px 14px;font-size:14px;cursor:pointer;border-bottom:1px solid #f2f2f7;color:#1c1c1e}
+body.dark .autocomplete-item{border-bottom-color:#3a3a3c;color:#fff}
+.autocomplete-item:last-child{border-bottom:none}
+.autocomplete-item:active{background:#f2f2f7}
+body.dark .autocomplete-item:active{background:#3a3a3c}
+.autocomplete-item strong{color:#007AFF}
+.autocomplete-item span{font-size:12px;color:#8e8e93;margin-left:6px}
 /* ── OBCHODY ── */
 .obch-header-title{font-size:22px;font-weight:700;color:#1c1c1e}
 body.dark .obch-header-title{color:#fff}
@@ -721,7 +733,10 @@ body.dark .druh-foto-btn{background:#2c2c2e;border-color:#48484a}
             <button class="druh-kat-btn" id="dkat-GUM" onclick="druhSelKat('GUM')">GUM</button>
           </div>
           <div class="slabel">Obchod</div>
-          <div class="fmb"><input type="text" id="druhObchod" placeholder="napr. Tesco Žilina"></div>
+          <div class="autocomplete-wrap">
+            <input type="text" id="druhObchod" placeholder="Hľadaj obchod..." oninput="druhAutoInput(this)" onblur="druhAutoHide()" autocomplete="off">
+            <div class="autocomplete-list" id="druhAutoList"></div>
+          </div>
           <div class="slabel">Počet kusov</div>
           <div class="fmb"><input type="number" id="druhKs" min="1" placeholder="0" inputmode="numeric"></div>
           <input type="file" id="druhFotoInput" accept="image/*" capture="environment" style="display:none" onchange="druhFotoChange(this)">
@@ -779,7 +794,7 @@ var OBCHODY={"Filip": [{"id": "SK002284", "n": "POT J-LM 053 MIX", "m": "PARTIZA
 var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v12';
+var APP_VERSION = 'dochadzka-mars-v13';
 var swRegistration = null;
 var updateWaiting = false;
 
@@ -1272,6 +1287,40 @@ var druhQYear = new Date().getFullYear();
 var DRUH_QUARTERS = {
   'Q1':[0,1,2], 'Q2':[3,4,5], 'Q3':[6,7,8], 'Q4':[9,10,11]
 };
+
+function druhAutoInput(inp){
+  var val = inp.value.trim().toLowerCase();
+  var list = document.getElementById('druhAutoList');
+  if(!list) return;
+  if(val.length < 1){ list.classList.remove('show'); return; }
+  var shops = (OBCHODY && OBCHODY[currentUser]) ? OBCHODY[currentUser] : [];
+  var matches = shops.filter(function(s){
+    return (s.n+' '+s.m).toLowerCase().indexOf(val) >= 0;
+  }).slice(0, 8);
+  if(matches.length === 0){ list.classList.remove('show'); return; }
+  list.innerHTML = '';
+  matches.forEach(function(s){
+    var item = document.createElement('div');
+    item.className = 'autocomplete-item';
+    var highlighted = s.n.replace(new RegExp('('+val+')', 'gi'), '<strong>$1</strong>');
+    item.innerHTML = highlighted + '<span>' + s.m + '</span>';
+    item.onmousedown = function(e){
+      e.preventDefault();
+      var inp2 = document.getElementById('druhObchod');
+      if(inp2) inp2.value = s.n + (s.m ? ', ' + s.m : '');
+      list.classList.remove('show');
+    };
+    list.appendChild(item);
+  });
+  list.classList.add('show');
+}
+
+function druhAutoHide(){
+  setTimeout(function(){
+    var list = document.getElementById('druhAutoList');
+    if(list) list.classList.remove('show');
+  }, 150);
+}
 
 function druhKey(){ return 'druhotky_'+currentUser; }
 

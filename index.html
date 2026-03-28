@@ -794,7 +794,7 @@ var OBCHODY={"Filip": [{"id": "SK002284", "n": "POT J-LM 053 MIX", "m": "PARTIZA
 var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v14';
+var APP_VERSION = 'dochadzka-mars-v15';
 var swRegistration = null;
 var updateWaiting = false;
 
@@ -1230,7 +1230,7 @@ function dnes(){ var d=new Date(); return d.getDate()+'.'+(d.getMonth()+1)+'.'+d
 function skRenderAll(){ skRenderSklad(); skRenderPrijem(); skRenderVydaj(); skRenderHistoria(); skRenderProdukty(); }
 function skRenderSklad(){ var html='<div class="sk-card">'; if(!PRODUKTY.length){html+='<div class="sk-empty">Žiadne produkty</div>';}else{PRODUKTY.forEach(function(p){var z=skGet(p.ean);html+='<div class="sk-row"><div><div class="sk-name">'+p.nazov+'</div><div class="sk-ean">'+p.ean+'</div></div><div class="sk-badge '+(z>0?'sk-ok':'sk-low')+'">'+z+' boxov</div></div>';});} document.getElementById('skView-sklad').innerHTML=html+'</div>'; }
 function skRenderPrijem(){ var btns=PRODUKTY.map(function(p){return '<div class="sk-prod-btn'+(selPrijem===p.ean?' selected':'')+'" onclick="skSelP(\''+p.ean+'\')">'+p.nazov+'</div>';}).join(''),prev=selPrijem?'<div class="sk-preview"><span class="sk-preview-label">Na sklade:</span><span class="sk-preview-val">📦 '+skGet(selPrijem)+' boxov</span></div>':''; document.getElementById('skView-prijem').innerHTML='<div class="sk-card"><div class="slabel">Vyber produkt</div><div class="prod-grid">'+btns+'</div>'+prev+'<div class="slabel">Počet boxov</div><div class="fmb"><input type="number" id="skPP" min="1" placeholder="0" inputmode="numeric"></div><div class="slabel">Dátum</div><div class="fmb"><input type="text" id="skPD" value="'+dnes()+'"></div><button class="sk-save-btn sk-btn-green" onclick="skSaveP()">⬇️ Naskladniť</button></div>'; }
-function skRenderVydaj(){ var btns=PRODUKTY.map(function(p){return '<div class="sk-prod-btn'+(selVydaj===p.ean?' selected':'')+'" onclick="skSelV(\''+p.ean+'\')">'+p.nazov+'</div>';}).join(''),prev=selVydaj?'<div class="sk-preview"><span class="sk-preview-label">Na sklade:</span><span class="sk-preview-val">📦 '+skGet(selVydaj)+' boxov</span></div>':''; document.getElementById('skView-vydaj').innerHTML='<div class="sk-card"><div class="slabel">Vyber produkt</div><div class="prod-grid">'+btns+'</div>'+prev+'<div class="slabel">Počet boxov</div><div class="fmb"><input type="number" id="skVP" min="1" placeholder="0" inputmode="numeric"></div><div class="slabel">Miesto / Obchod</div><div class="fmb"><input type="text" id="skVM" placeholder="napr. Tesco Žilina"></div><div class="slabel">Dátum</div><div class="fmb"><input type="text" id="skVD" value="'+dnes()+'"></div><button class="sk-save-btn sk-btn-blue" onclick="skSaveV()">⬆️ Vydať zo skladu</button></div>'; }
+function skRenderVydaj(){ var btns=PRODUKTY.map(function(p){return '<div class="sk-prod-btn'+(selVydaj===p.ean?' selected':'')+'" onclick="skSelV(\''+p.ean+'\')">'+p.nazov+'</div>';}).join(''),prev=selVydaj?'<div class="sk-preview"><span class="sk-preview-label">Na sklade:</span><span class="sk-preview-val">📦 '+skGet(selVydaj)+' boxov</span></div>':''; document.getElementById('skView-vydaj').innerHTML='<div class="sk-card"><div class="slabel">Vyber produkt</div><div class="prod-grid">'+btns+'</div>'+prev+'<div class="slabel">Počet boxov</div><div class="fmb"><input type="number" id="skVP" min="1" placeholder="0" inputmode="numeric"></div><div class="slabel">Miesto / Obchod</div><div class="fmb autocomplete-wrap"><input type="text" id="skVM" placeholder="Hľadaj obchod..." oninput="skAutoInput(this)" onblur="skAutoHide()" autocomplete="off"><div class="autocomplete-list" id="skAutoList"></div></div><div class="slabel">Dátum</div><div class="fmb"><input type="text" id="skVD" value="'+dnes()+'"></div><button class="sk-save-btn sk-btn-blue" onclick="skSaveV()">⬆️ Vydať zo skladu</button></div>'; }
 function skRenderHistoria(){ var filtered=historia.filter(function(h){return h.typ===histFilter;}),fHtml='<div class="sk-hist-filter"><button class="sk-hf-btn'+(histFilter==='prijem'?' active-in':'')+'" onclick="skHF(\'prijem\')">⬇️ Príjem</button><button class="sk-hf-btn'+(histFilter==='vydaj'?' active-out':'')+'" onclick="skHF(\'vydaj\')">⬆️ Výdaj</button></div>',items=filtered.length?filtered.map(function(h){var ri=historia.indexOf(h);return '<div class="sk-hist-item"><div class="sk-hist-row"><div class="sk-hist-name">'+h.nazov+'</div><div style="display:flex;align-items:center;"><div class="'+(h.typ==='prijem'?'badge-in':'badge-out')+'">'+(h.typ==='prijem'?'+':'-')+h.pocet+' ks</div><button class="sk-cancel-btn" onclick="skZrusit('+ri+')">Zrušiť</button></div></div><div class="sk-hist-detail">'+(h.typ==='prijem'?'Príjem':'Výdaj: '+h.miesto)+' · '+h.datum+'</div></div>';}).join(''):'<div class="sk-empty">Žiadne záznamy</div>'; document.getElementById('skView-historia').innerHTML=fHtml+'<div class="sk-card">'+items+'</div>'; }
 function skRenderProdukty(){ var rows=PRODUKTY.map(function(p,i){return '<div class="sk-row"><div><div class="sk-name">'+p.nazov+'</div><div class="sk-ean">'+p.ean+'</div></div><div style="display:flex;align-items:center;gap:8px;"><div class="sk-badge '+(skGet(p.ean)>0?'sk-ok':'sk-low')+'">'+skGet(p.ean)+'</div>'+(i>=4?'<button class="remove-prod-btn" onclick="skRemove(\''+p.ean+'\')">×</button>':'')+'</div></div>';}).join(''); document.getElementById('skView-produkty').innerHTML='<div class="sk-card"><div class="slabel">Zoznam tovarov</div>'+(rows||'<div class="sk-empty">Žiadne</div>')+'</div><div class="sk-card"><div class="slabel">Pridať nový tovar</div><div class="fmb"><div class="slabel">EAN kód</div><input type="text" id="skNE" placeholder="napr. 4009900123456" inputmode="numeric"></div><div class="fmb"><div class="slabel">Názov produktu</div><input type="text" id="skNN" placeholder="napr. Orbit Watermelon"></div><button class="sk-save-btn sk-btn-green" onclick="skAdd()">➕ Pridať tovar</button></div>'; }
 function skSelP(e){ selPrijem=e; skRenderPrijem(); }
@@ -1303,6 +1303,40 @@ function druhAutoInput(inp){
 function druhAutoHide(){
   setTimeout(function(){
     var list = document.getElementById('druhAutoList');
+    if(list) list.classList.remove('show');
+  }, 150);
+}
+
+function skAutoInput(inp){
+  var val = inp.value.trim().toLowerCase();
+  var list = document.getElementById('skAutoList');
+  if(!list) return;
+  if(val.length < 1){ list.classList.remove('show'); return; }
+  var shops = (OBCHODY && OBCHODY[currentUser]) ? OBCHODY[currentUser] : [];
+  var matches = shops.filter(function(s){
+    return (s.n+' '+s.m).toLowerCase().indexOf(val) >= 0;
+  }).slice(0, 8);
+  if(matches.length === 0){ list.classList.remove('show'); return; }
+  list.innerHTML = '';
+  matches.forEach(function(s){
+    var item = document.createElement('div');
+    item.className = 'autocomplete-item';
+    var highlighted = s.n.replace(new RegExp('('+val.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')', 'gi'), '<strong>$1</strong>');
+    item.innerHTML = highlighted + '<span>' + s.m + '</span>';
+    item.onmousedown = function(e){
+      e.preventDefault();
+      var inp2 = document.getElementById('skVM');
+      if(inp2) inp2.value = s.n + (s.m ? ', ' + s.m : '');
+      list.classList.remove('show');
+    };
+    list.appendChild(item);
+  });
+  list.classList.add('show');
+}
+
+function skAutoHide(){
+  setTimeout(function(){
+    var list = document.getElementById('skAutoList');
     if(list) list.classList.remove('show');
   }, 150);
 }

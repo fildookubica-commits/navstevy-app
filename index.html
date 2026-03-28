@@ -305,6 +305,53 @@ body.dark .stat-header-title{color:#fff}
 .stat-header-title span{color:#007AFF}
 /* VERZIA INFO */
 .ver-info{font-size:11px;color:#c7c7cc;text-align:center;padding:8px 0 4px}
+/* ── DRUHOTKY ── */
+.druh-header-title{font-size:22px;font-weight:700;color:#1c1c1e}
+body.dark .druh-header-title{color:#fff}
+.druh-header-title span{color:#FF9500}
+.druh-wrap{padding:14px 20px 0}
+.druh-add-card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px}
+body.dark .druh-add-card{background:#2c2c2e}
+.druh-kat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.druh-kat-btn{padding:14px 4px;border:1.5px solid #e5e5ea;border-radius:12px;background:#f2f2f7;font-size:13px;font-weight:700;cursor:pointer;text-align:center;color:#8e8e93}
+body.dark .druh-kat-btn{background:#3a3a3c;border-color:#48484a;color:#8e8e93}
+.druh-kat-btn.sel-KPZ{background:#d6eaff;border-color:#007AFF;color:#007AFF}
+.druh-kat-btn.sel-COKO{background:#fff3d6;border-color:#FF9500;color:#b36200}
+.druh-kat-btn.sel-GUM{background:#d1f2d8;border-color:#34C759;color:#1a7431}
+.druh-save-btn{width:100%;padding:14px;background:#FF9500;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:-apple-system,Arial,sans-serif;margin-top:4px}
+.druh-save-btn:active{opacity:0.8}
+.druh-record{background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:10px}
+body.dark .druh-record{background:#2c2c2e}
+.druh-record-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.druh-record-left{display:flex;align-items:center;gap:10px}
+.druh-kat-badge{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700}
+.badge-KPZ{background:#d6eaff;color:#007AFF}
+.badge-COKO{background:#fff3d6;color:#b36200}
+.badge-GUM{background:#d1f2d8;color:#1a7431}
+body.dark .badge-KPZ{background:#0c2a4a;color:#4da6ff}
+body.dark .badge-COKO{background:#3a2a00;color:#FF9500}
+body.dark .badge-GUM{background:#1a3a23;color:#4cd964}
+.druh-record-obchod{font-size:14px;font-weight:600;color:#1c1c1e}
+body.dark .druh-record-obchod{color:#fff}
+.druh-record-meta{font-size:12px;color:#8e8e93;margin-top:3px}
+.druh-record-ks{font-size:18px;font-weight:700;color:#1c1c1e;white-space:nowrap}
+body.dark .druh-record-ks{color:#fff}
+.druh-del-btn{background:none;border:none;color:#FF3B30;font-size:18px;cursor:pointer;padding:0 2px}
+.druh-empty{text-align:center;padding:40px 16px;color:#8e8e93;font-size:14px}
+.druh-q-bar{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
+.druh-q-bar::-webkit-scrollbar{display:none}
+.druh-qbtn{flex-shrink:0;padding:8px 18px;border-radius:20px;border:1.5px solid #e5e5ea;background:#f2f2f7;font-size:13px;font-weight:600;cursor:pointer;color:#8e8e93}
+body.dark .druh-qbtn{background:#2c2c2e;border-color:#38383a;color:#8e8e93}
+.druh-qbtn.active{background:#FF9500;border-color:#FF9500;color:#fff}
+.druh-stat-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.druh-stat-card{background:#fff;border-radius:12px;padding:12px;text-align:center}
+body.dark .druh-stat-card{background:#2c2c2e}
+.druh-stat-label{font-size:10px;color:#8e8e93;font-weight:600;text-transform:uppercase;margin-bottom:4px}
+.druh-stat-val{font-size:20px;font-weight:700;color:#1c1c1e}
+body.dark .druh-stat-val{color:#fff}
+.druh-foto-btn{width:100%;padding:12px;background:#f2f2f7;border:1.5px dashed #c7c7cc;border-radius:12px;font-size:14px;color:#8e8e93;cursor:pointer;text-align:center;margin-bottom:10px;font-family:-apple-system,Arial,sans-serif}
+body.dark .druh-foto-btn{background:#2c2c2e;border-color:#48484a}
+.druh-foto-preview{width:100%;height:140px;object-fit:cover;border-radius:12px;margin-bottom:10px;display:block}
 .forget-btn{width:100%;margin-top:-8px;padding:8px;background:none;border:none;color:#8e8e93;font-size:13px;cursor:pointer;font-family:-apple-system,Arial,sans-serif}
 .forget-btn:active{opacity:0.6}
 </style>
@@ -440,6 +487,23 @@ body.dark .stat-header-title{color:#fff}
       </div>
     </div>
 
+    <!-- HEADER DRUHOTKY -->
+    <div class="app-header" id="headerDruhotky" style="display:none;">
+      <div class="header-top" style="margin-bottom:14px;">
+        <div class="app-title-wrap" style="padding-bottom:0;">
+          <div class="druh-header-title">Druhotky <span>🏪</span></div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+            <div class="user-dot" id="userDot5" style="width:20px;height:20px;font-size:10px;"></div>
+            <div class="header-name" id="headerName5" style="font-size:13px;"></div>
+          </div>
+        </div>
+        <div class="header-btns">
+          <button class="hbtn" onclick="switchUser()">Zmeniť</button>
+          <button class="hbtn" id="darkBtn5" onclick="toggleDark()">🌙</button>
+        </div>
+      </div>
+    </div>
+
     <!-- HEADER POZNÁMKY -->
     <div class="app-header pozn-header-wrap" id="headerPoznamky" style="display:none;">
       <div class="header-top" style="margin-bottom:0;">
@@ -484,6 +548,35 @@ body.dark .stat-header-title{color:#fff}
       <div class="stat-view" id="statContent"></div>
     </div>
 
+    <!-- DRUHOTKY VIEW -->
+    <div id="viewDruhotky" style="display:none;">
+      <div class="druh-wrap">
+        <!-- Formulár na pridanie -->
+        <div class="druh-add-card">
+          <div class="slabel">Kategória</div>
+          <div class="druh-kat-grid">
+            <button class="druh-kat-btn" id="dkat-KPZ" onclick="druhSelKat('KPZ')">KPZ</button>
+            <button class="druh-kat-btn" id="dkat-COKO" onclick="druhSelKat('COKO')">ČOKO</button>
+            <button class="druh-kat-btn" id="dkat-GUM" onclick="druhSelKat('GUM')">GUM</button>
+          </div>
+          <div class="slabel">Obchod</div>
+          <div class="fmb"><input type="text" id="druhObchod" placeholder="napr. Tesco Žilina"></div>
+          <div class="slabel">Počet kusov</div>
+          <div class="fmb"><input type="number" id="druhKs" min="1" placeholder="0" inputmode="numeric"></div>
+          <input type="file" id="druhFotoInput" accept="image/*" capture="environment" style="display:none" onchange="druhFotoChange(this)">
+          <button class="druh-foto-btn" onclick="document.getElementById('druhFotoInput').click()">📷 Pridať fotku (voliteľné)</button>
+          <img id="druhFotoPreview" class="druh-foto-preview" style="display:none">
+          <button class="druh-save-btn" onclick="druhSave()">+ Pridať záznam</button>
+        </div>
+        <!-- Kvartálny filter -->
+        <div class="druh-q-bar" id="druhQBar"></div>
+        <!-- Štatistiky -->
+        <div class="druh-stat-cards" id="druhStatCards"></div>
+        <!-- Zoznam záznamov -->
+        <div id="druhList"></div>
+      </div>
+    </div>
+
     <!-- POZNÁMKY VIEW -->
     <div id="viewPoznamky" style="display:none;">
       <div class="pozn-wrap">
@@ -511,8 +604,9 @@ body.dark .stat-header-title{color:#fff}
   <div class="bottom-tabs">
     <button class="btab active" onclick="switchMainTab('dochadzka')" id="mtab-dochadzka"><span class="ti">📅</span>Dochádz.</button>
     <button class="btab" onclick="switchMainTab('sklad')" id="mtab-sklad"><span class="ti">📦</span>Sklad</button>
-    <button class="btab" onclick="switchMainTab('stat')" id="mtab-stat"><span class="ti">📊</span>Štatistiky</button>
-    <button class="btab" onclick="switchMainTab('poznamky')" id="mtab-poznamky"><span class="ti">📝</span>Poznámky</button>
+    <button class="btab" onclick="switchMainTab('stat')" id="mtab-stat"><span class="ti">📊</span>Štat.</button>
+    <button class="btab" onclick="switchMainTab('druhotky')" id="mtab-druhotky"><span class="ti">🏪</span>Druhotky</button>
+    <button class="btab" onclick="switchMainTab('poznamky')" id="mtab-poznamky"><span class="ti">📝</span>Pozn.</button>
   </div>
 </div>
 
@@ -522,7 +616,7 @@ body.dark .stat-header-title{color:#fff}
 var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v6';
+var APP_VERSION = 'dochadzka-mars-v7';
 var swRegistration = null;
 var updateWaiting = false;
 
@@ -686,9 +780,9 @@ function toggleDark(){
   ['darkBtn','darkBtn2','darkBtn3','darkBtn4'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=darkMode?'☀️':'🌙'; });
   apiSet('settings_dark',darkMode?'1':'0');
 }
-function allDots(name){ ['userDot','userDot2','userDot3','userDot4'].forEach(function(id){ var el=document.getElementById(id); if(el){el.textContent=name[0];el.className='user-dot dot-'+name.toLowerCase();} }); }
-function allNames(name){ ['headerName','headerName2','headerName3','headerName4'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=name; }); }
-function allDarkBtns(){ ['darkBtn','darkBtn2','darkBtn3','darkBtn4'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=darkMode?'☀️':'🌙'; }); }
+function allDots(name){ ['userDot','userDot2','userDot3','userDot4','userDot5'].forEach(function(id){ var el=document.getElementById(id); if(el){el.textContent=name[0];el.className='user-dot dot-'+name.toLowerCase();} }); }
+function allNames(name){ ['headerName','headerName2','headerName3','headerName4','headerName5'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=name; }); }
+function allDarkBtns(){ ['darkBtn','darkBtn2','darkBtn3','darkBtn4','darkBtn5'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=darkMode?'☀️':'🌙'; }); }
 
 // ── FACE ID ──────────────────────────────────────────────────────
 function faceIdKey(user){ return 'faceid_cred_'+user; }
@@ -1005,12 +1099,179 @@ function renderPoznamky(){
 function addPoznamka(){ var input=document.getElementById('poznNewInput'),text=input?input.value.trim():''; if(!text){setStatus('⚠️ Napíš text!');return;} poznLoad(function(notes){var d=new Date(),datum=d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');notes.unshift({text:text,datum:datum,id:Date.now(),important:poznImportant});poznSave(notes,function(){setStatus('✅ Uložené!');input.value='';poznImportant=false;var btn=document.getElementById('poznImpToggle');if(btn)btn.className='pozn-important-toggle';renderPoznamky();});}); }
 function deletePoznamka(i){ poznLoad(function(notes){notes.splice(i,1);poznSave(notes,function(){setStatus('🗑️ Vymazaná');renderPoznamky();});}); }
 
+
+// ── DRUHOTKY ─────────────────────────────────────────────────────
+var druhSelKatVal = '';
+var druhFotoData = '';
+var druhQPeriod = 'Q' + (Math.ceil((new Date().getMonth()+1)/3));
+var druhQYear = new Date().getFullYear();
+
+var DRUH_QUARTERS = {
+  'Q1':[0,1,2], 'Q2':[3,4,5], 'Q3':[6,7,8], 'Q4':[9,10,11]
+};
+
+function druhKey(){ return 'druhotky_'+currentUser; }
+
+function druhLoad(cb){
+  var recs=[];
+  try{ var r=localStorage.getItem(druhKey()); if(r) recs=JSON.parse(r); }catch(e){}
+  if(window.storage&&window.storage.get){
+    window.storage.get(druhKey()).then(function(r){
+      if(r&&r.value){try{recs=JSON.parse(r.value);}catch(e){}}
+      cb(recs);
+    }).catch(function(){ cb(recs); });
+  } else { cb(recs); }
+}
+
+function druhSaveAll(recs,cb){
+  try{ localStorage.setItem(druhKey(),JSON.stringify(recs)); }catch(e){}
+  if(window.storage&&window.storage.set){
+    window.storage.set(druhKey(),JSON.stringify(recs)).then(function(){if(cb)cb();}).catch(function(){if(cb)cb();});
+  } else { if(cb) cb(); }
+}
+
+function druhSelKat(k){
+  druhSelKatVal=k;
+  ['KPZ','COKO','GUM'].forEach(function(x){
+    var b=document.getElementById('dkat-'+x);
+    if(b) b.className='druh-kat-btn'+(x===k?' sel-'+x:'');
+  });
+}
+
+function druhFotoChange(inp){
+  if(!inp.files||!inp.files[0]) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    druhFotoData=e.target.result;
+    var prev=document.getElementById('druhFotoPreview');
+    if(prev){prev.src=druhFotoData;prev.style.display='block';}
+    var btn=document.querySelector('.druh-foto-btn');
+    if(btn) btn.textContent='✅ Fotka pridaná';
+  };
+  reader.readAsDataURL(inp.files[0]);
+}
+
+function druhSave(){
+  if(!druhSelKatVal){setStatus('⚠️ Vyber kategóriu!');return;}
+  var obchod=document.getElementById('druhObchod').value.trim();
+  if(!obchod){setStatus('⚠️ Zadaj obchod!');return;}
+  var ks=parseInt(document.getElementById('druhKs').value)||0;
+  if(ks<=0){setStatus('⚠️ Zadaj počet kusov!');return;}
+  druhLoad(function(recs){
+    var d=new Date();
+    var datum=d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+    var rec={
+      id:Date.now(),
+      kat:druhSelKatVal,
+      obchod:obchod,
+      ks:ks,
+      datum:datum,
+      mesiac:d.getMonth(),
+      rok:d.getFullYear(),
+      foto:druhFotoData||''
+    };
+    recs.unshift(rec);
+    druhSaveAll(recs,function(){
+      setStatus('✅ Záznam uložený!');
+      // Reset formulára
+      druhSelKatVal='';
+      druhFotoData='';
+      ['KPZ','COKO','GUM'].forEach(function(x){
+        var b=document.getElementById('dkat-'+x);
+        if(b) b.className='druh-kat-btn';
+      });
+      document.getElementById('druhObchod').value='';
+      document.getElementById('druhKs').value='';
+      var prev=document.getElementById('druhFotoPreview');
+      if(prev){prev.style.display='none';prev.src='';}
+      var btn=document.querySelector('.druh-foto-btn');
+      if(btn) btn.textContent='📷 Pridať fotku (voliteľné)';
+      document.getElementById('druhFotoInput').value='';
+      renderDruhotky();
+    });
+  });
+}
+
+function druhDelete(id){
+  druhLoad(function(recs){
+    recs=recs.filter(function(r){return r.id!==id;});
+    druhSaveAll(recs,function(){ setStatus('🗑️ Vymazané'); renderDruhotky(); });
+  });
+}
+
+function druhSetQ(q){
+  druhQPeriod=q;
+  renderDruhotky();
+}
+
+function druhSetYear(d){
+  druhQYear+=d;
+  renderDruhotky();
+}
+
+function renderDruhotky(){
+  druhLoad(function(recs){
+    // Kvartálny filter bar
+    var curQ='Q'+(Math.ceil((new Date().getMonth()+1)/3));
+    var qBar=['Q1','Q2','Q3','Q4'].map(function(q){
+      return '<button class="druh-qbtn'+(druhQPeriod===q?' active':'')+'" onclick="druhSetQ(''+q+'')">'+q+'</button>';
+    }).join('');
+    qBar+='<button class="druh-qbtn" onclick="druhSetYear(-1)">‹</button><span style="padding:8px 4px;font-size:13px;font-weight:600;color:#1c1c1e;white-space:nowrap;">'+druhQYear+'</span><button class="druh-qbtn" onclick="druhSetYear(1)">›</button>';
+    var qBarEl=document.getElementById('druhQBar');
+    if(qBarEl) qBarEl.innerHTML=qBar;
+
+    // Filter podľa Q a roka
+    var months=DRUH_QUARTERS[druhQPeriod]||[];
+    var filtered=recs.filter(function(r){
+      return r.rok===druhQYear && months.indexOf(r.mesiac)>=0;
+    });
+
+    // Štatistiky
+    var stats={KPZ:0, COKO:0, GUM:0};
+    filtered.forEach(function(r){ if(stats[r.kat]!==undefined) stats[r.kat]+=r.ks; });
+    var statCards=['KPZ','COKO','GUM'].map(function(k){
+      var colors={KPZ:'#007AFF',COKO:'#FF9500',GUM:'#34C759'};
+      return '<div class="druh-stat-card"><div class="druh-stat-label">'+k+'</div><div class="druh-stat-val" style="color:'+colors[k]+'">'+stats[k]+'</div></div>';
+    }).join('');
+    var statEl=document.getElementById('druhStatCards');
+    if(statEl) statEl.innerHTML=statCards;
+
+    // Zoznam
+    var listEl=document.getElementById('druhList');
+    if(!listEl) return;
+    if(filtered.length===0){
+      listEl.innerHTML='<div class="druh-empty">Žiadne záznamy za '+druhQPeriod+' '+druhQYear+'</div>';
+      return;
+    }
+    listEl.innerHTML=filtered.map(function(r){
+      var fotoHtml=r.foto?'<img src="'+r.foto+'" style="width:100%;height:120px;object-fit:cover;border-radius:10px;margin-top:8px;display:block">':'';
+      return '<div class="druh-record">'+
+        '<div class="druh-record-header">'+
+          '<div class="druh-record-left">'+
+            '<span class="druh-kat-badge badge-'+r.kat+'">'+(r.kat==='COKO'?'ČOKO':r.kat)+'</span>'+
+            '<div>'+
+              '<div class="druh-record-obchod">'+r.obchod+'</div>'+
+              '<div class="druh-record-meta">'+r.datum+'</div>'+
+            '</div>'+
+          '</div>'+
+          '<div style="display:flex;align-items:center;gap:8px;">'+
+            '<span class="druh-record-ks">'+r.ks+' ks</span>'+
+            '<button class="druh-del-btn" onclick="druhDelete('+r.id+')">×</button>'+
+          '</div>'+
+        '</div>'+
+        fotoHtml+
+      '</div>';
+    }).join('');
+  });
+}
+
 // ── NAVIGÁCIA ────────────────────────────────────────────────────
 function switchMainTab(tab){
   var TABS={
     dochadzka:{view:'viewDochadzka',header:'headerDochadzka'},
     sklad:    {view:'viewSklad',    header:'headerSklad'},
     stat:     {view:'viewStat',     header:'headerStat'},
+    druhotky: {view:'viewDruhotky', header:'headerDruhotky'},
     poznamky: {view:'viewPoznamky', header:'headerPoznamky'}
   };
   Object.keys(TABS).forEach(function(v){
@@ -1024,6 +1285,7 @@ function switchMainTab(tab){
   });
   if(tab==='sklad') switchSkTab(currentSkTab);
   if(tab==='stat')  renderStat();
+  if(tab==='druhotky') renderDruhotky();
   if(tab==='poznamky') renderPoznamky();
 }
 function switchSkTab(tab){ currentSkTab=tab; ['sklad','prijem','vydaj','historia','produkty'].forEach(function(t){ document.getElementById('skView-'+t).style.display=t===tab?'block':'none'; document.getElementById('stab-'+t).className='sk-stab'+(t===tab?' active':''); }); }

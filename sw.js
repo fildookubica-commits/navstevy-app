@@ -1,6 +1,5 @@
-// ⚠️ VERZIA — zmeň toto číslo pri každom nasadení novej verzie (napr. v4, v5...)
-// Appka automaticky zobrazí "Dostupná aktualizácia" banner
-const CACHE_NAME = 'dochadzka-mars-v13';
+// ⚠️ VERZIA — zmeň toto číslo pri každom nasadení novej verzie
+const CACHE_NAME = 'dochadzka-mars-v14';
 
 const urlsToCache = [
   '/navstevy-app/',
@@ -9,14 +8,14 @@ const urlsToCache = [
 ];
 
 // ── INSTALL ──────────────────────────────────────────────────────
+// NEKČAKAJ na skipWaiting tu — nechaj SW čakať kým klient klikne "Aktualizovať"
 self.addEventListener('install', function(event) {
-  // NEKČAKAJ — nová verzia sa aktivuje hneď po refreshi (nie až keď sa zatvoria všetky taby)
-  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll(urlsToCache).catch(function() {});
     })
   );
+  // POZOR: skipWaiting() TU NEVOLAJ — inak waiting nikdy nenastatne
 });
 
 // ── ACTIVATE ─────────────────────────────────────────────────────
@@ -29,13 +28,12 @@ self.addEventListener('activate', function(event) {
           .map(function(name) { return caches.delete(name); })
       );
     }).then(function() {
-      // Prevezmeme kontrolu nad všetkými otvorenými tabmi okamžite
       return self.clients.claim();
     }).then(function() {
-      // Oznám všetkým klientom že nová verzia je aktívna
+      // Pošli RELOAD všetkým klientom — stránka sa sama obnoví
       return self.clients.matchAll({ type: 'window' }).then(function(clients) {
         clients.forEach(function(client) {
-          client.postMessage({ type: 'SW_ACTIVATED', version: CACHE_NAME });
+          client.postMessage({ type: 'SW_UPDATED', version: CACHE_NAME });
         });
       });
     })
@@ -46,7 +44,7 @@ self.addEventListener('activate', function(event) {
 self.addEventListener('fetch', function(event) {
   var url = event.request.url;
 
-  // Google Scripts JSONP — sieť first, pri offline vráti prázdny callback
+  // Google Scripts — vždy sieť
   if (url.includes('script.google.com')) {
     if (url.includes('callback=gs_cb')) {
       event.respondWith(
@@ -62,7 +60,7 @@ self.addEventListener('fetch', function(event) {
     return;
   }
 
-  // Network first pre index.html — vždy skúsi stiahnuť novú verziu
+  // Network first pre HTML — vždy skúsi najnovšiu verziu
   if (url.endsWith('/') || url.includes('index.html')) {
     event.respondWith(
       fetch(event.request).then(function(resp) {
@@ -78,7 +76,7 @@ self.addEventListener('fetch', function(event) {
     return;
   }
 
-  // Cache first pre ostatné súbory
+  // Cache first pre ostatné
   event.respondWith(
     caches.match(event.request).then(function(cached) {
       if (cached) return cached;
@@ -96,20 +94,13 @@ self.addEventListener('fetch', function(event) {
 
 // ── SPRÁVY OD KLIENTA ────────────────────────────────────────────
 self.addEventListener('message', function(event) {
-  // ⚡ SKIP_WAITING — klient žiada okamžitú aktiváciu novej verzie
   if (event.data && event.data.type === 'SKIP_WAITING') {
+    // Klient klikol "Aktualizovať" — aktivuj nový SW
     self.skipWaiting();
   }
   if (event.data && event.data.type === 'DO_SYNC') {
     self.clients.matchAll({ type: 'window' }).then(function(clients) {
       clients.forEach(function(c) { c.postMessage({ type: 'DO_SYNC' }); });
-    });
-  }
-  if (event.data && event.data.type === 'CHECK_UPDATE') {
-    self.clients.matchAll({ type: 'window' }).then(function(clients) {
-      clients.forEach(function(c) {
-        c.postMessage({ type: 'CURRENT_VERSION', version: CACHE_NAME });
-      });
     });
   }
 });

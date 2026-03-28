@@ -794,7 +794,7 @@ var OBCHODY={"Filip": [{"id": "SK002284", "n": "POT J-LM 053 MIX", "m": "PARTIZA
 var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v13';
+var APP_VERSION = 'dochadzka-mars-v14';
 var swRegistration = null;
 var updateWaiting = false;
 
@@ -803,52 +803,39 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('sw.js').then(function(reg) {
       swRegistration = reg;
-      console.log('SW registered:', reg.scope);
 
-      // Ak čaká nová verzia (waiting SW)
+      // Ak už čaká nová verzia
       if (reg.waiting) {
         showUpdateBanner();
       }
 
-      // Počúvaj keď sa nainštaluje nová verzia
+      // Keď sa nainštaluje nová verzia
       reg.addEventListener('updatefound', function() {
         var newWorker = reg.installing;
         if (!newWorker) return;
         newWorker.addEventListener('statechange', function() {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // Nová verzia je pripravená — zobraz banner
             showUpdateBanner();
           }
         });
       });
 
-      // Počúvaj správy zo SW
+      // Správy zo SW
       navigator.serviceWorker.addEventListener('message', function(e) {
-        if (e.data && e.data.type === 'SW_ACTIVATED') {
-          console.log('New SW activated:', e.data.version);
-          var vi = document.getElementById('verInfo');
-          if (vi) vi.textContent = 'Verzia: ' + e.data.version;
+        if (!e.data) return;
+        if (e.data.type === 'SW_UPDATED') {
+          // Nový SW sa aktivoval — reload stránky
+          window.location.reload();
         }
-        if (e.data && e.data.type === 'DO_SYNC') {
+        if (e.data.type === 'DO_SYNC') {
           flushOfflineQueue();
         }
       });
 
-      // Skontroluj update každých 10 minút (kým je appka otvorená)
-      setInterval(function() {
-        reg.update().catch(function() {});
-      }, 10 * 60 * 1000);
+      // Kontroluj update každých 10 minút
+      setInterval(function() { reg.update().catch(function(){}); }, 10 * 60 * 1000);
 
     }).catch(function(err) { console.log('SW error:', err); });
-  });
-
-  // Keď sa aktivuje nový SW, reload page
-  var refreshing = false;
-  navigator.serviceWorker.addEventListener('controllerchange', function() {
-    if (!refreshing) {
-      refreshing = true;
-      window.location.reload();
-    }
   });
 }
 
@@ -860,10 +847,8 @@ function showUpdateBanner() {
 function applyUpdate() {
   document.getElementById('updateBanner').classList.remove('show');
   if (swRegistration && swRegistration.waiting) {
-    // Pošli SKIP_WAITING — SW sa aktivuje, controllerchange spustí reload
+    // Pošli SKIP_WAITING → SW sa aktivuje → pošle SW_UPDATED → reload
     swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
-    // Bezpečnostný fallback: ak controllerchange nepríde do 2s, reload sám
-    setTimeout(function() { window.location.reload(); }, 2000);
   } else {
     window.location.reload(true);
   }

@@ -456,6 +456,7 @@ body.dark .druh-kat-btn{background:#3a3a3c;border-color:#48484a;color:#8e8e93}
 .druh-kat-btn.sel-KPZ{background:#d6eaff;border-color:#007AFF;color:#007AFF}
 .druh-kat-btn.sel-COKO{background:#fff3d6;border-color:#FF9500;color:#b36200}
 .druh-kat-btn.sel-GUM{background:#d1f2d8;border-color:#34C759;color:#1a7431}
+.druh-kat-btn.sel-PET{background:#ffd6e0;border-color:#FF2D55;color:#c0002e}
 .druh-save-btn{width:100%;padding:14px;background:#FF9500;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:-apple-system,Arial,sans-serif;margin-top:4px}
 .druh-save-btn:active{opacity:0.8}
 .druh-record{background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:10px}
@@ -466,9 +467,11 @@ body.dark .druh-record{background:#2c2c2e}
 .badge-KPZ{background:#d6eaff;color:#007AFF}
 .badge-COKO{background:#fff3d6;color:#b36200}
 .badge-GUM{background:#d1f2d8;color:#1a7431}
+.badge-PET{background:#ffd6e0;color:#c0002e}
 body.dark .badge-KPZ{background:#0c2a4a;color:#4da6ff}
 body.dark .badge-COKO{background:#3a2a00;color:#FF9500}
 body.dark .badge-GUM{background:#1a3a23;color:#4cd964}
+body.dark .badge-PET{background:#3a0010;color:#ff6b87}
 .druh-record-obchod{font-size:14px;font-weight:600;color:#1c1c1e}
 body.dark .druh-record-obchod{color:#fff}
 .druh-record-meta{font-size:12px;color:#8e8e93;margin-top:3px}
@@ -728,10 +731,11 @@ body.dark .druh-foto-btn{background:#2c2c2e;border-color:#48484a}
         <!-- Formulár na pridanie -->
         <div class="druh-add-card">
           <div class="slabel">Kategória</div>
-          <div class="druh-kat-grid">
+          <div class="druh-kat-grid" id="druhKatGrid">
             <button class="druh-kat-btn" id="dkat-KPZ" onclick="druhSelKat('KPZ')">KPZ</button>
             <button class="druh-kat-btn" id="dkat-COKO" onclick="druhSelKat('COKO')">ČOKO</button>
             <button class="druh-kat-btn" id="dkat-GUM" onclick="druhSelKat('GUM')">GUM</button>
+            <button class="druh-kat-btn" id="dkat-PET" onclick="druhSelKat('PET')" style="display:none;">PET</button>
           </div>
           <div class="slabel">Obchod</div>
           <div class="autocomplete-wrap">
@@ -796,7 +800,7 @@ var OBCHODY={"Filip": [{"id": "SK002284", "n": "POT J-LM 053 MIX", "m": "PARTIZA
 var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v18';
+var APP_VERSION = 'dochadzka-mars-v19';
 var swRegistration = null;
 var updateWaiting = false;
 
@@ -1365,10 +1369,31 @@ function druhSaveAll(recs,cb){
 
 function druhSelKat(k){
   druhSelKatVal=k;
-  ['KPZ','COKO','GUM'].forEach(function(x){
+  druhKats().forEach(function(x){
     var b=document.getElementById('dkat-'+x);
     if(b) b.className='druh-kat-btn'+(x===k?' sel-'+x:'');
   });
+}
+
+function druhKats(){
+  return currentUser==='Mirka' ? ['PET'] : ['KPZ','COKO','GUM'];
+}
+
+function druhUpdateKatButtons(){
+  var isMirka = currentUser==='Mirka';
+  ['KPZ','COKO','GUM'].forEach(function(x){
+    var b=document.getElementById('dkat-'+x);
+    if(b) b.style.display=isMirka?'none':'';
+  });
+  var petBtn=document.getElementById('dkat-PET');
+  if(petBtn) petBtn.style.display=isMirka?'':'none';
+  if(druhSelKatVal && druhKats().indexOf(druhSelKatVal)<0){
+    druhSelKatVal='';
+    ['KPZ','COKO','GUM','PET'].forEach(function(x){
+      var b=document.getElementById('dkat-'+x);
+      if(b) b.className='druh-kat-btn';
+    });
+  }
 }
 
 function druhFotoChange(inp){
@@ -1409,7 +1434,7 @@ function druhSave(){
       // Reset formulára
       druhSelKatVal='';
       druhFotoData='';
-      ['KPZ','COKO','GUM'].forEach(function(x){
+      ['KPZ','COKO','GUM','PET'].forEach(function(x){
         var b=document.getElementById('dkat-'+x);
         if(b) b.className='druh-kat-btn';
       });
@@ -1443,6 +1468,7 @@ function druhSetYear(d){
 }
 
 function renderDruhotky(){
+  druhUpdateKatButtons();
   druhLoad(function(recs){
     // Kvartálny filter bar
     var curQ='Q'+(Math.ceil((new Date().getMonth()+1)/3));
@@ -1461,14 +1487,16 @@ function renderDruhotky(){
     });
 
     // Štatistiky
-    var stats={KPZ:0, COKO:0, GUM:0};
+    var isMirka = currentUser==='Mirka';
+    var statKats = isMirka ? ['PET'] : ['KPZ','COKO','GUM'];
+    var stats={KPZ:0, COKO:0, GUM:0, PET:0};
     filtered.forEach(function(r){ if(stats[r.kat]!==undefined) stats[r.kat]+=r.ks; });
-    var statCards=['KPZ','COKO','GUM'].map(function(k){
-      var colors={KPZ:'#007AFF',COKO:'#FF9500',GUM:'#34C759'};
-      return '<div class="druh-stat-card"><div class="druh-stat-label">'+k+'</div><div class="druh-stat-val" style="color:'+colors[k]+'">'+stats[k]+'</div></div>';
+    var statCards=statKats.map(function(k){
+      var colors={KPZ:'#007AFF',COKO:'#FF9500',GUM:'#34C759',PET:'#FF2D55'};
+      return '<div class="druh-stat-card"><div class="druh-stat-label">'+(k==='COKO'?'ČOKO':k)+'</div><div class="druh-stat-val" style="color:'+colors[k]+'">'+stats[k]+'</div></div>';
     }).join('');
     var statEl=document.getElementById('druhStatCards');
-    if(statEl) statEl.innerHTML=statCards;
+    if(statEl){ statEl.innerHTML=statCards; statEl.style.gridTemplateColumns='repeat('+statKats.length+',1fr)'; }
 
     // Zoznam
     var listEl=document.getElementById('druhList');

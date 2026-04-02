@@ -466,6 +466,10 @@ body.dark .druh-record{background:#2c2c2e}
 .badge-KPZ{background:#d6eaff;color:#007AFF}
 .badge-COKO{background:#fff3d6;color:#b36200}
 .badge-GUM{background:#d1f2d8;color:#1a7431}
+.druh-kat-btn.sel-PET{background:#f3d6ff;border-color:#AF52DE;color:#7d2fa8}
+body.dark .druh-kat-btn.sel-PET{background:#2a1a3a;color:#bf6ee0}
+.badge-PET{background:#f3d6ff;color:#7d2fa8}
+body.dark .badge-PET{background:#2a1a3a;color:#bf6ee0}
 body.dark .badge-KPZ{background:#0c2a4a;color:#4da6ff}
 body.dark .badge-COKO{background:#3a2a00;color:#FF9500}
 body.dark .badge-GUM{background:#1a3a23;color:#4cd964}
@@ -729,10 +733,10 @@ body.dark .druh-foto-btn{background:#2c2c2e;border-color:#48484a}
         <!-- Formulár na pridanie -->
         <div class="druh-add-card">
           <div class="slabel">Kategória</div>
-          <div class="druh-kat-grid">
-            <button class="druh-kat-btn" id="dkat-KPZ" onclick="druhSelKat('KPZ')">KPZ</button>
-            <button class="druh-kat-btn" id="dkat-COKO" onclick="druhSelKat('COKO')">ČOKO</button>
-            <button class="druh-kat-btn" id="dkat-GUM" onclick="druhSelKat('GUM')">GUM</button>
+          <div class="druh-kat-grid" id="druhKatGrid">
+            <button class="druh-kat-btn" id="dkat-KPZ" onclick="druhSelKat(this.dataset.k)" data-k="KPZ">KPZ</button>
+            <button class="druh-kat-btn" id="dkat-COKO" onclick="druhSelKat(this.dataset.k)" data-k="COKO">ČOKO</button>
+            <button class="druh-kat-btn" id="dkat-GUM" onclick="druhSelKat(this.dataset.k)" data-k="GUM">GUM</button>
           </div>
           <div class="slabel">Obchod</div>
           <div class="autocomplete-wrap">
@@ -797,7 +801,7 @@ var OBCHODY={"Filip": [{"id": "SK002284", "n": "POT J-LM 053 MIX", "m": "PARTIZA
 var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v19';
+var APP_VERSION = 'dochadzka-mars-v20';
 var swRegistration = null;
 var updateWaiting = false;
 
@@ -1365,8 +1369,9 @@ function druhSaveAll(recs,cb){
 }
 
 function druhSelKat(k){
+  if(k && k.dataset) k=k.dataset.k;
   druhSelKatVal=k;
-  ['KPZ','COKO','GUM'].forEach(function(x){
+  ['KPZ','COKO','GUM','PET'].forEach(function(x){
     var b=document.getElementById('dkat-'+x);
     if(b) b.className='druh-kat-btn'+(x===k?' sel-'+x:'');
   });
@@ -1410,10 +1415,16 @@ function druhSave(){
       // Reset formulára
       druhSelKatVal='';
       druhFotoData='';
-      ['KPZ','COKO','GUM'].forEach(function(x){
+      ['KPZ','COCO','GUM','PET'].forEach(function(x){
         var b=document.getElementById('dkat-'+x);
         if(b) b.className='druh-kat-btn';
       });
+      // Pre Mirku znova nastav PET ako predvolenú
+      if(currentUser === 'Mirka'){
+        druhSelKatVal = 'PET';
+        var petBtn = document.getElementById('dkat-PET');
+        if(petBtn) petBtn.className = 'druh-kat-btn sel-PET';
+      }
       document.getElementById('druhObchod').value='';
       document.getElementById('druhKs').value='';
       var prev=document.getElementById('druhFotoPreview');
@@ -1444,6 +1455,23 @@ function druhSetYear(d){
 }
 
 function renderDruhotky(){
+  // Pre Mirku nastav kategórie na PET
+  var katGrid = document.getElementById('druhKatGrid');
+  if(katGrid){
+    if(currentUser === 'Mirka'){
+      katGrid.innerHTML = '<button class="druh-kat-btn sel-PET" id="dkat-PET" onclick="druhSelKat(this.dataset.k)" data-k="PET">PET</button>';
+      katGrid.style.gridTemplateColumns = '1fr';
+      if(!druhSelKatVal || druhSelKatVal !== 'PET') { druhSelKatVal = 'PET'; }
+    } else {
+      if(katGrid.innerHTML.indexOf('dkat-KPZ') < 0){
+        katGrid.innerHTML =
+          '<button class="druh-kat-btn" id="dkat-KPZ" onclick="druhSelKat(this.dataset.k)" data-k="KPZ">KPZ</button>' +
+          '<button class="druh-kat-btn" id="dkat-COKO" onclick="druhSelKat(this.dataset.k)" data-k="COKO">ČOKO</button>' +
+          '<button class="druh-kat-btn" id="dkat-GUM" onclick="druhSelKat(this.dataset.k)" data-k="GUM">GUM</button>';
+        katGrid.style.gridTemplateColumns = 'repeat(3,1fr)';
+      }
+    }
+  }
   druhLoad(function(recs){
     // Kvartálny filter bar
     var curQ='Q'+(Math.ceil((new Date().getMonth()+1)/3));
@@ -1465,7 +1493,7 @@ function renderDruhotky(){
     var stats={KPZ:0, COKO:0, GUM:0};
     filtered.forEach(function(r){ if(stats[r.kat]!==undefined) stats[r.kat]+=r.ks; });
     var statCards=['KPZ','COKO','GUM'].map(function(k){
-      var colors={KPZ:'#007AFF',COKO:'#FF9500',GUM:'#34C759'};
+      var colors={KPZ:'#007AFF',COKO:'#FF9500',GUM:'#34C759',PET:'#AF52DE'};
       return '<div class="druh-stat-card"><div class="druh-stat-label">'+k+'</div><div class="druh-stat-val" style="color:'+colors[k]+'">'+stats[k]+'</div></div>';
     }).join('');
     var statEl=document.getElementById('druhStatCards');

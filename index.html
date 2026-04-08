@@ -14,16 +14,40 @@
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
 body{background:#f2f2f7;min-height:100vh}
 body.dark{background:#1c1c1e;color:#fff}
-.user-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 20px}
-.user-logo{font-size:48px;margin-bottom:16px}
-.user-title{font-size:32px;font-weight:700;color:#1c1c1e;margin-bottom:8px}
-body.dark .user-title{color:#fff}
-.user-sub{font-size:17px;color:#8e8e93;margin-bottom:40px}
-.user-btns{display:flex;flex-direction:column;gap:14px;width:100%;max-width:340px}
-.user-btn{padding:22px;border-radius:16px;font-size:22px;font-weight:700;text-align:center;cursor:pointer;border:none;position:relative}
-.user-btn.filip{background:#007AFF;color:#fff}
-.user-btn.beny{background:#34C759;color:#fff}
-.user-btn.mirka{background:#FF2D55;color:#fff}
+/* ── USER SCREEN (Material Design) ── */
+.user-screen{min-height:100vh;display:flex;flex-direction:column;background:#faf9fe;padding:0}
+body.dark .user-screen{background:#1a1b1f}
+.user-topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px 12px;background:rgba(250,249,254,0.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);position:sticky;top:0;z-index:10;box-shadow:0 2px 12px rgba(0,88,188,0.07)}
+body.dark .user-topbar{background:rgba(26,27,31,0.8)}
+.user-topbar-brand{display:flex;align-items:center;gap:10px}
+.user-topbar-icon{color:#0058bc;font-size:24px}
+.user-topbar-title{font-size:20px;font-weight:700;background:linear-gradient(135deg,#0058bc,#0070eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.3px}
+.user-content{padding:28px 24px 40px;max-width:480px;margin:0 auto;width:100%}
+.user-greeting{font-size:32px;font-weight:600;color:#1a1b1f;letter-spacing:-0.5px;margin-bottom:6px}
+body.dark .user-greeting{color:#e3e2e7}
+.user-sub{font-size:15px;color:#414755;margin-bottom:28px;font-weight:500;opacity:0.75}
+body.dark .user-sub{color:#c1c6d7}
+.user-cards{display:flex;flex-direction:column;gap:12px}
+.user-card{display:flex;align-items:center;padding:16px;background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,88,188,0.04);cursor:pointer;transition:all 0.2s;border:none;text-align:left;width:100%;position:relative}
+body.dark .user-card{background:#2f3034}
+.user-card:hover{box-shadow:0 6px 20px rgba(0,88,188,0.1);transform:translateY(-1px)}
+.user-card:active{transform:scale(0.98)}
+.user-avatar-wrap{position:relative;flex-shrink:0}
+.user-avatar{width:60px;height:60px;border-radius:50%;background:#eeedf3;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;overflow:hidden}
+body.dark .user-avatar{background:#414755}
+.user-avatar img{width:100%;height:100%;object-fit:cover}
+.user-avatar-initials{font-size:22px;font-weight:700;color:#fff}
+.user-cam-btn{position:absolute;bottom:0;right:0;width:22px;height:22px;background:#0058bc;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.2);border:2px solid #fff;cursor:pointer;font-size:10px}
+body.dark .user-cam-btn{border-color:#2f3034}
+.user-card-name{font-size:17px;font-weight:600;color:#1a1b1f;margin-left:18px;flex:1}
+body.dark .user-card-name{color:#e3e2e7}
+.user-card-badges{display:flex;gap:4px;margin-left:8px}
+.user-card-arrow{color:#c1c6d7;font-size:20px;transition:all 0.2s;margin-left:auto}
+.user-card:hover .user-card-arrow{color:#0058bc;opacity:1}
+.user-card-badge{font-size:16px}
+.user-add-btn{margin-top:8px;width:100%;padding:16px;border:2px dashed rgba(113,119,134,0.3);border-radius:16px;display:flex;align-items:center;justify-content:center;gap:8px;color:#414755;font-size:15px;font-weight:500;background:transparent;cursor:pointer;transition:all 0.2s;font-family:-apple-system,Arial,sans-serif}
+.user-add-btn:hover{background:#eeedf3;border-color:#0058bc;color:#0058bc}
+body.dark .user-add-btn{color:#c1c6d7;border-color:rgba(193,198,215,0.2)}.user-logo{display:none}.user-title{display:none}.user-btns{display:none}.user-btn{display:none}
 .faceid-badge{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:20px;opacity:0.85}
 .pin-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:60px 20px 20px}
 .pin-name{font-size:28px;font-weight:700;color:#1c1c1e;margin-bottom:8px}
@@ -511,27 +535,97 @@ body.dark .druh-foto-btn{background:#2c2c2e;border-color:#48484a}
 <!-- USER SCREEN -->
 <div id="userScreen">
   <div class="user-screen">
-    <div class="user-logo">📋</div>
-    <div class="user-title">Dochádzka & Sklad</div>
-    <div class="user-sub">Vyber kto si</div>
-    <div class="user-btns">
-      <div style="position:relative">
-        <div class="user-btn filip" onclick="startLogin('Filip')">Filip<span class="faceid-badge" id="faceBtn-Filip" style="display:none">🔒</span><span class="faceid-badge" id="remBtn-Filip" style="display:none;right:44px">✅</span></div>
-        <button class="forget-btn" id="forgetBtn-Filip" onclick="forgetUser('Filip')" style="display:none">Zabudnúť</button>
+    <div class="user-topbar">
+      <div class="user-topbar-brand">
+        <span style="font-size:22px">🚀</span>
+        <span class="user-topbar-title">Mars</span>
       </div>
-      <div style="position:relative">
-        <div class="user-btn beny" onclick="startLogin('Beny')">Beny<span class="faceid-badge" id="faceBtn-Beny" style="display:none">🔒</span><span class="faceid-badge" id="remBtn-Beny" style="display:none;right:44px">✅</span></div>
-        <button class="forget-btn" id="forgetBtn-Beny" onclick="forgetUser('Beny')" style="display:none">Zabudnúť</button>
-      </div>
-      <div style="position:relative">
-        <div class="user-btn mirka" onclick="startLogin('Mirka')">Mirka<span class="faceid-badge" id="faceBtn-Mirka" style="display:none">🔒</span><span class="faceid-badge" id="remBtn-Mirka" style="display:none;right:44px">✅</span></div>
-        <div class="user-btn" style="background:#FF9500;margin-top:12px" onclick="startLogin('Lubo')">Ľubo<span class="faceid-badge" id="faceBtn-Lubo" style="display:none">🔒</span><span class="faceid-badge" id="remBtn-Lubo" style="display:none;right:44px">✅</span></div>
-        <div class="user-btn" style="background:#AF52DE;margin-top:12px" onclick="startLogin('Martin')">Martin<span class="faceid-badge" id="faceBtn-Martin" style="display:none">🔒</span><span class="faceid-badge" id="remBtn-Martin" style="display:none;right:44px">✅</span></div>
-        <button class="forget-btn" id="forgetBtn-Mirka" onclick="forgetUser('Mirka')" style="display:none">Zabudnúť</button>
+      <button onclick="toggleDark()" style="width:40px;height:40px;border-radius:50%;border:none;background:transparent;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center" id="darkBtnLogin">🌙</button>
+    </div>
+    <div class="user-content">
+      <div class="user-greeting">Welcome</div>
+      <div class="user-sub">Vyber profil pre pokračovanie do pracovného priestoru.</div>
+      <div class="user-cards">
+        <button class="user-card" onclick="startLogin('Filip')">
+          <div class="user-avatar-wrap">
+            <div class="user-avatar" id="avatarWrap-Filip">
+              <img id="avatarImg-Filip" src="" style="display:none" alt="Filip">
+              <span class="user-avatar-initials" style="background:#007AFF">F</span>
+            </div>
+            <div class="user-cam-btn" onclick="event.stopPropagation();triggerAvatarUpload('Filip')">📷</div>
+          </div>
+          <span class="user-card-name">Filip</span>
+          <div class="user-card-badges">
+            <span class="user-card-badge" id="faceBtn-Filip" style="display:none">🔒</span>
+            <span class="user-card-badge" id="remBtn-Filip" style="display:none">✅</span>
+          </div>
+          <span class="user-card-arrow">›</span>
+        </button>
+        <button class="user-card" onclick="startLogin('Beny')">
+          <div class="user-avatar-wrap">
+            <div class="user-avatar" id="avatarWrap-Beny">
+              <img id="avatarImg-Beny" src="" style="display:none" alt="Beny">
+              <span class="user-avatar-initials" style="background:#34C759">B</span>
+            </div>
+            <div class="user-cam-btn" onclick="event.stopPropagation();triggerAvatarUpload('Beny')">📷</div>
+          </div>
+          <span class="user-card-name">Beny</span>
+          <div class="user-card-badges">
+            <span class="user-card-badge" id="faceBtn-Beny" style="display:none">🔒</span>
+            <span class="user-card-badge" id="remBtn-Beny" style="display:none">✅</span>
+          </div>
+          <span class="user-card-arrow">›</span>
+        </button>
+        <button class="user-card" onclick="startLogin('Mirka')">
+          <div class="user-avatar-wrap">
+            <div class="user-avatar" id="avatarWrap-Mirka">
+              <img id="avatarImg-Mirka" src="" style="display:none" alt="Mirka">
+              <span class="user-avatar-initials" style="background:#FF2D55">M</span>
+            </div>
+            <div class="user-cam-btn" onclick="event.stopPropagation();triggerAvatarUpload('Mirka')">📷</div>
+          </div>
+          <span class="user-card-name">Mirka</span>
+          <div class="user-card-badges">
+            <span class="user-card-badge" id="faceBtn-Mirka" style="display:none">🔒</span>
+            <span class="user-card-badge" id="remBtn-Mirka" style="display:none">✅</span>
+          </div>
+          <span class="user-card-arrow">›</span>
+        </button>
+        <button class="user-card" onclick="startLogin('Lubo')">
+          <div class="user-avatar-wrap">
+            <div class="user-avatar" id="avatarWrap-Lubo">
+              <img id="avatarImg-Lubo" src="" style="display:none" alt="Lubo">
+              <span class="user-avatar-initials" style="background:#FF9500">&#317;</span>
+            </div>
+            <div class="user-cam-btn" onclick="event.stopPropagation();triggerAvatarUpload('Lubo')">📷</div>
+          </div>
+          <span class="user-card-name">Ľubo</span>
+          <div class="user-card-badges">
+            <span class="user-card-badge" id="faceBtn-Lubo" style="display:none">🔒</span>
+            <span class="user-card-badge" id="remBtn-Lubo" style="display:none">✅</span>
+          </div>
+          <span class="user-card-arrow">›</span>
+        </button>
+        <button class="user-card" onclick="startLogin('Martin')">
+          <div class="user-avatar-wrap">
+            <div class="user-avatar" id="avatarWrap-Martin">
+              <img id="avatarImg-Martin" src="" style="display:none" alt="Martin">
+              <span class="user-avatar-initials" style="background:#AF52DE">M</span>
+            </div>
+            <div class="user-cam-btn" onclick="event.stopPropagation();triggerAvatarUpload('Martin')">📷</div>
+          </div>
+          <span class="user-card-name">Martin</span>
+          <div class="user-card-badges">
+            <span class="user-card-badge" id="faceBtn-Martin" style="display:none">🔒</span>
+            <span class="user-card-badge" id="remBtn-Martin" style="display:none">✅</span>
+          </div>
+          <span class="user-card-arrow">›</span>
+        </button>
       </div>
     </div>
   </div>
 </div>
+<input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)">
 
 <!-- PIN SCREEN -->
 <div id="pinScreen" style="display:none;">
@@ -801,7 +895,7 @@ var OBCHODY={"Filip": [{"id": "SK002284", "n": "POT J-LM 053 MIX", "m": "PARTIZA
 var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v21';
+var APP_VERSION = 'dochadzka-mars-v22';
 var swRegistration = null;
 var updateWaiting = false;
 
@@ -952,7 +1046,7 @@ function toggleDark(){
 }
 function allDots(name){ ['userDot','userDot2','userDot3','userDot4','userDot5','userDot6'].forEach(function(id){ var el=document.getElementById(id); if(el){el.textContent=name[0];el.className='user-dot dot-'+name.toLowerCase();} }); }
 function allNames(name){ ['headerName','headerName2','headerName3','headerName4','headerName5','headerName6'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=name; }); }
-function allDarkBtns(){ ['darkBtn','darkBtn2','darkBtn3','darkBtn4','darkBtn5','darkBtn6'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=darkMode?'☀️':'🌙'; }); }
+function allDarkBtns(){ ['darkBtn','darkBtn2','darkBtn3','darkBtn4','darkBtn5','darkBtn6','darkBtnLogin'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=darkMode?'☀️':'🌙'; }); }
 
 // ── FACE ID ──────────────────────────────────────────────────────
 function faceIdKey(user){ return 'faceid_cred_'+user; }
@@ -1078,6 +1172,7 @@ function switchUser(){
   document.getElementById('userScreen').style.display='block';
   document.getElementById('dayDetail').innerHTML='';
   switchMainTab('dochadzka');
+  loadAvatars();
   updateFaceIdBtns();
 }
 
@@ -1778,6 +1873,51 @@ function obchDeleteNote(shopId,idx){
   obchRenderDetail(obchCurrentShop);
 }
 function renderObchody(){ obchRender(); }
+
+
+// ── AVATARY ──────────────────────────────────────────────────────
+var avatarUploadTarget = null;
+
+function triggerAvatarUpload(user) {
+  avatarUploadTarget = user;
+  document.getElementById('avatarFileInput').click();
+}
+
+function handleAvatarUpload(inp) {
+  if (!inp.files || !inp.files[0] || !avatarUploadTarget) return;
+  var reader = new FileReader();
+  var user = avatarUploadTarget;
+  reader.onload = function(e) {
+    var src = e.target.result;
+    localStorage.setItem('avatar_' + user, src);
+    applyAvatar(user, src);
+    avatarUploadTarget = null;
+    inp.value = '';
+  };
+  reader.readAsDataURL(inp.files[0]);
+}
+
+function applyAvatar(user, src) {
+  var img = document.getElementById('avatarImg-' + user);
+  var wrap = document.getElementById('avatarWrap-' + user);
+  if (img && wrap) {
+    img.src = src;
+    img.style.display = 'block';
+    // Skry initials
+    var initials = wrap.querySelector('.user-avatar-initials');
+    if (initials) initials.style.display = 'none';
+  }
+}
+
+function loadAvatars() {
+  ['Filip','Beny','Mirka','Lubo','Martin'].forEach(function(user) {
+    var src = localStorage.getItem('avatar_' + user);
+    if (src) applyAvatar(user, src);
+  });
+}
+
+// Uprav darkBtnLogin pri toggleDark
+var _origToggleDark = typeof toggleDark !== 'undefined' ? toggleDark : null;
 
 // ── NAVIGÁCIA ────────────────────────────────────────────────────
 function switchMainTab(tab){

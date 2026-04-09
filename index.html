@@ -150,15 +150,15 @@ body.dark .info-value{color:#fff}
 body.dark .clockout-card{background:#2c2c2e}
 .clockout-title{font-size:15px;font-weight:600;color:#1c1c1e;margin-bottom:10px}
 body.dark .clockout-title{color:#fff}
-.clockout-edit-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:flex-end;margin-bottom:10px}
-.co-time-group{display:flex;flex-direction:column;gap:3px}
+.clockout-edit-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.co-time-group{display:flex;flex-direction:column;gap:2px}
 .co-time-group.full{grid-column:1/-1}
-.co-time-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#8e8e93}
-.co-time-input{padding:8px 6px;border-radius:9px;border:1.5px solid #e5e5ea;background:#f9f9fb;font-size:14px;font-weight:700;color:#1c1c1e;width:100%;font-family:-apple-system,Arial,sans-serif;text-align:center;box-sizing:border-box}
+.co-time-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#8e8e93}
+.co-time-input{padding:7px 4px;border-radius:8px;border:1.5px solid #e5e5ea;background:#f9f9fb;font-size:13px;font-weight:700;color:#1c1c1e;width:100%;font-family:-apple-system,Arial,sans-serif;text-align:center;box-sizing:border-box;-webkit-appearance:none}
 body.dark .co-time-input{background:#3a3a3c;border-color:#48484a;color:#fff}
 .co-time-input:focus{border-color:#007AFF;outline:none;background:#fff}
 body.dark .co-time-input:focus{background:#2c2c2e}
-.co-time-input[readonly]{opacity:0.5;background:#f2f2f7}
+.co-time-input[readonly]{opacity:0.45;pointer-events:none}
 body.dark .co-time-input[readonly]{background:#2c2c2e}
 .clockin-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:#34C759;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:-apple-system,Arial,sans-serif}
 .clockin-btn:active{opacity:0.85}
@@ -1433,29 +1433,19 @@ function renderDetail(){
       +' onkeydown="if(event.key===\'Enter\'){updateVisit('+i+',this.value);this.blur();}">'
       +'<button class="del-v" onclick="removeVisit('+i+')">&#xd7;</button></div>';
   }).join('');
-  // Clock sekcia pre tento deň
+  // Clock sekcia — vždy pre každý deň
   var predpKRaw=tMin(dd.start||'00:00')+CIEL_P;
   var predpK=dd.start&&predpKRaw<1440?mToT(predpKRaw):'';
-  var clockSection='';
-  if(!dd.start){
-    clockSection=''
-      +'<div class="slabel">Pracovná doba</div>'
-      +'<div class="clockout-edit-row">'
-        +'<div class="co-time-group"><div class="co-time-label">Začiatok</div><input type="time" class="co-time-input" id="det-start-inp" value="" placeholder="--:--" onchange="detUpdateWork(\'start\',this.value)"></div>'
-        +'<div class="co-time-group"><div class="co-time-label">Koniec</div><input type="time" class="co-time-input" id="det-end-inp" value="" placeholder="--:--" onchange="detUpdateWork(\'end\',this.value)"></div>'
-        +(predpK?'<div class="co-time-group full"><div class="co-time-label">Predp. koniec</div><input type="time" class="co-time-input" value="'+predpK+'" readonly></div>':'')
-      +'</div>'
-      +'<div class="stat-row" style="margin-bottom:8px"><span class="stat-l">Celkom</span><span class="stat-r '+(wOk?'ok':'bad')+'">'+wH+' / cieľ '+wGoal+'</span></div>';
-  } else {
-    clockSection=''
-      +'<div class="slabel">Pracovná doba</div>'
-      +'<div class="clockout-edit-row">'
-        +'<div class="co-time-group"><div class="co-time-label">Začiatok</div><input type="time" class="co-time-input" id="det-start-inp" value="'+dd.start+'" onchange="detUpdateWork(\'start\',this.value)"></div>'
-        +'<div class="co-time-group"><div class="co-time-label">Koniec</div><input type="time" class="co-time-input" id="det-end-inp" value="'+(dd.end||'')+'" onchange="detUpdateWork(\'end\',this.value)"></div>'
-        +(predpK?'<div class="co-time-group full"><div class="co-time-label">Predp. koniec</div><input type="time" class="co-time-input" value="'+predpK+'" readonly></div>':'')
-      +'</div>'
-      +'<div class="stat-row" style="margin-bottom:8px"><span class="stat-l">Celkom</span><span class="stat-r '+(wOk?'ok':'bad')+'">'+ wH+' / cieľ '+wGoal+'</span></div>';
-  }
+  var clockSection=''
+    +'<div class="slabel" style="margin-top:4px">Pracovná doba</div>'
+    +'<div class="clockout-edit-row">'
+      +'<div class="co-time-group"><div class="co-time-label">Začiatok</div>'
+        +'<input type="time" class="co-time-input" value="'+(dd.start||'')+'" placeholder="--:--" onchange="detUpdateWork(\'start\',this.value)"></div>'
+      +'<div class="co-time-group"><div class="co-time-label">Koniec</div>'
+        +'<input type="time" class="co-time-input" value="'+(dd.end||'')+'" placeholder="--:--" onchange="detUpdateWork(\'end\',this.value)"></div>'
+      +(predpK?'<div class="co-time-group full"><div class="co-time-label">Predp. koniec</div><input type="time" class="co-time-input" value="'+predpK+'" readonly></div>':'')
+    +'</div>'
+    +'<div class="stat-row" style="margin-bottom:6px"><span class="stat-l">Celkom</span><span class="stat-r '+(wOk?'ok':'bad')+'">'+wH+' / cieľ '+wGoal+'</span></div>';
   var html='<div class="detail">'
     +'<div class="detail-header"><div class="detail-title">'+title+'</div><button class="close-x" onclick="closeDetail()">&#xd7;</button></div>'
     +'<div class="slabel">Typ dňa</div><div class="day-types">'+typeBtns+'</div>'

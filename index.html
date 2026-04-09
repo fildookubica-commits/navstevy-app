@@ -9,10 +9,12 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#007AFF">
 <meta name="apple-mobile-web-app-title" content="Mars">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
-body{background:#f2f2f7;min-height:100vh}
+body{background:#f2f2f7;min-height:100vh;font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display',Arial,sans-serif}
 body.dark{background:#1c1c1e;color:#fff}
 /* ── USER SCREEN (Material Design) ── */
 .user-screen{min-height:100vh;display:flex;flex-direction:column;background:#faf9fe;padding:0}
@@ -80,8 +82,8 @@ body.dark .pin-faceid-btn{background:#2c2c2e;color:#0a84ff}
 .sync-banner.show{display:block}
 /* MAIN APP */
 .app{max-width:430px;margin:0 auto;padding-bottom:110px}
-.app-header{background:#fff;padding:16px 20px 0;position:sticky;top:0;z-index:10;border-bottom:1px solid #e5e5ea}
-body.dark .app-header{background:#1c1c1e;border-bottom-color:#38383a}
+.app-header{background:rgba(250,249,254,0.75);padding:14px 20px 0;position:sticky;top:0;z-index:10;border-bottom:none;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:0 2px 16px rgba(0,88,188,0.07)}
+body.dark .app-header{background:rgba(26,27,31,0.8)}
 .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .user-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff}
 .dot-filip{background:#007AFF}.dot-beny{background:#34C759}.dot-mirka{background:#FF2D55}.dot-lubo{background:#FF9500}
@@ -108,17 +110,61 @@ body.dark .doch-title{color:#fff}
 body.dark .sk-stab{background:#2c2c2e;border-color:#38383a;color:#8e8e93}
 .sk-stab.active{background:#34C759;border-color:#34C759;color:#fff}
 /* BOTTOM TABS */
-.bottom-tabs{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;border-top:1px solid #e5e5ea;display:flex;padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
-body.dark .bottom-tabs{background:#1c1c1e;border-top-color:#38383a}
-.btab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:10px;cursor:pointer;font-size:11px;font-weight:600;color:#8e8e93;border:none;background:none}
-.btab .ti{font-size:22px;line-height:1}
-.btab.active{color:#007AFF}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+.bottom-tabs{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(250,249,254,0.75);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:none;display:flex;justify-content:space-around;align-items:center;padding:12px 16px calc(12px + env(safe-area-inset-bottom)) 16px;box-shadow:0 -8px 24px rgba(0,88,188,0.08);border-radius:24px 24px 0 0}
+body.dark .bottom-tabs{background:rgba(26,27,31,0.8)}
+.btab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 4px;border-radius:16px;cursor:pointer;font-size:10px;font-weight:600;color:#717786;border:none;background:none;font-family:'Inter',sans-serif;letter-spacing:0.04em;text-transform:uppercase;transition:all 0.2s;min-width:0}
+.btab:active{transform:scale(0.9)}
+.btab .ti{font-size:0;line-height:0;display:none}
+.btab .ms-icon{font-size:24px;line-height:1;font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;display:block;margin-bottom:2px;transition:all 0.2s}
+.btab.active{color:#0058bc;background:rgba(0,88,188,0.07);border-radius:16px}
+.btab.active .ms-icon{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+body.dark .btab{color:#717786}
+body.dark .btab.active{color:#adc6ff;background:rgba(173,198,255,0.1)}
 /* CALENDAR */
-.summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:16px 20px}
-.scard{background:#fff;border-radius:14px;padding:14px 16px}
-body.dark .scard{background:#2c2c2e}
-.scard-label{font-size:12px;color:#8e8e93;margin-bottom:4px;font-weight:500}
-.scard-val{font-size:22px;font-weight:700}
+.summary{padding:14px 16px 0}
+.scard{display:none}
+/* ── RING CARDS ── */
+.ring-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.ring-card{background:#fff;border-radius:16px;padding:14px 12px 12px;display:flex;flex-direction:column;align-items:center;gap:6px}
+body.dark .ring-card{background:#2c2c2e}
+.ring-wrap{position:relative;width:72px;height:72px;flex-shrink:0}
+.ring-wrap svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+.ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#1c1c1e}
+body.dark .ring-pct{color:#fff}
+.ring-label{font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#8e8e93;text-align:center}
+.ring-value{font-size:18px;font-weight:700;color:#1c1c1e;line-height:1}
+body.dark .ring-value{color:#fff}
+.ring-sub{font-size:11px;color:#8e8e93}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.info-card{background:#fff;border-radius:16px;padding:14px 12px 12px;display:flex;flex-direction:column;align-items:center;gap:5px}
+body.dark .info-card{background:#2c2c2e}
+.info-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.info-icon-blue{background:#e8f0fd}
+.info-icon-purple{background:#f0ecfc}
+body.dark .info-icon-blue{background:#0a3d6b}
+body.dark .info-icon-purple{background:#2d1f5e}
+.info-label{font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#8e8e93;text-align:center}
+.info-value{font-size:20px;font-weight:700;color:#1c1c1e;line-height:1}
+body.dark .info-value{color:#fff}
+/* ── CLOCK IN / OUT CARD ── */
+.clockout-card{background:#fff;border-radius:16px;padding:14px 16px;margin:0 0 10px}
+body.dark .clockout-card{background:#2c2c2e}
+.clockout-title{font-size:15px;font-weight:600;color:#1c1c1e;margin-bottom:10px}
+body.dark .clockout-title{color:#fff}
+.clockout-hint{font-size:13px;color:#8e8e93;margin-bottom:10px}
+.clockout-hint b{color:#007AFF;font-weight:600}
+.clockout-edit-row{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.co-time-group{display:flex;flex-direction:column;gap:3px;flex:1}
+.co-time-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#8e8e93}
+.co-time-input{padding:8px 10px;border-radius:9px;border:1.5px solid #e5e5ea;background:#f9f9fb;font-size:15px;font-weight:700;color:#1c1c1e;width:100%;font-family:-apple-system,Arial,sans-serif;text-align:center}
+body.dark .co-time-input{background:#3a3a3c;border-color:#48484a;color:#fff}
+.co-time-input:focus{border-color:#007AFF;outline:none;background:#fff}
+body.dark .co-time-input:focus{background:#2c2c2e}
+.clockin-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:#34C759;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:-apple-system,Arial,sans-serif}
+.clockin-btn:active{opacity:0.85}
+.clockout-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:#007AFF;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:-apple-system,Arial,sans-serif}
+.clockout-btn:active{opacity:0.85}
 .green{color:#34C759}.red{color:#FF3B30}.blue{color:#007AFF}.gray{color:#8e8e93}
 .cal-wrap{padding:0 20px 16px}
 .cal-days-header{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px}
@@ -662,18 +708,25 @@ body.dark .druh-foto-btn{background:#2c2c2e;border-color:#48484a}
     <!-- HEADER DOCHÁDZKA -->
     <div class="app-header" id="headerDochadzka">
       <div class="header-top">
-        <div class="app-title-wrap">
-          <div class="doch-title">Dochádzka <span style="color:#007AFF;">Mars</span></div>
-          <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
-            <div class="user-dot" id="userDot" style="width:20px;height:20px;font-size:10px;"></div>
-            <div class="header-name" id="headerName" style="font-size:13px;"></div>
-            <div class="app-byline">· by @filip.kubica</div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="position:relative;width:40px;height:40px;border-radius:50%;overflow:hidden;border:1.5px solid rgba(193,198,215,0.4);flex-shrink:0;background:#eeedf3;cursor:pointer;" onclick="switchUser()" id="headerAvatarWrap">
+            <img id="headerAvatarImg" src="" style="width:100%;height:100%;object-fit:cover;display:none;" alt="">
+            <div id="headerAvatarInitials" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;font-family:'Inter',sans-serif;"></div>
+          </div>
+          <div>
+            <div style="font-size:18px;font-weight:700;color:#1a1b1f;letter-spacing:-0.3px;font-family:'Inter',sans-serif;" class="doch-title-md">Mars Management</div>
+            <div style="display:flex;align-items:center;gap:5px;margin-top:1px;">
+              <div class="header-name" id="headerName" style="font-size:12px;color:#717786;font-weight:500;"></div>
+            </div>
           </div>
         </div>
-        <div class="header-btns">
-          <button class="hbtn" onclick="showSettings()">Ciele</button>
-          <button class="hbtn" onclick="switchUser()">Zmeniť</button>
-          <button class="hbtn" id="darkBtn" onclick="toggleDark()">🌙</button>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button onclick="showSettings()" style="width:36px;height:36px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Ciele">
+            <span class="material-symbols-outlined" style="font-size:22px;color:#717786;">bar_chart</span>
+          </button>
+          <button id="darkBtn" onclick="toggleDark()" style="width:36px;height:36px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Tmavý režim">
+            <span class="material-symbols-outlined" style="font-size:22px;color:#717786;">dark_mode</span>
+          </button>
         </div>
       </div>
       <div class="month-nav">
@@ -685,7 +738,7 @@ body.dark .druh-foto-btn{background:#2c2c2e;border-color:#48484a}
 
     <!-- HEADER SKLAD -->
     <div class="app-header" id="headerSklad" style="display:none;">
-      <div class="header-top">
+      <div class="header-top" style="padding-bottom:4px;">
         <div class="app-title-wrap">
           <div class="sklad-title">Sklad <span>žuvačiek</span></div>
           <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
@@ -877,14 +930,32 @@ body.dark .druh-foto-btn{background:#2c2c2e;border-color:#48484a}
   </div>
 
   <!-- BOTTOM TABS -->
-  <div class="bottom-tabs">
-    <button class="btab active" onclick="switchMainTab('dochadzka')" id="mtab-dochadzka"><span class="ti">📅</span>Dochádz.</button>
-    <button class="btab" onclick="switchMainTab('sklad')" id="mtab-sklad"><span class="ti">📦</span>Sklad</button>
-    <button class="btab" onclick="switchMainTab('stat')" id="mtab-stat"><span class="ti">📊</span>Štat.</button>
-    <button class="btab" onclick="switchMainTab('obchody')" id="mtab-obchody"><span class="ti">🏬</span>Obchody</button>
-    <button class="btab" onclick="switchMainTab('druhotky')" id="mtab-druhotky"><span class="ti">🏪</span>Druhotky</button>
-    <button class="btab" onclick="switchMainTab('poznamky')" id="mtab-poznamky"><span class="ti">📝</span>Pozn.</button>
-  </div>
+  <nav class="bottom-tabs">
+    <button class="btab active" onclick="switchMainTab('dochadzka')" id="mtab-dochadzka">
+      <span class="ms-icon material-symbols-outlined">calendar_today</span>
+      <span>Dochádz.</span>
+    </button>
+    <button class="btab" onclick="switchMainTab('sklad')" id="mtab-sklad">
+      <span class="ms-icon material-symbols-outlined">inventory_2</span>
+      <span>Sklad</span>
+    </button>
+    <button class="btab" onclick="switchMainTab('stat')" id="mtab-stat">
+      <span class="ms-icon material-symbols-outlined">leaderboard</span>
+      <span>Štat.</span>
+    </button>
+    <button class="btab" onclick="switchMainTab('obchody')" id="mtab-obchody">
+      <span class="ms-icon material-symbols-outlined">storefront</span>
+      <span>Obchody</span>
+    </button>
+    <button class="btab" onclick="switchMainTab('druhotky')" id="mtab-druhotky">
+      <span class="ms-icon material-symbols-outlined">sell</span>
+      <span>Druhotky</span>
+    </button>
+    <button class="btab" onclick="switchMainTab('poznamky')" id="mtab-poznamky">
+      <span class="ms-icon material-symbols-outlined">description</span>
+      <span>Pozn.</span>
+    </button>
+  </nav>
 </div>
 
 <div id="settingsModal" style="display:none;"></div>
@@ -895,7 +966,7 @@ var OBCHODY={"Filip": [{"id": "SK002284", "n": "POT J-LM 053 MIX", "m": "PARTIZA
 var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v22';
+var APP_VERSION = 'dochadzka-mars-v23';
 var swRegistration = null;
 var updateWaiting = false;
 
@@ -1156,10 +1227,30 @@ function completeLogin(name){
 }
 
 // ── USER ─────────────────────────────────────────────────────────
+function updateHeaderAvatarInHeader(user) {
+  var initials = document.getElementById('headerAvatarInitials');
+  var img = document.getElementById('headerAvatarImg');
+  var wrap = document.getElementById('headerAvatarWrap');
+  if (!wrap) return;
+  var colors = {Filip:'#007AFF',Beny:'#34C759',Mirka:'#FF2D55',Lubo:'#FF9500',Martin:'#AF52DE'};
+  var letters = {Filip:'F',Beny:'B',Mirka:'M',Lubo:'L',Martin:'M'};
+  wrap.style.background = colors[user] || '#717786';
+  if (initials) { initials.textContent = letters[user] || user.charAt(0); }
+  var saved = localStorage.getItem('avatar_' + user);
+  if (saved && img) {
+    img.src = saved; img.style.display = 'block';
+    if (initials) initials.style.display = 'none';
+  } else if (img) {
+    img.style.display = 'none';
+    if (initials) initials.style.display = 'flex';
+  }
+}
+
 function setUser(name){
   currentUser=name; applyGoals();
   document.getElementById('mainApp').style.display='block';
   allDots(name); allNames(name); allDarkBtns();
+  updateHeaderAvatarInHeader(name);
   document.getElementById('monthTitle').textContent=MONTHS[currentMonth]+' '+currentYear;
   var vi=document.getElementById('verInfo'); if(vi) vi.textContent='Verzia: '+APP_VERSION;
   loadData();
@@ -1233,10 +1324,11 @@ function renderCalendar(){
   document.getElementById('calendar').innerHTML=html; renderSummary();
 }
 function renderSummary(){
+  var today=new Date();
   var days=Object.keys(data).filter(function(k){ if(!k.startsWith(currentUser+'_d_')) return false; var p=k.replace(currentUser+'_d_','').split('-').map(Number); return p[0]===currentYear&&p[1]===currentMonth+1; });
   var EXCL_TYPES=['dovol','pn'];
   var SKIP_TIME_TYPES=['cd','meeting'];
-  var wDiff=0,vDiff=0,cDiff=0,wDays=0,timeDays=0,totalW=0,totalC=0;
+  var wDiff=0,vDiff=0,cDiff=0,wDays=0,timeDays=0,totalW=0,totalC=0,totalVM=0;
   days.forEach(function(k){
     var d=data[k],s=getDayStats(d),t=d.type||'';
     if(!s.saved) return;
@@ -1244,10 +1336,108 @@ function renderSummary(){
     wDays++;
     if(SKIP_TIME_TYPES.indexOf(t)>=0) return;
     timeDays++;
-    wDiff+=s.tw-CIEL_P;vDiff+=s.vm-CIEL_V;cDiff+=s.vc-CIEL_N;totalW+=s.tw;totalC+=s.vc;
+    wDiff+=s.tw-CIEL_P; vDiff+=s.vm-CIEL_V; cDiff+=s.vc-CIEL_N;
+    totalW+=s.tw; totalC+=s.vc; totalVM+=s.vm;
   });
-  var avgV=timeDays?(totalC/timeDays).toFixed(1):'—',avgW=timeDays?Math.round(totalW/timeDays):0,avgWH=timeDays?Math.floor(avgW/60)+'h'+(avgW%60>0?avgW%60+'m':''):'—';
-  document.getElementById('summary').innerHTML=[{l:'Pracovná doba',v:wDays?mToH(wDiff):'—',c:wDiff>=0?'green':'red'},{l:'Čas návštev',v:wDays?mToH(vDiff):'—',c:vDiff>=0?'green':'red'},{l:'Počet návštev',v:wDays?(cDiff>=0?'+':'')+cDiff:'—',c:cDiff>=0?'green':'red'},{l:'Priemer návštev',v:avgV,c:'blue'},{l:'Priemer prac.',v:avgWH,c:'blue'},{l:'Dni',v:wDays,c:'gray'}].map(function(c){return '<div class="scard"><div class="scard-label">'+c.l+'</div><div class="scard-val '+c.c+'">'+c.v+'</div></div>';}).join('');
+  var avgV=timeDays?(totalC/timeDays).toFixed(1):'—';
+  var avgW=timeDays?Math.round(totalW/timeDays):0;
+  var avgWH=timeDays?Math.floor(avgW/60)+'h'+(avgW%60>0?' '+avgW%60+'m':''):'—';
+  var wGoal=timeDays*CIEL_P||1; var vGoal=timeDays*CIEL_V||1; var cGoal=timeDays*CIEL_N||1;
+  var wPct=wGoal>0?Math.min(Math.round(totalW/wGoal*100),100):0;
+  var vPct=vGoal>0?Math.min(Math.round(totalVM/vGoal*100),100):0;
+  var cPct=cGoal>0?Math.min(Math.round(totalC/cGoal*100),100):0;
+
+  function ring(pct,color,bg){
+    var r=30,circ=2*Math.PI*r,offset=circ*(1-pct/100);
+    return '<svg width="72" height="72" viewBox="0 0 72 72">'
+      +'<circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+bg+'" stroke-width="6"/>'
+      +'<circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="6" stroke-linecap="round"'
+      +' stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+offset.toFixed(1)+'"/>'
+      +'</svg>';
+  }
+
+  var wH2=timeDays?Math.floor(totalW/60)+'h'+(totalW%60>0?' '+(totalW%60)+'m':''):'—';
+  var vH2=timeDays?Math.floor(totalVM/60)+'h'+(totalVM%60>0?' '+(totalVM%60)+'m':''):'—';
+
+  var ringCards=''
+    +'<div class="ring-card"><div class="ring-wrap">'+ring(wPct,'#007AFF','#e8f0fd')+'<div class="ring-pct">'+wPct+'%</div></div>'
+      +'<div class="ring-label">Pracovný čas</div><div class="ring-value">'+wH2+'</div>'
+      +'<div class="ring-sub">Cieľ: '+Math.floor(wGoal/60)+'h</div></div>'
+    +'<div class="ring-card"><div class="ring-wrap">'+ring(vPct,'#34C759','#e2f7ee')+'<div class="ring-pct">'+vPct+'%</div></div>'
+      +'<div class="ring-label">Čas u zákazníka</div><div class="ring-value">'+vH2+'</div>'
+      +'<div class="ring-sub">Cieľ: '+Math.floor(vGoal/60)+'h</div></div>'
+    +'<div class="ring-card"><div class="ring-wrap">'+ring(cPct,'#AF52DE','#f0ecfc')+'<div class="ring-pct">'+cPct+'%</div></div>'
+      +'<div class="ring-label">Návštevy</div><div class="ring-value">'+totalC+'</div>'
+      +'<div class="ring-sub">Cieľ: '+Math.round(cGoal)+'</div></div>'
+    +'<div class="ring-card">'
+      +'<div class="info-icon info-icon-blue" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center">'
+        +'<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><circle cx="15" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><path d="M3 17c0-3 2.7-5 6-5h6c3.3 0 6 2 6 5" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/></svg>'
+      +'</div>'
+      +'<div class="ring-label">Priemer / deň</div><div class="ring-value">'+avgV+'</div>'
+      +'<div class="ring-sub">&nbsp;</div></div>';
+
+  var infoCards=''
+    +'<div class="info-card"><div class="info-icon info-icon-blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#007AFF" stroke-width="1.8"/><path d="M12 7v5l3 3" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="info-label">Priemer prac.</div><div class="info-value">'+avgWH+'</div></div>'
+    +'<div class="info-card"><div class="info-icon info-icon-purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="17" rx="2.5" stroke="#AF52DE" stroke-width="1.8"/><path d="M8 2v3M16 2v3M3 9h18" stroke="#AF52DE" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="info-label">Odpracované</div><div class="info-value">'+wDays+' dní</div></div>';
+
+  // Clock In / Clock Out karta
+  var isThisMonth=today.getMonth()===currentMonth&&today.getFullYear()===currentYear;
+  var clockHtml='';
+  if(isThisMonth){
+    var todayDk=dKey(currentYear,currentMonth,today.getDate());
+    var td=data[todayDk]||{};
+    var dows2=['Nedeľa','Pondelok','Utorok','Streda','Štvrtok','Piatok','Sobota'];
+    var months2=['januára','februára','marca','apríla','mája','júna','júla','augusta','septembra','októbra','novembra','decembra'];
+    var todayLabel=dows2[today.getDay()]+', '+today.getDate()+'. '+months2[today.getMonth()];
+    var predpKoniec=td.start?mToT(tMin(td.start)+CIEL_P):'';
+    var nowHH=String(today.getHours()).padStart(2,'0')+':'+String(today.getMinutes()).padStart(2,'0');
+
+    if(!td.start){
+      // Ešte nebol Clock In
+      clockHtml='<div class="clockout-card">'
+        +'<div class="clockout-title">Dnes, '+todayLabel+'</div>'
+        +'<div class="clockout-edit-row">'
+          +'<div class="co-time-group"><div class="co-time-label">Začiatok</div>'
+            +'<input type="time" class="co-time-input" id="co-start-inp" value="'+nowHH+'"></div>'
+        +'</div>'
+        +'<button class="clockin-btn" onclick="clockIn()">'
+          +'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>'
+          +' Clock In'
+        +'</button>'
+      +'</div>';
+    } else if(!td.end){
+      // Má start, ešte nie koniec
+      clockHtml='<div class="clockout-card">'
+        +'<div class="clockout-title">Dnes, '+todayLabel+'</div>'
+        +'<div class="clockout-edit-row">'
+          +'<div class="co-time-group"><div class="co-time-label">Začiatok</div>'
+            +'<input type="time" class="co-time-input" id="co-start-inp" value="'+td.start+'" onchange="coUpdateStart(this.value)"></div>'
+          +'<div class="co-time-group"><div class="co-time-label">Predp. koniec</div>'
+            +'<input type="time" class="co-time-input" id="co-end-inp" value="'+predpKoniec+'" readonly style="opacity:0.6"></div>'
+        +'</div>'
+        +'<button class="clockout-btn" onclick="clockOut()">'
+          +'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>'
+          +' Clock Out'
+        +'</button>'
+      +'</div>';
+    } else {
+      // Má oboje - zobraz s možnosťou upraviť
+      clockHtml='<div class="clockout-card">'
+        +'<div class="clockout-title">Dnes, '+todayLabel+'</div>'
+        +'<div class="clockout-edit-row">'
+          +'<div class="co-time-group"><div class="co-time-label">Začiatok</div>'
+            +'<input type="time" class="co-time-input" id="co-start-inp" value="'+td.start+'" onchange="coUpdateStart(this.value)"></div>'
+          +'<div class="co-time-group"><div class="co-time-label">Koniec</div>'
+            +'<input type="time" class="co-time-input" id="co-end-inp" value="'+td.end+'" onchange="coUpdateEnd(this.value)"></div>'
+        +'</div>'
+      +'</div>';
+    }
+  }
+
+  document.getElementById('summary').innerHTML=
+    '<div class="ring-grid">'+ringCards+'</div>'
+    +'<div class="info-grid">'+infoCards+'</div>'
+    +clockHtml;
 }
 function selectDay(d){ selectedDay=d; renderDetail(); document.getElementById('dayDetail').scrollIntoView({behavior:'smooth',block:'start'}); }
 function renderDetail(){
@@ -1255,14 +1445,65 @@ function renderDetail(){
   var date=new Date(currentYear,currentMonth,d),dows=['Nedeľa','Pondelok','Utorok','Streda','Štvrtok','Piatok','Sobota'];
   var title=dows[date.getDay()]+', '+d+'. '+MONTHS[currentMonth];
   var wOk=s.tw>=CIEL_P,vOk=s.vm>=CIEL_V,nOk=s.vc>=CIEL_N;
-  var wH=s.tw?Math.floor(s.tw/60)+'h '+(s.tw%60)+'m':'—',vH=s.vm?Math.floor(s.vm/60)+'h '+(s.vm%60)+'m':'—';
-  var hint=dd.start?'Koniec o '+mToT(tMin(dd.start)+CIEL_P):'';
-  var typeBtns=Object.keys(DTYPES).map(function(t){return '<div class="dtype-btn'+(dd.type===t?' active-'+t:'')+'" onclick="setType(\''+t+'\')">'+DTYPES[t]+'</div>';}).join('');
+  var wH=s.tw?Math.floor(s.tw/60)+'h '+(s.tw%60)+'m':'—';
+  var vH=s.vm?Math.floor(s.vm/60)+'h '+(s.vm%60)+'m':'—';
+  var typeBtns=Object.keys(DTYPES).map(function(t){return '<div class="dtype-btn'+(dd.type===t?' active-'+t:'')+'" onclick="setType(''+t+'')">'+DTYPES[t]+'</div>';}).join('');
   var visits=dd.visits.map(function(v,i){return '<div class="visit-row"><div class="vnum">'+(i+1)+'.</div><input type="number" min="1" max="999" value="'+(v.mins||'')+'" placeholder="min" onchange="updateVisit('+i+',this.value)" onkeydown="if(event.key===\'Enter\'){updateVisit('+i+',this.value);this.blur();}"><button class="del-v" onclick="removeVisit('+i+')">×</button></div>';}).join('');
-  document.getElementById('dayDetail').innerHTML='<div class="detail"><div class="detail-header"><div class="detail-title">'+title+'</div><button class="close-x" onclick="closeDetail()">×</button></div><div class="slabel">Typ dňa</div><div class="day-types">'+typeBtns+'</div><div class="slabel">Pracovná doba</div><div class="time-row"><div class="fg"><label>Začiatok</label><input type="time" value="'+(dd.start||'')+'" onblur="updateWork(\'start\',this.value)" oninput="updateHint(this.value)"></div><div class="fg"><label>Koniec</label><input type="time" value="'+(dd.end||'')+'" onblur="updateWork(\'end\',this.value)"></div></div><div class="end-hint" id="endHint">'+hint+'</div><div class="stat-row"><span class="stat-l">Celkom</span><span class="stat-r '+(wOk?'ok':'bad')+'">'+wH+' / cieľ '+Math.floor(CIEL_P/60)+'h'+(CIEL_P%60>0?CIEL_P%60+'m':'')+'</span></div><div class="slabel">Návštevy (min)</div><div id="visitsList">'+visits+'</div><div class="quick-btns"><div class="qbtn" onclick="addQuick(20)">+20 min</div><div class="qbtn" onclick="addQuick(30)">+30 min</div><div class="qbtn" onclick="addQuick(45)">+45 min</div></div><div class="add-v-btn" onclick="addVisit()">+ Vlastný čas</div><div class="stat-row" style="margin-top:10px;"><span class="stat-l">Čas návštev</span><span class="stat-r '+(vOk?'ok':'bad')+'">'+vH+' / cieľ '+Math.floor(CIEL_V/60)+'h'+(CIEL_V%60>0?CIEL_V%60+'m':'')+'</span></div><div class="stat-row"><span class="stat-l">Počet návštev</span><span class="stat-r '+(nOk?'ok':'bad')+'">'+s.vc+' / cieľ '+CIEL_N+'</span></div><div class="slabel">Poznámka</div><textarea class="note-input" placeholder="Voliteľná poznámka..." onblur="updateNote(this.value)">'+(dd.note||'')+'</textarea><button class="save-day-btn" onclick="saveDay()">Uložiť deň</button><button class="del-day-btn" onclick="deleteDay()">Vymazať deň</button></div>';
+  var wGoalStr=Math.floor(CIEL_P/60)+'h'+(CIEL_P%60>0?CIEL_P%60+'m':'');
+  var vGoalStr=Math.floor(CIEL_V/60)+'h'+(CIEL_V%60>0?CIEL_V%60+'m':'');
+  document.getElementById('dayDetail').innerHTML=
+    '<div class="detail">'
+    +'<div class="detail-header"><div class="detail-title">'+title+'</div><button class="close-x" onclick="closeDetail()">×</button></div>'
+    +'<div class="slabel">Typ dňa</div><div class="day-types">'+typeBtns+'</div>'
+    +'<div class="stat-row"><span class="stat-l">Pracovná doba</span><span class="stat-r '+(wOk?'ok':'bad')+'">'+wH+' / cieľ '+wGoalStr+'</span></div>'
+    +'<div class="slabel">Návštevy (min)</div><div id="visitsList">'+visits+'</div>'
+    +'<div class="quick-btns"><div class="qbtn" onclick="addQuick(20)">+20 min</div><div class="qbtn" onclick="addQuick(30)">+30 min</div><div class="qbtn" onclick="addQuick(45)">+45 min</div></div>'
+    +'<div class="add-v-btn" onclick="addVisit()">+ Vlastný čas</div>'
+    +'<div class="stat-row" style="margin-top:10px;"><span class="stat-l">Čas u zákazníka</span><span class="stat-r '+(vOk?'ok':'bad')+'">'+vH+' / cieľ '+vGoalStr+'</span></div>'
+    +'<div class="stat-row"><span class="stat-l">Počet návštev</span><span class="stat-r '+(nOk?'ok':'bad')+'">'+s.vc+' / cieľ '+CIEL_N+'</span></div>'
+    +'<div class="slabel">Poznámka</div><textarea class="note-input" placeholder="Voliteľná poznámka..." onblur="updateNote(this.value)">'+(dd.note||'')+'</textarea>'
+    +'<button class="save-day-btn" onclick="saveDay()">Uložiť deň</button>'
+    +'<button class="del-day-btn" onclick="deleteDay()">Vymazať deň</button>'
+    +'</div>';
 }
-function updateHint(v){ var h=document.getElementById('endHint'); if(h&&v) h.textContent='Koniec o '+mToT(tMin(v)+CIEL_P); }
-function updateWork(f,v){ var dd=getDay(currentYear,currentMonth,selectedDay); dd[f]=v; renderDetail(); renderCalendar(); autoSave(); }
+function updateHint(v){}
+function updateWork(f,v){ var dd=getDay(currentYear,currentMonth,selectedDay); dd[f]=v; renderCalendar(); autoSave(); }
+function clockIn(){
+  var inp=document.getElementById('co-start-inp');
+  var startTime=inp?inp.value:'';
+  if(!startTime){var n=new Date();startTime=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
+  var d=new Date(),dk=dKey(d.getFullYear(),d.getMonth(),d.getDate()),k=key(d.getFullYear(),d.getMonth(),d.getDate());
+  if(!data[dk]) data[dk]={start:'',end:'',visits:[],note:'',type:''};
+  data[dk].start=startTime;
+  apiSet(k,JSON.stringify(data[dk]));
+  setStatus('Clock In: '+startTime);
+  renderSummary(); renderCalendar();
+}
+function clockOut(){
+  var d=new Date(),dk=dKey(d.getFullYear(),d.getMonth(),d.getDate()),k=key(d.getFullYear(),d.getMonth(),d.getDate());
+  var endTime=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  if(!data[dk]) data[dk]={start:'',end:'',visits:[],note:'',type:''};
+  data[dk].end=endTime;
+  apiSet(k,JSON.stringify(data[dk]));
+  setStatus('Clock Out: '+endTime);
+  renderSummary(); renderCalendar();
+}
+function coUpdateStart(v){
+  var d=new Date(),dk=dKey(d.getFullYear(),d.getMonth(),d.getDate()),k=key(d.getFullYear(),d.getMonth(),d.getDate());
+  if(!data[dk]) data[dk]={start:'',end:'',visits:[],note:'',type:''};
+  data[dk].start=v;
+  apiSet(k,JSON.stringify(data[dk]));
+  setStatus('Uložené');
+  renderSummary(); renderCalendar();
+}
+function coUpdateEnd(v){
+  var d=new Date(),dk=dKey(d.getFullYear(),d.getMonth(),d.getDate()),k=key(d.getFullYear(),d.getMonth(),d.getDate());
+  if(!data[dk]) data[dk]={start:'',end:'',visits:[],note:'',type:''};
+  data[dk].end=v;
+  apiSet(k,JSON.stringify(data[dk]));
+  setStatus('Uložené');
+  renderSummary(); renderCalendar();
+}
 function updateVisit(i,v){ var n=parseInt(v)||0; if(n>0){getDay(currentYear,currentMonth,selectedDay).visits[i].mins=n; renderDetail(); renderCalendar(); autoSave();} }
 function addQuick(m){ getDay(currentYear,currentMonth,selectedDay).visits.push({mins:m}); renderDetail(); renderCalendar(); autoSave(); }
 function addVisit(){ getDay(currentYear,currentMonth,selectedDay).visits.push({mins:''}); renderDetail(); setTimeout(function(){ var ii=document.querySelectorAll('#visitsList input'); if(ii.length) ii[ii.length-1].focus(); },50); }
@@ -1315,7 +1556,7 @@ function renderStat(){
   var avgV=totalTimeDays?(totalC/totalTimeDays).toFixed(1):'—',avgWMin=totalTimeDays?Math.round(totalW/totalTimeDays):0,avgWH=totalTimeDays?Math.floor(avgWMin/60)+'h'+(avgWMin%60>0?avgWMin%60+'m':''):'—';
   var periodBtns=['Q1','Q2','Q3','Q4','Rok'].map(function(p){ return '<button class="spbtn'+(statPeriod===p?' active':'')+'" onclick="statSetPeriod(\''+p+'\')">'+p+'</button>'; }).join('');
   var yearRow='<div class="stat-year-row"><button class="stat-year-btn" onclick="statChangeYear(-1)">‹</button><div class="stat-year-val">'+statYear+'</div><button class="stat-year-btn" onclick="statChangeYear(1)">›</button></div>';
-  var summaryCards=[{l:'Pracovná doba',v:totalTimeDays?mToH(totalWDiff):'—',c:totalWDiff>=0?'green':'red'},{l:'Čas návštev',v:totalTimeDays?mToH(totalVDiff):'—',c:totalVDiff>=0?'green':'red'},{l:'Počet návštev',v:totalTimeDays?(totalCDiff>=0?'+':'')+totalCDiff:'—',c:totalCDiff>=0?'green':'red'},{l:'Priemer návštev',v:avgV,c:'blue'},{l:'Priemer prac.',v:avgWH,c:'blue'},{l:'Pracovné dni',v:totalDays,c:'gray'}].map(function(c){return '<div class="stat-card"><div class="stat-card-label">'+c.l+'</div><div class="stat-card-val '+c.c+'">'+c.v+'</div></div>';}).join('');
+  var summaryCards=[{l:'Pracovná doba',v:totalTimeDays?mToH(totalWDiff):'—',c:totalWDiff>=0?'green':'red'},{l:'Čas u zákazníka',v:totalTimeDays?mToH(totalVDiff):'—',c:totalVDiff>=0?'green':'red'},{l:'Počet návštev',v:totalTimeDays?(totalCDiff>=0?'+':'')+totalCDiff:'—',c:totalCDiff>=0?'green':'red'},{l:'Priemer návštev',v:avgV,c:'blue'},{l:'Priemer prac.',v:avgWH,c:'blue'},{l:'Pracovné dni',v:totalDays,c:'gray'}].map(function(c){return '<div class="stat-card"><div class="stat-card-label">'+c.l+'</div><div class="stat-card-val '+c.c+'">'+c.v+'</div></div>';}).join('');
   var maxC=1,maxW2=1;
   months.forEach(function(m){ var s=getMonthStats(statYear,m); if(s.totalC>maxC) maxC=s.totalC; if(s.totalW/60>maxW2) maxW2=s.totalW/60; });
   var bars=months.map(function(m){ var s=getMonthStats(statYear,m),pct=maxC>0?Math.round(s.totalC/maxC*100):0,col=s.wDays>0?'#007AFF':'#e5e5ea'; return '<div class="bar-col"><div style="flex:1;display:flex;align-items:flex-end;width:100%"><div class="bar-col-inner" style="height:'+pct+'%;background:'+col+'"></div></div><div class="bar-label">'+MONTHS[m].slice(0,3)+'</div><div class="bar-val">'+(s.totalC||'')+'</div></div>'; }).join('');

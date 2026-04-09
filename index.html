@@ -1266,6 +1266,8 @@ function switchUser(){
 function loadData(){
   setStatus('Načítavam...');
   PRODUKTY=JSON.parse(JSON.stringify(DEFAULT_PRODUKTY));
+  // Okamžite zobraz cache kým čakáme na API
+  if(loadFromCache()){ renderCalendar(); skRenderAll(); }
   apiGet(function(result){
     data={}; zasoby={}; historia=[];
     for(var k in result){
@@ -1338,19 +1340,27 @@ function renderSummary(){
   var avgW=timeDays?Math.round(totalW/timeDays):0;
   var avgWH=timeDays?Math.floor(avgW/60)+'h'+(avgW%60>0?' '+avgW%60+'m':''):'—';
   var wG=timeDays*CIEL_P||1,vG=timeDays*CIEL_V||1,cG=timeDays*CIEL_N||1;
-  var wPct=Math.min(Math.round(totalW/wG*100),100);
-  var vPct=Math.min(Math.round(totalVM/vG*100),100);
-  var cPct=Math.min(Math.round(totalC/cG*100),100);
+  var wPct=Math.round(totalW/wG*100);
+  var vPct=Math.round(totalVM/vG*100);
+  var cPct=Math.round(totalC/cG*100);
   function ring(pct,col,bg){
     var r=30,ci=2*Math.PI*r,off=ci*(1-pct/100);
     return '<svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+bg+'" stroke-width="6"/><circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+ci.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg>';
   }
   var wH2=totalW?Math.floor(totalW/60)+'h'+(totalW%60?' '+(totalW%60)+'m':''):'—';
   var vH2=totalVM?Math.floor(totalVM/60)+'h'+(totalVM%60?' '+(totalVM%60)+'m':''):'—';
+  var wDiff2=totalW-wG,vDiff2=totalVM-vG,cDiff2=totalC-cG;
+  function fmtDiff(m){ var h=Math.abs(Math.floor(m/60)),mn=Math.abs(Math.round(m%60)); var s=(m>=0?'+':'-')+h+'h'+(mn>0?' '+mn+'m':''); return s; }
+  var wSub=timeDays?fmtDiff(wDiff2):'—';
+  var vSub=timeDays?fmtDiff(vDiff2):'—';
+  var cSub=timeDays?(cDiff2>=0?'+':'')+Math.round(cDiff2):'—';
+  var wSubCol=wDiff2>=0?'#34C759':'#FF3B30';
+  var vSubCol=vDiff2>=0?'#34C759':'#FF3B30';
+  var cSubCol=cDiff2>=0?'#34C759':'#FF3B30';
   var rings=''
-    +'<div class="ring-card"><div class="ring-wrap">'+ring(wPct,'#007AFF','#e8f0fd')+'<div class="ring-pct">'+wPct+'%</div></div><div class="ring-label">Pracovný čas</div><div class="ring-value">'+wH2+'</div><div class="ring-sub">Cieľ: '+Math.floor(wG/60)+'h</div></div>'
-    +'<div class="ring-card"><div class="ring-wrap">'+ring(vPct,'#34C759','#e2f7ee')+'<div class="ring-pct">'+vPct+'%</div></div><div class="ring-label">Čas u zákazníka</div><div class="ring-value">'+vH2+'</div><div class="ring-sub">Cieľ: '+Math.floor(vG/60)+'h</div></div>'
-    +'<div class="ring-card"><div class="ring-wrap">'+ring(cPct,'#AF52DE','#f0ecfc')+'<div class="ring-pct">'+cPct+'%</div></div><div class="ring-label">Návštevy</div><div class="ring-value">'+totalC+'</div><div class="ring-sub">Cieľ: '+Math.round(cG)+'</div></div>'
+    +'<div class="ring-card"><div class="ring-wrap">'+ring(wPct,'#007AFF','#e8f0fd')+'<div class="ring-pct">'+wPct+'%</div></div><div class="ring-label">Pracovný čas</div><div class="ring-value">'+wH2+'</div><div class="ring-sub" style="color:'+wSubCol+';font-weight:600">'+wSub+'</div></div>'
+    +'<div class="ring-card"><div class="ring-wrap">'+ring(vPct,'#34C759','#e2f7ee')+'<div class="ring-pct">'+vPct+'%</div></div><div class="ring-label">Čas u zákazníka</div><div class="ring-value">'+vH2+'</div><div class="ring-sub" style="color:'+vSubCol+';font-weight:600">'+vSub+'</div></div>'
+    +'<div class="ring-card"><div class="ring-wrap">'+ring(cPct,'#AF52DE','#f0ecfc')+'<div class="ring-pct">'+cPct+'%</div></div><div class="ring-label">Návštevy</div><div class="ring-value">'+totalC+'</div><div class="ring-sub" style="color:'+cSubCol+';font-weight:600">'+cSub+'</div></div>'
     +'<div class="ring-card"><div class="info-icon info-icon-blue" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><circle cx="15" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><path d="M3 17c0-3 2.7-5 6-5h6c3.3 0 6 2 6 5" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="ring-label">Priemer / deň</div><div class="ring-value">'+avgV+'</div><div class="ring-sub">&nbsp;</div></div>';
   var infos=''
     +'<div class="info-card"><div class="info-icon info-icon-blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#007AFF" stroke-width="1.8"/><path d="M12 7v5l3 3" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="info-label">Priemer prac.</div><div class="info-value">'+avgWH+'</div></div>'

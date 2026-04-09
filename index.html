@@ -1348,7 +1348,7 @@ function renderSummary(){
   }
   var wH2=totalW?Math.floor(totalW/60)+'h'+(totalW%60?' '+(totalW%60)+'m':''):'—';
   var vH2=totalVM?Math.floor(totalVM/60)+'h'+(totalVM%60?' '+(totalVM%60)+'m':''):'—';
-  function fd(m){var h=Math.abs(Math.floor(m/60)),mn=Math.abs(Math.round(m)%60);return (m>=0?'+':'-')+h+'h'+(mn?' '+mn+'m':'');}
+  function fd(m){var a=Math.abs(m),h=Math.floor(a/60),mn=Math.round(a%60);return (m>=0?'+':'-')+(h?h+'h ':' ')+(mn?mn+'m':'0m');}
   var wSub=timeDays?fd(totalW-wG):'—', vSub=timeDays?fd(totalVM-vG):'—';
   var cSub=timeDays?((totalC-cG>=0?'+':'')+Math.round(totalC-cG)):'—';
   var wSC=(totalW-wG)>=0?'#34C759':'#FF3B30';

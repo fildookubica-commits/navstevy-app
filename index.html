@@ -834,6 +834,7 @@ body.dark .druh-foto-btn{background:#2c2c2e;border-color:#48484a}
         </div>
         <div class="calendar" id="calendar"></div>
       </div>
+      <div id="clockCard" style="padding:0 16px;margin-bottom:4px;"></div>
       <div id="dayDetail"></div>
     </div>
 
@@ -1397,7 +1398,8 @@ function renderSummary(){
         +'</div>';
     }
   }
-  document.getElementById('summary').innerHTML='<div class="ring-grid">'+rings+'</div><div class="info-grid">'+infos+'</div>'+clock;
+  document.getElementById('summary').innerHTML='<div class="ring-grid">'+rings+'</div><div class="info-grid">'+infos+'</div>';
+  var cc=document.getElementById('clockCard'); if(cc) cc.innerHTML=clock;
 }
 function selectDay(d){ selectedDay=d; renderDetail(); document.getElementById('dayDetail').scrollIntoView({behavior:'smooth',block:'start'}); }
 function renderDetail(){

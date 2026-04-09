@@ -124,11 +124,10 @@ body.dark .btab.active{color:#adc6ff;background:rgba(173,198,255,0.1)}
 /* CALENDAR */
 .summary{padding:14px 16px 0}
 .scard{display:none}
-/* ── RING CARDS ── */
 .ring-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .ring-card{background:#fff;border-radius:16px;padding:14px 12px 12px;display:flex;flex-direction:column;align-items:center;gap:6px}
 body.dark .ring-card{background:#2c2c2e}
-.ring-wrap{position:relative;width:72px;height:72px;flex-shrink:0}
+.ring-wrap{position:relative;width:72px;height:72px}
 .ring-wrap svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
 .ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#1c1c1e}
 body.dark .ring-pct{color:#fff}
@@ -147,20 +146,16 @@ body.dark .info-icon-purple{background:#2d1f5e}
 .info-label{font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#8e8e93;text-align:center}
 .info-value{font-size:20px;font-weight:700;color:#1c1c1e;line-height:1}
 body.dark .info-value{color:#fff}
-/* ── CLOCK IN / OUT CARD ── */
 .clockout-card{background:#fff;border-radius:16px;padding:14px 16px;margin:0 0 10px}
 body.dark .clockout-card{background:#2c2c2e}
 .clockout-title{font-size:15px;font-weight:600;color:#1c1c1e;margin-bottom:10px}
 body.dark .clockout-title{color:#fff}
-.clockout-hint{font-size:13px;color:#8e8e93;margin-bottom:10px}
-.clockout-hint b{color:#007AFF;font-weight:600}
-.clockout-edit-row{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
-.co-time-group{display:flex;flex-direction:column;gap:3px;flex:1}
+.clockout-edit-row{display:flex;gap:10px;align-items:flex-end;margin-bottom:10px;flex-wrap:wrap}
+.co-time-group{display:flex;flex-direction:column;gap:3px;flex:1;min-width:90px}
 .co-time-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#8e8e93}
-.co-time-input{padding:8px 10px;border-radius:9px;border:1.5px solid #e5e5ea;background:#f9f9fb;font-size:15px;font-weight:700;color:#1c1c1e;width:100%;font-family:-apple-system,Arial,sans-serif;text-align:center}
+.co-time-input{padding:8px 10px;border-radius:9px;border:1.5px solid #e5e5ea;background:#f9f9fb;font-size:15px;font-weight:700;color:#1c1c1e;width:100%;font-family:-apple-system,Arial,sans-serif;text-align:center;box-sizing:border-box}
 body.dark .co-time-input{background:#3a3a3c;border-color:#48484a;color:#fff}
-.co-time-input:focus{border-color:#007AFF;outline:none;background:#fff}
-body.dark .co-time-input:focus{background:#2c2c2e}
+.co-time-input:focus{border-color:#007AFF;outline:none}
 .clockin-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:#34C759;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:-apple-system,Arial,sans-serif}
 .clockin-btn:active{opacity:0.85}
 .clockout-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:#007AFF;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:-apple-system,Arial,sans-serif}
@@ -1325,183 +1320,148 @@ function renderCalendar(){
 }
 function renderSummary(){
   var today=new Date();
-  var days=Object.keys(data).filter(function(k){ if(!k.startsWith(currentUser+'_d_')) return false; var p=k.replace(currentUser+'_d_','').split('-').map(Number); return p[0]===currentYear&&p[1]===currentMonth+1; });
-  var EXCL_TYPES=['dovol','pn'];
-  var SKIP_TIME_TYPES=['cd','meeting'];
-  var wDiff=0,vDiff=0,cDiff=0,wDays=0,timeDays=0,totalW=0,totalC=0,totalVM=0;
+  var days=Object.keys(data).filter(function(k){
+    if(!k.startsWith(currentUser+'_d_')) return false;
+    var p=k.replace(currentUser+'_d_','').split('-').map(Number);
+    return p[0]===currentYear&&p[1]===currentMonth+1;
+  });
+  var EXCL=['dovol','pn'],SKIP=['cd','meeting'];
+  var wDays=0,timeDays=0,totalW=0,totalC=0,totalVM=0;
   days.forEach(function(k){
     var d=data[k],s=getDayStats(d),t=d.type||'';
-    if(!s.saved) return;
-    if(EXCL_TYPES.indexOf(t)>=0) return;
+    if(!s.saved||EXCL.indexOf(t)>=0) return;
     wDays++;
-    if(SKIP_TIME_TYPES.indexOf(t)>=0) return;
-    timeDays++;
-    wDiff+=s.tw-CIEL_P; vDiff+=s.vm-CIEL_V; cDiff+=s.vc-CIEL_N;
-    totalW+=s.tw; totalC+=s.vc; totalVM+=s.vm;
+    if(SKIP.indexOf(t)>=0) return;
+    timeDays++; totalW+=s.tw; totalC+=s.vc; totalVM+=s.vm;
   });
   var avgV=timeDays?(totalC/timeDays).toFixed(1):'—';
   var avgW=timeDays?Math.round(totalW/timeDays):0;
   var avgWH=timeDays?Math.floor(avgW/60)+'h'+(avgW%60>0?' '+avgW%60+'m':''):'—';
-  var wGoal=timeDays*CIEL_P||1; var vGoal=timeDays*CIEL_V||1; var cGoal=timeDays*CIEL_N||1;
-  var wPct=wGoal>0?Math.min(Math.round(totalW/wGoal*100),100):0;
-  var vPct=vGoal>0?Math.min(Math.round(totalVM/vGoal*100),100):0;
-  var cPct=cGoal>0?Math.min(Math.round(totalC/cGoal*100),100):0;
-
-  function ring(pct,color,bg){
-    var r=30,circ=2*Math.PI*r,offset=circ*(1-pct/100);
-    return '<svg width="72" height="72" viewBox="0 0 72 72">'
-      +'<circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+bg+'" stroke-width="6"/>'
-      +'<circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="6" stroke-linecap="round"'
-      +' stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+offset.toFixed(1)+'"/>'
-      +'</svg>';
+  var wG=timeDays*CIEL_P||1,vG=timeDays*CIEL_V||1,cG=timeDays*CIEL_N||1;
+  var wPct=Math.min(Math.round(totalW/wG*100),100);
+  var vPct=Math.min(Math.round(totalVM/vG*100),100);
+  var cPct=Math.min(Math.round(totalC/cG*100),100);
+  function ring(pct,col,bg){
+    var r=30,ci=2*Math.PI*r,off=ci*(1-pct/100);
+    return '<svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+bg+'" stroke-width="6"/><circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+ci.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg>';
   }
-
-  var wH2=timeDays?Math.floor(totalW/60)+'h'+(totalW%60>0?' '+(totalW%60)+'m':''):'—';
-  var vH2=timeDays?Math.floor(totalVM/60)+'h'+(totalVM%60>0?' '+(totalVM%60)+'m':''):'—';
-
-  var ringCards=''
-    +'<div class="ring-card"><div class="ring-wrap">'+ring(wPct,'#007AFF','#e8f0fd')+'<div class="ring-pct">'+wPct+'%</div></div>'
-      +'<div class="ring-label">Pracovný čas</div><div class="ring-value">'+wH2+'</div>'
-      +'<div class="ring-sub">Cieľ: '+Math.floor(wGoal/60)+'h</div></div>'
-    +'<div class="ring-card"><div class="ring-wrap">'+ring(vPct,'#34C759','#e2f7ee')+'<div class="ring-pct">'+vPct+'%</div></div>'
-      +'<div class="ring-label">Čas u zákazníka</div><div class="ring-value">'+vH2+'</div>'
-      +'<div class="ring-sub">Cieľ: '+Math.floor(vGoal/60)+'h</div></div>'
-    +'<div class="ring-card"><div class="ring-wrap">'+ring(cPct,'#AF52DE','#f0ecfc')+'<div class="ring-pct">'+cPct+'%</div></div>'
-      +'<div class="ring-label">Návštevy</div><div class="ring-value">'+totalC+'</div>'
-      +'<div class="ring-sub">Cieľ: '+Math.round(cGoal)+'</div></div>'
-    +'<div class="ring-card">'
-      +'<div class="info-icon info-icon-blue" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center">'
-        +'<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><circle cx="15" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><path d="M3 17c0-3 2.7-5 6-5h6c3.3 0 6 2 6 5" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/></svg>'
-      +'</div>'
-      +'<div class="ring-label">Priemer / deň</div><div class="ring-value">'+avgV+'</div>'
-      +'<div class="ring-sub">&nbsp;</div></div>';
-
-  var infoCards=''
+  var wH2=totalW?Math.floor(totalW/60)+'h'+(totalW%60?' '+(totalW%60)+'m':''):'—';
+  var vH2=totalVM?Math.floor(totalVM/60)+'h'+(totalVM%60?' '+(totalVM%60)+'m':''):'—';
+  var rings=''
+    +'<div class="ring-card"><div class="ring-wrap">'+ring(wPct,'#007AFF','#e8f0fd')+'<div class="ring-pct">'+wPct+'%</div></div><div class="ring-label">Pracovný čas</div><div class="ring-value">'+wH2+'</div><div class="ring-sub">Cieľ: '+Math.floor(wG/60)+'h</div></div>'
+    +'<div class="ring-card"><div class="ring-wrap">'+ring(vPct,'#34C759','#e2f7ee')+'<div class="ring-pct">'+vPct+'%</div></div><div class="ring-label">Čas u zákazníka</div><div class="ring-value">'+vH2+'</div><div class="ring-sub">Cieľ: '+Math.floor(vG/60)+'h</div></div>'
+    +'<div class="ring-card"><div class="ring-wrap">'+ring(cPct,'#AF52DE','#f0ecfc')+'<div class="ring-pct">'+cPct+'%</div></div><div class="ring-label">Návštevy</div><div class="ring-value">'+totalC+'</div><div class="ring-sub">Cieľ: '+Math.round(cG)+'</div></div>'
+    +'<div class="ring-card"><div class="info-icon info-icon-blue" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><circle cx="15" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><path d="M3 17c0-3 2.7-5 6-5h6c3.3 0 6 2 6 5" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="ring-label">Priemer / deň</div><div class="ring-value">'+avgV+'</div><div class="ring-sub">&nbsp;</div></div>';
+  var infos=''
     +'<div class="info-card"><div class="info-icon info-icon-blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#007AFF" stroke-width="1.8"/><path d="M12 7v5l3 3" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="info-label">Priemer prac.</div><div class="info-value">'+avgWH+'</div></div>'
     +'<div class="info-card"><div class="info-icon info-icon-purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="17" rx="2.5" stroke="#AF52DE" stroke-width="1.8"/><path d="M8 2v3M16 2v3M3 9h18" stroke="#AF52DE" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="info-label">Odpracované</div><div class="info-value">'+wDays+' dní</div></div>';
-
-  // Clock In / Clock Out karta
-  var isThisMonth=today.getMonth()===currentMonth&&today.getFullYear()===currentYear;
-  var clockHtml='';
-  if(isThisMonth){
-    var todayDk=dKey(currentYear,currentMonth,today.getDate());
-    var td=data[todayDk]||{};
+  var isNow=today.getMonth()===currentMonth&&today.getFullYear()===currentYear;
+  var clock='';
+  if(isNow){
+    var dk=dKey(currentYear,currentMonth,today.getDate());
+    var td=data[dk]||{};
     var dows2=['Nedeľa','Pondelok','Utorok','Streda','Štvrtok','Piatok','Sobota'];
-    var months2=['januára','februára','marca','apríla','mája','júna','júla','augusta','septembra','októbra','novembra','decembra'];
-    var todayLabel=dows2[today.getDay()]+', '+today.getDate()+'. '+months2[today.getMonth()];
-    var predpKoniec=td.start?mToT(tMin(td.start)+CIEL_P):'';
-    var nowHH=String(today.getHours()).padStart(2,'0')+':'+String(today.getMinutes()).padStart(2,'0');
-
+    var mn2=['januára','februára','marca','apríla','mája','júna','júla','augusta','septembra','októbra','novembra','decembra'];
+    var tlabel=dows2[today.getDay()]+', '+today.getDate()+'. '+mn2[today.getMonth()];
+    var nowT=String(today.getHours()).padStart(2,'0')+':'+String(today.getMinutes()).padStart(2,'0');
+    var predpK=td.start?mToT(tMin(td.start)+CIEL_P):'';
     if(!td.start){
-      // Ešte nebol Clock In
-      clockHtml='<div class="clockout-card">'
-        +'<div class="clockout-title">Dnes, '+todayLabel+'</div>'
-        +'<div class="clockout-edit-row">'
-          +'<div class="co-time-group"><div class="co-time-label">Začiatok</div>'
-            +'<input type="time" class="co-time-input" id="co-start-inp" value="'+nowHH+'"></div>'
-        +'</div>'
-        +'<button class="clockin-btn" onclick="clockIn()">'
-          +'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>'
-          +' Clock In'
-        +'</button>'
-      +'</div>';
+      clock='<div class="clockout-card"><div class="clockout-title">Dnes, '+tlabel+'</div>'
+        +'<div class="clockout-edit-row"><div class="co-time-group"><div class="co-time-label">Začiatok</div><input type="time" class="co-time-input" id="co-start-inp" value="'+nowT+'"></div></div>'
+        +'<button class="clockin-btn" onclick="clockIn()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Clock In</button>'
+        +'</div>';
     } else if(!td.end){
-      // Má start, ešte nie koniec
-      clockHtml='<div class="clockout-card">'
-        +'<div class="clockout-title">Dnes, '+todayLabel+'</div>'
+      clock='<div class="clockout-card"><div class="clockout-title">Dnes, '+tlabel+'</div>'
         +'<div class="clockout-edit-row">'
-          +'<div class="co-time-group"><div class="co-time-label">Začiatok</div>'
-            +'<input type="time" class="co-time-input" id="co-start-inp" value="'+td.start+'" onchange="coUpdateStart(this.value)"></div>'
-          +'<div class="co-time-group"><div class="co-time-label">Predp. koniec</div>'
-            +'<input type="time" class="co-time-input" id="co-end-inp" value="'+predpKoniec+'" readonly style="opacity:0.6"></div>'
+          +'<div class="co-time-group"><div class="co-time-label">Začiatok</div><input type="time" class="co-time-input" id="co-start-inp" value="'+td.start+'" onchange="coUpdateStart(this.value)"></div>'
+          +'<div class="co-time-group"><div class="co-time-label">Predp. koniec</div><input type="time" class="co-time-input" value="'+predpK+'" readonly style="opacity:0.55"></div>'
         +'</div>'
-        +'<button class="clockout-btn" onclick="clockOut()">'
-          +'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>'
-          +' Clock Out'
-        +'</button>'
-      +'</div>';
+        +'<button class="clockout-btn" onclick="clockOut()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Clock Out</button>'
+        +'</div>';
     } else {
-      // Má oboje - zobraz s možnosťou upraviť
-      clockHtml='<div class="clockout-card">'
-        +'<div class="clockout-title">Dnes, '+todayLabel+'</div>'
+      clock='<div class="clockout-card"><div class="clockout-title">Dnes, '+tlabel+'</div>'
         +'<div class="clockout-edit-row">'
-          +'<div class="co-time-group"><div class="co-time-label">Začiatok</div>'
-            +'<input type="time" class="co-time-input" id="co-start-inp" value="'+td.start+'" onchange="coUpdateStart(this.value)"></div>'
-          +'<div class="co-time-group"><div class="co-time-label">Koniec</div>'
-            +'<input type="time" class="co-time-input" id="co-end-inp" value="'+td.end+'" onchange="coUpdateEnd(this.value)"></div>'
+          +'<div class="co-time-group"><div class="co-time-label">Začiatok</div><input type="time" class="co-time-input" id="co-start-inp" value="'+td.start+'" onchange="coUpdateStart(this.value)"></div>'
+          +'<div class="co-time-group"><div class="co-time-label">Koniec</div><input type="time" class="co-time-input" id="co-end-inp" value="'+td.end+'" onchange="coUpdateEnd(this.value)"></div>'
         +'</div>'
-      +'</div>';
+        +'</div>';
     }
   }
-
-  document.getElementById('summary').innerHTML=
-    '<div class="ring-grid">'+ringCards+'</div>'
-    +'<div class="info-grid">'+infoCards+'</div>'
-    +clockHtml;
+  document.getElementById('summary').innerHTML='<div class="ring-grid">'+rings+'</div><div class="info-grid">'+infos+'</div>'+clock;
 }
 function selectDay(d){ selectedDay=d; renderDetail(); document.getElementById('dayDetail').scrollIntoView({behavior:'smooth',block:'start'}); }
 function renderDetail(){
   var d=selectedDay,dd=getDay(currentYear,currentMonth,d),s=getDayStats(dd);
-  var date=new Date(currentYear,currentMonth,d),dows=['Nedeľa','Pondelok','Utorok','Streda','Štvrtok','Piatok','Sobota'];
+  var date=new Date(currentYear,currentMonth,d);
+  var dows=['Nedeľa','Pondelok','Utorok','Streda','Štvrtok','Piatok','Sobota'];
   var title=dows[date.getDay()]+', '+d+'. '+MONTHS[currentMonth];
   var wOk=s.tw>=CIEL_P,vOk=s.vm>=CIEL_V,nOk=s.vc>=CIEL_N;
   var wH=s.tw?Math.floor(s.tw/60)+'h '+(s.tw%60)+'m':'—';
   var vH=s.vm?Math.floor(s.vm/60)+'h '+(s.vm%60)+'m':'—';
-  var typeBtns=Object.keys(DTYPES).map(function(t){return '<div class="dtype-btn'+(dd.type===t?' active-'+t:'')+'" onclick="setType(''+t+'')">'+DTYPES[t]+'</div>';}).join('');
-  var visits=dd.visits.map(function(v,i){return '<div class="visit-row"><div class="vnum">'+(i+1)+'.</div><input type="number" min="1" max="999" value="'+(v.mins||'')+'" placeholder="min" onchange="updateVisit('+i+',this.value)" onkeydown="if(event.key===\'Enter\'){updateVisit('+i+',this.value);this.blur();}"><button class="del-v" onclick="removeVisit('+i+')">×</button></div>';}).join('');
-  var wGoalStr=Math.floor(CIEL_P/60)+'h'+(CIEL_P%60>0?CIEL_P%60+'m':'');
-  var vGoalStr=Math.floor(CIEL_V/60)+'h'+(CIEL_V%60>0?CIEL_V%60+'m':'');
-  document.getElementById('dayDetail').innerHTML=
-    '<div class="detail">'
-    +'<div class="detail-header"><div class="detail-title">'+title+'</div><button class="close-x" onclick="closeDetail()">×</button></div>'
+  var wGoal=Math.floor(CIEL_P/60)+'h'+(CIEL_P%60>0?CIEL_P%60+'m':'');
+  var vGoal=Math.floor(CIEL_V/60)+'h'+(CIEL_V%60>0?CIEL_V%60+'m':'');
+  var typeBtns=Object.keys(DTYPES).map(function(t){
+    return '<div class="dtype-btn'+(dd.type===t?' active-'+t:'')+'" onclick="setType(\''+t+'\')">'+DTYPES[t]+'</div>';
+  }).join('');
+  var visits=dd.visits.map(function(v,i){
+    return '<div class="visit-row"><div class="vnum">'+(i+1)+'.</div>'
+      +'<input type="number" min="1" max="999" value="'+(v.mins||'')+'" placeholder="min"'
+      +' onchange="updateVisit('+i+',this.value)"'
+      +' onkeydown="if(event.key===\'Enter\'){updateVisit('+i+',this.value);this.blur();}">'
+      +'<button class="del-v" onclick="removeVisit('+i+')">&#xd7;</button></div>';
+  }).join('');
+  var html='<div class="detail">'
+    +'<div class="detail-header"><div class="detail-title">'+title+'</div><button class="close-x" onclick="closeDetail()">&#xd7;</button></div>'
     +'<div class="slabel">Typ dňa</div><div class="day-types">'+typeBtns+'</div>'
-    +'<div class="stat-row"><span class="stat-l">Pracovná doba</span><span class="stat-r '+(wOk?'ok':'bad')+'">'+wH+' / cieľ '+wGoalStr+'</span></div>'
+    +'<div class="stat-row"><span class="stat-l">Pracovná doba</span><span class="stat-r '+(wOk?'ok':'bad')+'">'+wH+' / cieľ '+wGoal+'</span></div>'
     +'<div class="slabel">Návštevy (min)</div><div id="visitsList">'+visits+'</div>'
-    +'<div class="quick-btns"><div class="qbtn" onclick="addQuick(20)">+20 min</div><div class="qbtn" onclick="addQuick(30)">+30 min</div><div class="qbtn" onclick="addQuick(45)">+45 min</div></div>'
+    +'<div class="quick-btns">'
+      +'<div class="qbtn" onclick="addQuick(20)">+20 min</div>'
+      +'<div class="qbtn" onclick="addQuick(30)">+30 min</div>'
+      +'<div class="qbtn" onclick="addQuick(45)">+45 min</div>'
+    +'</div>'
     +'<div class="add-v-btn" onclick="addVisit()">+ Vlastný čas</div>'
-    +'<div class="stat-row" style="margin-top:10px;"><span class="stat-l">Čas u zákazníka</span><span class="stat-r '+(vOk?'ok':'bad')+'">'+vH+' / cieľ '+vGoalStr+'</span></div>'
+    +'<div class="stat-row" style="margin-top:10px;"><span class="stat-l">Čas u zákazníka</span><span class="stat-r '+(vOk?'ok':'bad')+'">'+vH+' / cieľ '+vGoal+'</span></div>'
     +'<div class="stat-row"><span class="stat-l">Počet návštev</span><span class="stat-r '+(nOk?'ok':'bad')+'">'+s.vc+' / cieľ '+CIEL_N+'</span></div>'
-    +'<div class="slabel">Poznámka</div><textarea class="note-input" placeholder="Voliteľná poznámka..." onblur="updateNote(this.value)">'+(dd.note||'')+'</textarea>'
+    +'<div class="slabel">Poznámka</div>'
+    +'<textarea class="note-input" placeholder="Voliteľná poznámka..." onblur="updateNote(this.value)">'+(dd.note||'')+'</textarea>'
     +'<button class="save-day-btn" onclick="saveDay()">Uložiť deň</button>'
     +'<button class="del-day-btn" onclick="deleteDay()">Vymazať deň</button>'
     +'</div>';
+  document.getElementById('dayDetail').innerHTML=html;
 }
 function updateHint(v){}
 function updateWork(f,v){ var dd=getDay(currentYear,currentMonth,selectedDay); dd[f]=v; renderCalendar(); autoSave(); }
 function clockIn(){
   var inp=document.getElementById('co-start-inp');
-  var startTime=inp?inp.value:'';
-  if(!startTime){var n=new Date();startTime=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
-  var d=new Date(),dk=dKey(d.getFullYear(),d.getMonth(),d.getDate()),k=key(d.getFullYear(),d.getMonth(),d.getDate());
+  var t=inp?inp.value:'';
+  if(!t){var n=new Date();t=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
+  var n=new Date(),dk=dKey(n.getFullYear(),n.getMonth(),n.getDate()),k=key(n.getFullYear(),n.getMonth(),n.getDate());
   if(!data[dk]) data[dk]={start:'',end:'',visits:[],note:'',type:''};
-  data[dk].start=startTime;
+  data[dk].start=t;
   apiSet(k,JSON.stringify(data[dk]));
-  setStatus('Clock In: '+startTime);
+  setStatus('Clock In: '+t);
   renderSummary(); renderCalendar();
 }
 function clockOut(){
-  var d=new Date(),dk=dKey(d.getFullYear(),d.getMonth(),d.getDate()),k=key(d.getFullYear(),d.getMonth(),d.getDate());
-  var endTime=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  var n=new Date(),dk=dKey(n.getFullYear(),n.getMonth(),n.getDate()),k=key(n.getFullYear(),n.getMonth(),n.getDate());
+  var t=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
   if(!data[dk]) data[dk]={start:'',end:'',visits:[],note:'',type:''};
-  data[dk].end=endTime;
+  data[dk].end=t;
   apiSet(k,JSON.stringify(data[dk]));
-  setStatus('Clock Out: '+endTime);
+  setStatus('Clock Out: '+t);
   renderSummary(); renderCalendar();
 }
 function coUpdateStart(v){
-  var d=new Date(),dk=dKey(d.getFullYear(),d.getMonth(),d.getDate()),k=key(d.getFullYear(),d.getMonth(),d.getDate());
+  var n=new Date(),dk=dKey(n.getFullYear(),n.getMonth(),n.getDate()),k=key(n.getFullYear(),n.getMonth(),n.getDate());
   if(!data[dk]) data[dk]={start:'',end:'',visits:[],note:'',type:''};
-  data[dk].start=v;
-  apiSet(k,JSON.stringify(data[dk]));
-  setStatus('Uložené');
+  data[dk].start=v; apiSet(k,JSON.stringify(data[dk])); setStatus('Uložené');
   renderSummary(); renderCalendar();
 }
 function coUpdateEnd(v){
-  var d=new Date(),dk=dKey(d.getFullYear(),d.getMonth(),d.getDate()),k=key(d.getFullYear(),d.getMonth(),d.getDate());
+  var n=new Date(),dk=dKey(n.getFullYear(),n.getMonth(),n.getDate()),k=key(n.getFullYear(),n.getMonth(),n.getDate());
   if(!data[dk]) data[dk]={start:'',end:'',visits:[],note:'',type:''};
-  data[dk].end=v;
-  apiSet(k,JSON.stringify(data[dk]));
-  setStatus('Uložené');
+  data[dk].end=v; apiSet(k,JSON.stringify(data[dk])); setStatus('Uložené');
   renderSummary(); renderCalendar();
 }
 function updateVisit(i,v){ var n=parseInt(v)||0; if(n>0){getDay(currentYear,currentMonth,selectedDay).visits[i].mins=n; renderDetail(); renderCalendar(); autoSave();} }

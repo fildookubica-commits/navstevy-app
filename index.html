@@ -1327,7 +1327,11 @@ function renderSummary(){
   var avgV=timeDays?(totalC/timeDays).toFixed(1):'—';
   var avgW=timeDays?Math.round(totalW/timeDays):0;
   var avgWH=timeDays?Math.floor(avgW/60)+'h'+(avgW%60>0?' '+avgW%60+'m':''):'—';
+  // Debug: zobraz čo sa počíta
   var wG=timeDays*CIEL_P||1,vG=timeDays*CIEL_V||1,cG=timeDays*CIEL_N||1;
+  var debugInfo='Dni: '+timeDays+' | Práca: '+Math.floor(totalW/60)+'h'+(totalW%60)+'m'
+    +' | Cieľ/deň: '+Math.floor(CIEL_P/60)+'h'+(CIEL_P%60)+'m'
+    +' | Celk. cieľ: '+Math.floor(wG/60)+'h'+(wG%60)+'m';
   var wPct=Math.round(totalW/wG*100);
   var vPct=Math.round(totalVM/vG*100);
   var cPct=Math.round(totalC/cG*100);
@@ -1351,6 +1355,7 @@ function renderSummary(){
   var vSC=(totalVM-vG)>=0?'#34C759':'#FF3B30';
   var cSC=(totalC-cG)>=0?'#34C759':'#FF3B30';
   document.getElementById('summary').innerHTML=''
+    +'<div style="font-size:11px;color:#8e8e93;padding:4px 16px 8px;text-align:center">'+debugInfo+'</div>'
     +'<div class="ring-grid-wrap">'
       +rc(ring(wPct,'#007AFF','#e8f0fd'),wPct,'Pracovný čas',wH2,wSub,wSC)
       +rc(ring(vPct,'#34C759','#e2f7ee'),vPct,'Čas u zákazníka',vH2,vSub,vSC)

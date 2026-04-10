@@ -877,6 +877,7 @@ body.dark .ring-val-i{color:#fff}
           <div class="slabel">Počet kusov</div>
           <div class="fmb"><input type="number" id="druhKs" min="1" placeholder="0" inputmode="numeric"></div>
           <input type="file" id="druhFotoInput" accept="image/*" capture="environment" style="display:none" onchange="druhFotoChange(this)">
+          <div id="druhFotoStatus" style="display:none;font-size:12px;font-weight:600;text-align:center;padding:4px 0;border-radius:8px;"></div>
           <button class="druh-foto-btn" onclick="document.getElementById('druhFotoInput').click()">📷 Pridať fotku (voliteľné)</button>
           <img id="druhFotoPreview" class="druh-foto-preview" style="display:none">
           <button class="druh-save-btn" onclick="druhSave()">+ Pridať záznam</button>
@@ -1691,13 +1692,18 @@ function druhSelKat(k){
 function druhFotoChange(inp){
   if(!inp.files||!inp.files[0]) return;
   var btn=document.querySelector('.druh-foto-btn');
-  if(btn) btn.textContent='⏳ Nahrávam...';
+  var statusEl=document.getElementById('druhFotoStatus');
+  function setFotoStatus(txt,color){
+    if(btn) btn.textContent=txt;
+    if(statusEl){statusEl.textContent=txt;statusEl.style.color=color||'#8e8e93';statusEl.style.display='block';}
+  }
+  setFotoStatus('⏳ Nahrávam fotku na server...','#FF9500');
+  setStatus('📤 Nahrávam fotku...');
   var reader=new FileReader();
   reader.onload=function(e){
-    druhFotoData=e.target.result; // base64 pre preview
+    druhFotoData=e.target.result;
     var prev=document.getElementById('druhFotoPreview');
     if(prev){prev.src=druhFotoData;prev.style.display='block';}
-    // Nahranie na Imgur
     var base64=druhFotoData.replace(/^data:image\/[^;]+;base64,/,'');
     fetch('https://api.imgur.com/3/image',{
       method:'POST',
@@ -1705,13 +1711,16 @@ function druhFotoChange(inp){
       body:JSON.stringify({image:base64,type:'base64'})
     }).then(function(r){return r.json();}).then(function(d){
       if(d.success&&d.data&&d.data.link){
-        druhFotoData=d.data.link; // URL namiesto base64
-        if(btn) btn.textContent='✅ Fotka nahraná';
+        druhFotoData=d.data.link;
+        setFotoStatus('✅ Fotka nahraná na server','#34C759');
+        setStatus('✅ Fotka úspešne nahraná!');
       } else {
-        if(btn) btn.textContent='✅ Fotka uložená lokálne';
+        setFotoStatus('⚠️ Uložená len lokálne','#FF9500');
+        setStatus('⚠️ Fotka uložená len lokálne');
       }
     }).catch(function(){
-      if(btn) btn.textContent='✅ Fotka uložená lokálne';
+      setFotoStatus('⚠️ Uložená len lokálne (offline)','#FF9500');
+      setStatus('⚠️ Fotka uložená len lokálne');
     });
   };
   reader.readAsDataURL(inp.files[0]);
@@ -1758,6 +1767,8 @@ function druhSave(){
       if(prev){prev.style.display='none';prev.src='';}
       var btn=document.querySelector('.druh-foto-btn');
       if(btn) btn.textContent='📷 Pridať fotku (voliteľné)';
+      var fst=document.getElementById('druhFotoStatus');
+      if(fst){fst.style.display='none';fst.textContent='';}
       document.getElementById('druhFotoInput').value='';
       renderDruhotky();
     });

@@ -1274,6 +1274,13 @@ function loadData(){
       }catch(e){}
     }
     historia.sort(function(a,b){return new Date(b.datum)-new Date(a.datum);});
+    // Načítaj druhotky zo Sheets do localStorage ak tam nie sú
+    if(result[druhKey()]){
+      var existLocal = localStorage.getItem(druhKey());
+      if(!existLocal || existLocal === '[]') {
+        try{ localStorage.setItem(druhKey(), result[druhKey()]); }catch(e){}
+      }
+    }
     try { localStorage.setItem('cache_'+currentUser,JSON.stringify({data:data,zasoby:zasoby,historia:historia})); } catch(e){}
     setStatus(''); renderCalendar(); skRenderAll();
   });
@@ -1644,11 +1651,29 @@ function druhLoad(cb){
       if(r&&r.value){try{recs=JSON.parse(r.value);}catch(e){}}
       cb(recs);
     }).catch(function(){ cb(recs); });
-  } else { cb(recs); }
+  } else {
+    // Fallback: načítaj zo Sheets ak localStorage je prázdny
+    if(recs.length===0){
+      apiGet(function(result){
+        if(result[druhKey()]){
+          try{recs=JSON.parse(result[druhKey()]);}catch(e){}
+          try{localStorage.setItem(druhKey(),JSON.stringify(recs));}catch(e){}
+        }
+        cb(recs);
+      });
+    } else { cb(recs); }
+  }
 }
 
 function druhSaveAll(recs,cb){
   try{ localStorage.setItem(druhKey(),JSON.stringify(recs)); }catch(e){}
+  // Záloha do Google Sheets — foto len ak je URL (Imgur), nie base64
+  var recsForSheets = recs.map(function(r){
+    var x={}; for(var k in r) x[k]=r[k];
+    if(x.foto && x.foto.startsWith('data:')) x.foto=''; // vynechaj base64
+    return x;
+  });
+  apiSet(druhKey(), JSON.stringify(recsForSheets));
   if(window.storage&&window.storage.set){
     window.storage.set(druhKey(),JSON.stringify(recs)).then(function(){if(cb)cb();}).catch(function(){if(cb)cb();});
   } else { if(cb) cb(); }
@@ -1665,13 +1690,29 @@ function druhSelKat(k){
 
 function druhFotoChange(inp){
   if(!inp.files||!inp.files[0]) return;
+  var btn=document.querySelector('.druh-foto-btn');
+  if(btn) btn.textContent='⏳ Nahrávam...';
   var reader=new FileReader();
   reader.onload=function(e){
-    druhFotoData=e.target.result;
+    druhFotoData=e.target.result; // base64 pre preview
     var prev=document.getElementById('druhFotoPreview');
     if(prev){prev.src=druhFotoData;prev.style.display='block';}
-    var btn=document.querySelector('.druh-foto-btn');
-    if(btn) btn.textContent='✅ Fotka pridaná';
+    // Nahranie na Imgur
+    var base64=druhFotoData.replace(/^data:image\/[^;]+;base64,/,'');
+    fetch('https://api.imgur.com/3/image',{
+      method:'POST',
+      headers:{'Authorization':'Client-ID 546c25a59c58ad7','Content-Type':'application/json'},
+      body:JSON.stringify({image:base64,type:'base64'})
+    }).then(function(r){return r.json();}).then(function(d){
+      if(d.success&&d.data&&d.data.link){
+        druhFotoData=d.data.link; // URL namiesto base64
+        if(btn) btn.textContent='✅ Fotka nahraná';
+      } else {
+        if(btn) btn.textContent='✅ Fotka uložená lokálne';
+      }
+    }).catch(function(){
+      if(btn) btn.textContent='✅ Fotka uložená lokálne';
+    });
   };
   reader.readAsDataURL(inp.files[0]);
 }

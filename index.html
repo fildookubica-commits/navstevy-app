@@ -704,9 +704,6 @@ body.dark .ring-val-i{color:#fff}
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:2px;">
-          <button id="darkBtn" onclick="toggleDark()" style="width:36px;height:36px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Tmavý režim">
-            <span class="material-symbols-outlined" style="font-size:22px;color:#717786;">dark_mode</span>
-          </button>
           <button onclick="showSettings()" style="width:36px;height:36px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Nastavenia">
             <span class="material-symbols-outlined" style="font-size:22px;color:#717786;">settings</span>
           </button>
@@ -951,7 +948,7 @@ var OBCHODY={"Filip": [{"id": "SK002284", "n": "POT J-LM 053 MIX", "m": "PARTIZA
 var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v24';
+var APP_VERSION = 'dochadzka-mars-v25';
 var APP_TITLE = localStorage.getItem('app_title') || 'Mars Management';
 var swRegistration = null;
 var updateWaiting = false;
@@ -1501,9 +1498,39 @@ function showSettings(){
     +'<div style="margin:16px 0 10px;border-top:1px solid #e5e5ea;padding-top:16px;">'
       +'<div class="modal-label" style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#FF9500;">⚙️ Admin — správca</div>'
     +'</div>'
+    // Názov appky
     +'<div class="modal-field"><div class="modal-label">Názov aplikácie</div>'
       +'<input type="text" class="modal-input" id="gAppTitle" value="'+APP_TITLE+'" placeholder="napr. Time Management"></div>'
     +'<button class="modal-save" style="background:#FF9500;margin-top:8px;" onclick="saveAppTitle()">Uložiť názov</button>'
+    // Ciele pre celý tím
+    +'<div style="margin:12px 0 8px;"><div class="modal-label" style="font-size:11px;color:#8e8e93;">Nastaviť ciele pre iného používateľa</div></div>'
+    +'<div class="modal-field" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;">'
+      +'<div><div class="modal-label">Používateľ</div>'
+        +'<select class="modal-input" id="gAdminUser" style="padding:8px">'
+          +['Filip','Beny','Mirka','Lubo','Martin'].map(function(u){ return '<option value="'+u+'"'+(u===currentUser?' selected':'')+'>'+u+'</option>'; }).join('')
+        +'</select></div>'
+      +'<div><div class="modal-label">Prac. doba (h)</div><input type="number" class="modal-input" id="gAdminH" value="8.5" step="0.5"></div>'
+    +'</div>'
+    +'<div class="modal-field" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
+      +'<div><div class="modal-label">Min. čas návštev (h)</div><input type="number" class="modal-input" id="gAdminV" value="5" step="0.5"></div>'
+      +'<div><div class="modal-label">Min. návštevy</div><input type="number" class="modal-input" id="gAdminN" value="11" step="1"></div>'
+    +'</div>'
+    +'<button class="modal-save" style="background:#34C759;margin-top:4px;" onclick="saveAdminGoals()">Uložiť ciele pre používateľa</button>'
+    // Prehľad tímu + export + zobrazenie kolegu
+    +'<div style="margin:12px 0 8px;"><div class="modal-label" style="font-size:11px;color:#8e8e93;">Prehľad a reporty</div></div>'
+    +'<button class="modal-save" style="background:#007AFF;margin-top:0;" onclick="closeSettings();adminShowTeam()">👥 Prehľad tímu dnes</button>'
+    +'<button class="modal-save" style="background:#5856D6;margin-top:8px;" onclick="closeSettings();adminExportCSV()">📊 Export mesiaca do CSV</button>'
+    +'<div style="margin:12px 0 8px;"><div class="modal-label" style="font-size:11px;color:#8e8e93;">Zobraziť kalendár kolegu</div></div>'
+    +'<div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;margin-bottom:8px;">'
+      +'<div><div class="modal-label">Používateľ</div>'
+        +'<select class="modal-input" id="gViewUser" style="padding:8px">'
+          +['Beny','Mirka','Lubo','Martin'].map(function(u){ return '<option value="'+u+'">'+u+'</option>'; }).join('')
+        +'</select></div>'
+      +'<button class="modal-save" style="margin:0;padding:10px 14px;background:#FF9500;" onclick="adminViewUser()">Zobraziť</button>'
+    +'</div>'
+    // Vymazať dáta
+    +'<div style="margin:12px 0 8px;"><div class="modal-label" style="font-size:11px;color:#8e8e93;">Nebezpečná zóna</div></div>'
+    +'<button class="modal-save" style="background:#FF3B30;margin-top:0;" onclick="adminClearDay()">🗑️ Vymazať vybraný deň</button>'
     : '';
   var darkLabel = darkMode ? '☀️ Svetlý režim' : '🌙 Tmavý režim';
   document.getElementById('settingsModal').style.display='block';
@@ -1529,6 +1556,139 @@ function saveSettings(){
   apiSet('goals_'+currentUser,JSON.stringify(g)); closeSettings(); renderCalendar(); if(selectedDay) renderDetail(); setStatus('Ciele uložené!');
 }
 function closeSettings(){ document.getElementById('settingsModal').style.display='none'; }
+function adminShowTeam(){
+  // Zobrazi overlay s prehladom timu dnes
+  var today = new Date();
+  var USERS = ['Filip','Beny','Mirka','Lubo','Martin'];
+  var mo = today.getMonth(), yr = today.getFullYear(), day = today.getDate();
+  var rows = USERS.map(function(u){
+    var dk = u+'_d_'+yr+'-'+String(mo+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    var cached = null;
+    try{ var c=JSON.parse(localStorage.getItem('cache_'+u)||'null'); if(c&&c.data) cached=c.data[dk]; }catch(e){}
+    var s = cached ? getDayStats(cached) : null;
+    var start = cached&&cached.start ? cached.start : '—';
+    var end = cached&&cached.end ? cached.end : '—';
+    var visits = s ? s.vc : 0;
+    var tw = s ? (s.tw ? Math.floor(s.tw/60)+'h '+(s.tw%60)+'m' : '—') : '—';
+    var status = !cached ? '⬜ Žiadne dáta' : cached.type==='dovol' ? '🏖 Dovolenka' : cached.type==='pn' ? '🤒 PN' : cached.type==='meeting' ? '📋 Meeting' : cached.start&&!cached.end ? '🟡 Pracuje' : cached.start&&cached.end ? '✅ Hotový' : '⬜ Nezačal';
+    var g = userGoals[u]||{pocet:11};
+    var nOk = visits>=g.pocet;
+    return '<tr style="border-bottom:1px solid #f2f2f7">'
+      +'<td style="padding:10px 8px;font-weight:600">'+u+'</td>'
+      +'<td style="padding:10px 8px;font-size:13px">'+status+'</td>'
+      +'<td style="padding:10px 8px;font-size:13px">'+start+' – '+end+'</td>'
+      +'<td style="padding:10px 8px;font-size:13px;color:'+(nOk?'#34C759':'#FF3B30')+'">'+visits+' nav.</td>'
+      +'<td style="padding:10px 8px;font-size:13px">'+tw+'</td>'
+      +'</tr>';
+  }).join('');
+  var modal = document.getElementById('settingsModal');
+  modal.style.display='block';
+  modal.innerHTML='<div class="modal-overlay" onclick="closeSettings()"><div class="modal-box" onclick="event.stopPropagation()">'
+    +'<div class="modal-title">👥 Tím dnes — '+day+'.'+(mo+1)+'.'+yr+'</div>'
+    +'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">'
+      +'<thead><tr style="border-bottom:2px solid #e5e5ea">'
+        +'<th style="padding:8px;text-align:left">Meno</th>'
+        +'<th style="padding:8px;text-align:left">Stav</th>'
+        +'<th style="padding:8px;text-align:left">Čas</th>'
+        +'<th style="padding:8px;text-align:left">Návšt.</th>'
+        +'<th style="padding:8px;text-align:left">Práca</th>'
+      +'</tr></thead>'
+      +'<tbody>'+rows+'</tbody>'
+    +'</table></div>'
+    +'<div style="font-size:11px;color:#8e8e93;margin-top:8px;text-align:center">Dáta z lokálnej cache — nie vždy aktuálne v reálnom čase</div>'
+    +'<button class="modal-cancel" style="margin-top:12px" onclick="closeSettings()">Zavrieť</button>'
+    +'</div></div>';
+}
+
+function adminExportCSV(){
+  var USERS = ['Filip','Beny','Mirka','Lubo','Martin'];
+  var mo = currentMonth, yr = currentYear;
+  var EXCL=['dovol','pn'], SKIP=['cd','meeting'];
+  var lines = [['Meno','Dátum','Začiatok','Koniec','Prac. čas (min)','Návštevy','Čas návštev (min)','Typ'].join(';')];
+  USERS.forEach(function(u){
+    var cached = null;
+    try{ var c=JSON.parse(localStorage.getItem('cache_'+u)||'null'); if(c) cached=c.data; }catch(e){}
+    if(!cached) return;
+    Object.keys(cached).filter(function(k){ 
+      return k.includes(yr+'-'+String(mo+1).padStart(2,'0')); 
+    }).sort().forEach(function(k){
+      var d = cached[k];
+      var s = getDayStats(d);
+      var date = k.replace(u+'_d_','');
+      lines.push([u, date, d.start||'', d.end||'', s.tw, s.vc, s.vm, d.type||'normálny'].join(';'));
+    });
+  });
+  var csv = lines.join('\n');
+  var blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'mars-team-'+yr+'-'+String(mo+1).padStart(2,'0')+'.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  setStatus('✅ CSV exportovaný!');
+}
+
+function adminViewUser(){
+  var sel = document.getElementById('gViewUser');
+  if(!sel) return;
+  var viewUser = sel.value;
+  closeSettings();
+  // Dočasne prepneme currentUser na vybraného
+  var origUser = currentUser;
+  var origData = data;
+  var origGoals = JSON.parse(JSON.stringify(userGoals));
+  // Načítame cache vybraného
+  var cached = null;
+  try{ var c=JSON.parse(localStorage.getItem('cache_'+viewUser)||'null'); if(c){data=c.data||{};} }catch(e){}
+  currentUser = viewUser;
+  applyGoals();
+  renderCalendar();
+  setStatus('👁 Zobrazujem dáta: '+viewUser+' (len čítanie)');
+  // Pridáme banner s tlačidlom späť
+  var banner = document.createElement('div');
+  banner.id = 'viewUserBanner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999;background:#FF9500;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:14px;';
+  banner.innerHTML = '👁 Dáta: '+viewUser+' (len čítanie)'
+    +'<button onclick="adminRestoreUser(\''+origUser+'\')" style="background:rgba(0,0,0,0.2);border:none;color:#fff;padding:6px 12px;border-radius:8px;font-weight:600;cursor:pointer">← Späť na '+origUser+'</button>';
+  document.body.appendChild(banner);
+}
+
+function adminRestoreUser(origUser){
+  var banner = document.getElementById('viewUserBanner');
+  if(banner) banner.remove();
+  currentUser = origUser;
+  // Obnovíme pôvodné dáta
+  try{ var c=JSON.parse(localStorage.getItem('cache_'+origUser)||'null'); if(c){data=c.data||{};} }catch(e){}
+  applyGoals();
+  renderCalendar();
+  setStatus('✅ Prepnuté späť na '+origUser);
+}
+
+function saveAdminGoals(){
+  var user = document.getElementById('gAdminUser').value;
+  var g = {
+    pracovna: parseFloat(document.getElementById('gAdminH').value)||8.5,
+    navstevy: parseFloat(document.getElementById('gAdminV').value)||5,
+    pocet: parseInt(document.getElementById('gAdminN').value)||11
+  };
+  userGoals[user] = g;
+  apiSet('goals_'+user, JSON.stringify(g));
+  if(user===currentUser){ CIEL_P=g.pracovna*60; CIEL_V=g.navstevy*60; CIEL_N=g.pocet; renderCalendar(); }
+  setStatus('✅ Ciele uložené pre '+user+'!');
+  closeSettings();
+}
+function adminClearDay(){
+  if(!selectedDay){ setStatus('⚠️ Vyber najprv deň v kalendári'); closeSettings(); return; }
+  if(!confirm('Vymazať dáta dňa '+selectedDay+'.?')) return;
+  var k=key(currentYear,currentMonth,selectedDay), dk=dKey(currentYear,currentMonth,selectedDay);
+  delete data[dk]; apiSet(k,'');
+  closeDetail(); renderCalendar();
+  setStatus('🗑️ Deň vymazaný');
+  closeSettings();
+}
 function saveAppTitle(){
   var inp = document.getElementById('gAppTitle');
   if(!inp) return;

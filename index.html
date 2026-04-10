@@ -198,7 +198,7 @@ body.dark textarea.note-input{background:#3a3a3c;border-color:#48484a;color:#fff
 .del-day-btn{width:100%;padding:14px;background:none;color:#FF3B30;border:1px solid #FF3B30;border-radius:14px;font-size:16px;font-weight:600;cursor:pointer;margin-top:10px}
 /* MODAL */
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end}
-.modal-box{background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%}
+.modal-box{background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 body.dark .modal-box{background:#2c2c2e}
 .modal-title{font-size:20px;font-weight:700;color:#1c1c1e;margin-bottom:20px}
 body.dark .modal-title{color:#fff}
@@ -948,7 +948,7 @@ var OBCHODY={"Filip": [{"id": "SK002284", "n": "POT J-LM 053 MIX", "m": "PARTIZA
 var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMUjiMJF8S4sTsxkCSz-4WG9T5HRVKBAj-aUFnp5aUCj3/exec';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v25';
+var APP_VERSION = 'dochadzka-mars-v26';
 var APP_TITLE = localStorage.getItem('app_title') || 'Mars Management';
 var swRegistration = null;
 var updateWaiting = false;

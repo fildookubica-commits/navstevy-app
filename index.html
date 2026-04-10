@@ -1287,6 +1287,19 @@ function loadData(){
         }
       }catch(e){}
     }
+    // Načítaj avatary zo Sheets pre všetkých užívateľov
+    var avatarsUpdated = false;
+    Object.keys(result).forEach(function(k){
+      if(k.startsWith('avatar_')){
+        var localAvatar = localStorage.getItem(k);
+        // Ak lokálne nie je alebo je base64, nahraď URL zo Sheets
+        if(!localAvatar || (localAvatar.startsWith('data:') && result[k] && !result[k].startsWith('data:'))){
+          localStorage.setItem(k, result[k]);
+          avatarsUpdated = true;
+        }
+      }
+    });
+    if(avatarsUpdated) loadAvatars();
     try { localStorage.setItem('cache_'+currentUser,JSON.stringify({data:data,zasoby:zasoby,historia:historia})); } catch(e){}
     setStatus(''); renderCalendar(); skRenderAll();
   });
@@ -1650,24 +1663,35 @@ function skAutoHide(){
 function druhKey(){ return 'druhotky_'+currentUser; }
 
 function druhLoad(cb){
+  if(!currentUser){ cb([]); return; }
   var recs=[];
   try{ var r=localStorage.getItem(druhKey()); if(r) recs=JSON.parse(r); }catch(e){}
-  // Okamžite vrátime lokálne dáta — bez čakania na sieť
-  cb(recs);
+  if(recs.length>0){ cb(recs); return; }
+  // localStorage prázdny — skús načítať zo Sheets
+  apiGet(function(result){
+    if(result[druhKey()]){
+      try{
+        recs=JSON.parse(result[druhKey()])||[];
+        try{localStorage.setItem(druhKey(),JSON.stringify(recs));}catch(e){}
+      }catch(e){}
+    }
+    cb(recs);
+  });
 }
 
 function druhSaveAll(recs,cb){
+  if(!currentUser){ if(cb) cb(); return; }
+  // 1. localStorage — okamžite
   try{ localStorage.setItem(druhKey(),JSON.stringify(recs)); }catch(e){}
-  // Záloha do Google Sheets — foto len ak je URL (Imgur), nie base64
-  var recsForSheets = recs.map(function(r){
+  // 2. Google Sheets — záloha (foto len ak URL, nie base64)
+  var recsForSheets=recs.map(function(r){
     var x={}; for(var k in r) x[k]=r[k];
-    if(x.foto && x.foto.startsWith('data:')) x.foto=''; // vynechaj base64
+    if(x.foto&&x.foto.startsWith('data:')) x.foto='';
     return x;
   });
-  apiSet(druhKey(), JSON.stringify(recsForSheets));
-  if(window.storage&&window.storage.set){
-    window.storage.set(druhKey(),JSON.stringify(recs)).then(function(){if(cb)cb();}).catch(function(){if(cb)cb();});
-  } else { if(cb) cb(); }
+  apiSet(druhKey(),JSON.stringify(recsForSheets));
+  // 3. Callback
+  if(cb) cb();
 }
 
 function druhSelKat(k){
@@ -2123,10 +2147,26 @@ function handleAvatarUpload(inp) {
   var user = avatarUploadTarget;
   reader.onload = function(e) {
     var src = e.target.result;
+    // Uložíme lokálne okamžite
     localStorage.setItem('avatar_' + user, src);
     applyAvatar(user, src);
     avatarUploadTarget = null;
     inp.value = '';
+    // Nahráme na Imgur a uložíme URL do Sheets
+    var base64 = src.replace(/^data:image\/[^;]+;base64,/, '');
+    fetch('https://api.imgur.com/3/image', {
+      method: 'POST',
+      headers: {'Authorization': 'Client-ID 546c25a59c58ad7', 'Content-Type': 'application/json'},
+      body: JSON.stringify({image: base64, type: 'base64', privacy: 'hidden'})
+    }).then(function(r){ return r.json(); }).then(function(d){
+      if(d.success && d.data && d.data.link){
+        // Uložíme URL do Sheets aj localStorage
+        apiSet('avatar_' + user, d.data.link);
+        localStorage.setItem('avatar_' + user, d.data.link);
+        applyAvatar(user, d.data.link);
+        setStatus('✅ Profilová fotka uložená!');
+      }
+    }).catch(function(){ setStatus('⚠️ Fotka uložená len lokálne'); });
   };
   reader.readAsDataURL(inp.files[0]);
 }

@@ -1698,7 +1698,7 @@ function druhFotoChange(inp){
     fetch('https://api.imgur.com/3/image',{
       method:'POST',
       headers:{'Authorization':'Client-ID 546c25a59c58ad7','Content-Type':'application/json'},
-      body:JSON.stringify({image:base64,type:'base64'})
+      body:JSON.stringify({image:base64,type:'base64',privacy:'hidden'})
     }).then(function(r){return r.json();}).then(function(d){
       if(d.success&&d.data&&d.data.link){
         druhFotoData=d.data.link;
@@ -1766,6 +1766,7 @@ function druhSave(){
 }
 
 function druhDelete(id){
+  if(!confirm('Vymazať tento záznam?')) return;
   druhLoad(function(recs){
     recs=recs.filter(function(r){return r.id!==id;});
     druhSaveAll(recs,function(){ setStatus('🗑️ Vymazané'); renderDruhotky(); });

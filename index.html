@@ -1275,12 +1275,17 @@ function loadData(){
       }catch(e){}
     }
     historia.sort(function(a,b){return new Date(b.datum)-new Date(a.datum);});
-    // Načítaj druhotky zo Sheets do localStorage ak tam nie sú
+    // Sync druhotky zo Sheets do localStorage pri prihlásení
     if(result[druhKey()]){
-      var existLocal = localStorage.getItem(druhKey());
-      if(!existLocal || existLocal === '[]') {
-        try{ localStorage.setItem(druhKey(), result[druhKey()]); }catch(e){}
-      }
+      try{
+        var sheetsRecs = JSON.parse(result[druhKey()])||[];
+        var existLocal = localStorage.getItem(druhKey());
+        var localRecs = existLocal ? JSON.parse(existLocal)||[] : [];
+        // Sheets má viac = použijeme Sheets (napr. iné zariadenie)
+        if(sheetsRecs.length > localRecs.length){
+          localStorage.setItem(druhKey(), JSON.stringify(sheetsRecs));
+        }
+      }catch(e){}
     }
     try { localStorage.setItem('cache_'+currentUser,JSON.stringify({data:data,zasoby:zasoby,historia:historia})); } catch(e){}
     setStatus(''); renderCalendar(); skRenderAll();
@@ -1647,23 +1652,8 @@ function druhKey(){ return 'druhotky_'+currentUser; }
 function druhLoad(cb){
   var recs=[];
   try{ var r=localStorage.getItem(druhKey()); if(r) recs=JSON.parse(r); }catch(e){}
-  if(window.storage&&window.storage.get){
-    window.storage.get(druhKey()).then(function(r){
-      if(r&&r.value){try{recs=JSON.parse(r.value);}catch(e){}}
-      cb(recs);
-    }).catch(function(){ cb(recs); });
-  } else {
-    // Fallback: načítaj zo Sheets ak localStorage je prázdny
-    if(recs.length===0){
-      apiGet(function(result){
-        if(result[druhKey()]){
-          try{recs=JSON.parse(result[druhKey()]);}catch(e){}
-          try{localStorage.setItem(druhKey(),JSON.stringify(recs));}catch(e){}
-        }
-        cb(recs);
-      });
-    } else { cb(recs); }
-  }
+  // Okamžite vrátime lokálne dáta — bez čakania na sieť
+  cb(recs);
 }
 
 function druhSaveAll(recs,cb){

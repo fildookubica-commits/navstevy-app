@@ -697,18 +697,18 @@ body.dark .ring-val-i{color:#fff}
             <div id="headerAvatarInitials" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;font-family:'Inter',sans-serif;"></div>
           </div>
           <div>
-            <div style="font-size:18px;font-weight:700;color:#1a1b1f;letter-spacing:-0.3px;font-family:'Inter',sans-serif;" class="doch-title-md">Mars Management</div>
+            <div style="font-size:18px;font-weight:700;color:#1a1b1f;letter-spacing:-0.3px;font-family:'Inter',sans-serif;" class="doch-title-md" id="appTitleEl">Mars Management</div>
             <div style="display:flex;align-items:center;gap:5px;margin-top:1px;">
               <div class="header-name" id="headerName" style="font-size:12px;color:#717786;font-weight:500;"></div>
             </div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <button onclick="showSettings()" style="width:36px;height:36px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Ciele">
-            <span class="material-symbols-outlined" style="font-size:22px;color:#717786;">bar_chart</span>
-          </button>
+        <div style="display:flex;align-items:center;gap:2px;">
           <button id="darkBtn" onclick="toggleDark()" style="width:36px;height:36px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Tmavý režim">
             <span class="material-symbols-outlined" style="font-size:22px;color:#717786;">dark_mode</span>
+          </button>
+          <button onclick="showSettings()" style="width:36px;height:36px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Nastavenia">
+            <span class="material-symbols-outlined" style="font-size:22px;color:#717786;">settings</span>
           </button>
         </div>
       </div>
@@ -952,6 +952,7 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbyNDOjAEgtehGW9XJinxn6JMU
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
 var APP_VERSION = 'dochadzka-mars-v24';
+var APP_TITLE = localStorage.getItem('app_title') || 'Mars Management';
 var swRegistration = null;
 var updateWaiting = false;
 
@@ -1234,6 +1235,7 @@ function updateHeaderAvatarInHeader(user) {
 function setUser(name){
   currentUser=name; applyGoals();
   document.getElementById('mainApp').style.display='block';
+  applyAppTitle();
   allDots(name); allNames(name); allDarkBtns();
   updateHeaderAvatarInHeader(name);
   document.getElementById('monthTitle').textContent=MONTHS[currentMonth]+' '+currentYear;
@@ -1287,6 +1289,8 @@ function loadData(){
         }
       }catch(e){}
     }
+    // Načítaj názov appky zo Sheets
+    loadAppTitleFromSheets(result);
     // Načítaj avatary zo Sheets pre všetkých užívateľov
     var avatarsUpdated = false;
     Object.keys(result).forEach(function(k){
@@ -1493,12 +1497,31 @@ function closeDetail(){ document.getElementById('dayDetail').innerHTML=''; selec
 function changeMonth(dir){ currentMonth+=dir; if(currentMonth>11){currentMonth=0;currentYear++;} if(currentMonth<0){currentMonth=11;currentYear--;} closeDetail(); renderCalendar(); document.getElementById('monthTitle').textContent=MONTHS[currentMonth]+' '+currentYear; }
 function showSettings(){
   var g=userGoals[currentUser]||{pracovna:8.5,navstevy:5,pocet:11};
+  var adminSection = currentUser==='Filip' ? ''
+    +'<div style="margin:16px 0 10px;border-top:1px solid #e5e5ea;padding-top:16px;">'
+      +'<div class="modal-label" style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#FF9500;">⚙️ Admin — správca</div>'
+    +'</div>'
+    +'<div class="modal-field"><div class="modal-label">Názov aplikácie</div>'
+      +'<input type="text" class="modal-input" id="gAppTitle" value="'+APP_TITLE+'" placeholder="napr. Time Management"></div>'
+    +'<button class="modal-save" style="background:#FF9500;margin-top:8px;" onclick="saveAppTitle()">Uložiť názov</button>'
+    : '';
+  var darkLabel = darkMode ? '☀️ Svetlý režim' : '🌙 Tmavý režim';
   document.getElementById('settingsModal').style.display='block';
-  document.getElementById('settingsModal').innerHTML='<div class="modal-overlay" onclick="closeSettings()"><div class="modal-box" onclick="event.stopPropagation()"><div class="modal-title">Ciele — '+currentUser+'</div><div class="modal-field"><div class="modal-label">Pracovná doba (h)</div><input type="number" class="modal-input" id="gP" value="'+g.pracovna+'" step="0.5"></div><div class="modal-field"><div class="modal-label">Min. čas návštev (h)</div><input type="number" class="modal-input" id="gV" value="'+g.navstevy+'" step="0.5"></div><div class="modal-field"><div class="modal-label">Min. počet návštev</div><input type="number" class="modal-input" id="gN" value="'+g.pocet+'" step="1"></div>'
-  +'<div style="margin:20px 0 10px;border-top:1px solid #e5e5ea;padding-top:16px;"><div class="modal-label" style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Aplikácia</div></div>'
-  +'<button class="modal-save" style="background:#f2f2f7;color:#007AFF;margin-top:0;" onclick="closeSettings();manualRefresh()">🔄 Skontrolovať aktualizácie</button>'
-  +'<div style="text-align:center;font-size:12px;color:#8e8e93;margin-top:8px;">Verzia: '+APP_VERSION+'</div>'
-  +'<button class="modal-save" onclick="saveSettings()">Uložiť ciele</button><button class="modal-cancel" onclick="closeSettings()">Zrušiť</button></div></div>';
+  document.getElementById('settingsModal').innerHTML='<div class="modal-overlay" onclick="closeSettings()"><div class="modal-box" onclick="event.stopPropagation()">'
+    +'<div class="modal-title">Nastavenia — '+currentUser+'</div>'
+    +'<div class="modal-field"><div class="modal-label">Pracovná doba (h)</div><input type="number" class="modal-input" id="gP" value="'+g.pracovna+'" step="0.5"></div>'
+    +'<div class="modal-field"><div class="modal-label">Min. čas návštev (h)</div><input type="number" class="modal-input" id="gV" value="'+g.navstevy+'" step="0.5"></div>'
+    +'<div class="modal-field"><div class="modal-label">Min. počet návštev</div><input type="number" class="modal-input" id="gN" value="'+g.pocet+'" step="1"></div>'
+    +'<div style="margin:16px 0 10px;border-top:1px solid #e5e5ea;padding-top:16px;">'
+      +'<div class="modal-label" style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Zobrazenie</div>'
+    +'</div>'
+    +'<button class="modal-save" style="background:#f2f2f7;color:#1c1c1e;margin-top:0;" onclick="toggleDark();showSettings()">'+darkLabel+'</button>'
+    +'<button class="modal-save" style="background:#f2f2f7;color:#007AFF;margin-top:8px;" onclick="closeSettings();manualRefresh()">🔄 Skontrolovať aktualizácie</button>'
+    +adminSection
+    +'<div style="text-align:center;font-size:12px;color:#8e8e93;margin-top:12px;">Verzia: '+APP_VERSION+'</div>'
+    +'<button class="modal-save" onclick="saveSettings()">Uložiť ciele</button>'
+    +'<button class="modal-cancel" onclick="closeSettings()">Zrušiť</button>'
+    +'</div></div>';
 }
 function saveSettings(){
   var g={pracovna:parseFloat(document.getElementById('gP').value)||8.5,navstevy:parseFloat(document.getElementById('gV').value)||5,pocet:parseInt(document.getElementById('gN').value)||11};
@@ -1506,6 +1529,28 @@ function saveSettings(){
   apiSet('goals_'+currentUser,JSON.stringify(g)); closeSettings(); renderCalendar(); if(selectedDay) renderDetail(); setStatus('Ciele uložené!');
 }
 function closeSettings(){ document.getElementById('settingsModal').style.display='none'; }
+function saveAppTitle(){
+  var inp = document.getElementById('gAppTitle');
+  if(!inp) return;
+  var title = inp.value.trim() || 'Mars Management';
+  APP_TITLE = title;
+  localStorage.setItem('app_title', title);
+  apiSet('app_title', title);
+  applyAppTitle();
+  setStatus('✅ Názov uložený!');
+  closeSettings();
+}
+function applyAppTitle(){
+  var el = document.getElementById('appTitleEl');
+  if(el) el.textContent = APP_TITLE;
+}
+function loadAppTitleFromSheets(result){
+  if(result['app_title']){
+    APP_TITLE = result['app_title'];
+    localStorage.setItem('app_title', APP_TITLE);
+    applyAppTitle();
+  }
+}
 
 // ── ŠTATISTIKY ───────────────────────────────────────────────────
 var QUARTERS={'Q1':[0,1,2],'Q2':[3,4,5],'Q3':[6,7,8],'Q4':[9,10,11],'Rok':[0,1,2,3,4,5,6,7,8,9,10,11]};

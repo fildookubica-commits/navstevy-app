@@ -948,7 +948,7 @@ var OBCHODY={"Filip": [{"id": "SK002284", "n": "POT J-LM 053 MIX", "m": "PARTIZA
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v28-navstevy-cf';
+var APP_VERSION = 'dochadzka-mars-v29-cf';
 var APP_TITLE = localStorage.getItem('app_title') || 'Mars Management';
 var swRegistration = null;
 var updateWaiting = false;
@@ -1087,7 +1087,11 @@ function apiGet(cb){
 }
 function apiSet(k,v){
   if(!navigator.onLine){ offlineQueue.push({k:k,v:v}); saveOfflineQueue(); setStatus('📵 Uložené lokálne'); return; }
-  fetch(API_URL+'?key='+encodeURIComponent(k)+'&value='+encodeURIComponent(v)).catch(function(){ offlineQueue.push({k:k,v:v}); saveOfflineQueue(); });
+  fetch(API_URL+'?key='+encodeURIComponent(k)+'&value='+encodeURIComponent(v)).then(function(r){
+    return r.json();
+  }).then(function(d){
+    if(!d.ok) { offlineQueue.push({k:k,v:v}); saveOfflineQueue(); }
+  }).catch(function(){ offlineQueue.push({k:k,v:v}); saveOfflineQueue(); });
 }
 function setStatus(msg){ var s=document.getElementById('statusBar'); if(s){s.textContent=msg; setTimeout(function(){s.textContent='';},2500);} }
 function applyGoals(){ var g=userGoals[currentUser]||{pracovna:8.5,navstevy:5,pocet:11}; CIEL_P=g.pracovna*60; CIEL_V=g.navstevy*60; CIEL_N=g.pocet; }

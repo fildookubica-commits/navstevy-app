@@ -973,7 +973,7 @@ var OBCHODY={"Filip": [{"id": "SK002284", "n": "POT J-LM 053 MIX", "m": "PARTIZA
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v35-cf';
+var APP_VERSION = 'dochadzka-mars-v36-cf';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -1609,6 +1609,18 @@ function showSettings(){
       +'<div class="modal-label" style="font-size:11px;color:#ff3b30;margin-bottom:8px;">Nebezpečná zóna</div>'
     +'</div>'
     +'<button class="modal-save" style="background:#FF3B30;margin-top:0;" onclick="adminClearDay()">🗑️ Vymazať vybraný deň</button>'
+    +'<div style="margin:14px 0 6px;border-top:1px solid #e5e5ea;padding-top:12px;">'
+      +'<div class="modal-label" style="font-size:11px;color:#8e8e93;margin-bottom:8px;">➕ Pridať nového užívateľa</div>'
+    +'</div>'
+    +'<div class="modal-field"><div class="modal-label">Meno</div>'
+      +'<input type="text" class="modal-input" id="gNewUserName" placeholder="napr. Jana" maxlength="20"></div>'
+    +'<div class="modal-field" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
+      +'<div><div class="modal-label">PIN (4 číslice)</div>'
+        +'<input type="number" class="modal-input" id="gNewUserPin" placeholder="1234"></div>'
+      +'<div><div class="modal-label">Farba avatara</div>'
+        +'<input type="color" class="modal-input" id="gNewUserColor" value="#34C759" style="height:38px;padding:4px;"></div>'
+    +'</div>'
+    +'<button class="modal-save" style="background:#30D158;margin-top:4px;" onclick="adminAddUser()">➕ Pridať užívateľa</button>'
     : ''
   var darkLabel = darkMode ? '☀️ Svetlý režim' : '🌙 Tmavý režim';
   document.getElementById('settingsModal').style.display='block';
@@ -1987,14 +1999,27 @@ function druhSaveAll(recs,cb){
   if(!currentUser){ if(cb) cb(); return; }
   // 1. localStorage — okamžite
   try{ localStorage.setItem(druhKey(),JSON.stringify(recs)); }catch(e){}
-  // 2. Google Sheets — záloha (foto len ak URL, nie base64)
-  var recsForSheets=recs.map(function(r){
+  // 2. Server — bez fotek (foto kľúče zostávajú ako referencie)
+  var recsForServer=recs.map(function(r){
     var x={}; for(var k in r) x[k]=r[k];
+    // Ak foto je base64 data URL, vynechaj — uložená je cez POST samostatne
     if(x.foto&&x.foto.startsWith('data:')) x.foto='';
     return x;
   });
-  apiSet(druhKey(),JSON.stringify(recsForSheets));
-  // 3. Callback
+  var val=JSON.stringify(recsForServer);
+  // CF backend — použijeme POST (GET má limit URL dĺžky)
+  if(API_URL.includes('workers.dev')){
+    fetch(API_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({key:druhKey(),value:val})
+    }).then(function(r){return r.json();}).then(function(d){
+      if(!d.ok) apiSet(druhKey(),val); // fallback na GET
+    }).catch(function(){ apiSet(druhKey(),val); });
+  } else {
+    apiSet(druhKey(),val);
+  }
+  // 3. Callback — okamžite po localStorage
   if(cb) cb();
 }
 

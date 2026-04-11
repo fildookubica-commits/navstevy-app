@@ -973,7 +973,7 @@ var OBCHODY={"Filip": [{"id": "SK002284", "n": "POT J-LM 053 MIX", "m": "PARTIZA
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v38-cf';
+var APP_VERSION = 'dochadzka-mars-v39-cf';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -1825,23 +1825,10 @@ function applyAppTitle(){
   if(el) el.textContent = APP_TITLE;
 }
 function loadAppTitleFromSheets(result){
-  // localStorage má prednosť — ak používateľ nastavil názov, nemeníme ho
-  var localTitle = localStorage.getItem('app_title');
-  if(localTitle && localTitle !== 'Time Management') {
-    // localStorage má platný názov — ignorujeme KV
-    APP_TITLE = localTitle;
-    applyAppTitle();
-    return;
-  }
-  // localStorage je prázdny alebo má starý default — použijeme KV ak je platné
-  if(result['app_title'] && result['app_title'] !== 'Time Management'){
+  // KV je zdrojom pravdy — čo je v KV, to sa zobrazí na všetkých zariadeniach
+  if(result['app_title']){
     APP_TITLE = result['app_title'];
     localStorage.setItem('app_title', APP_TITLE);
-    applyAppTitle();
-  } else {
-    // KV má aj starý default — resetujeme na Mars Management
-    APP_TITLE = 'Mars Management';
-    localStorage.setItem('app_title', 'Mars Management');
     applyAppTitle();
   }
 }

@@ -675,6 +675,21 @@ body.dark select option{background:#3a3a3c;color:#fff}
           </div>
           <span class="user-card-arrow">›</span>
         </button>
+        <button class="user-card" onclick="startLogin('Monika')">
+          <div class="user-avatar-wrap">
+            <div class="user-avatar" id="avatarWrap-Monika">
+              <img id="avatarImg-Monika" src="" style="display:none" alt="Monika">
+              <span class="user-avatar-initials" style="background:#AF52DE">M</span>
+            </div>
+            <div class="user-cam-btn" onclick="event.stopPropagation();triggerAvatarUpload('Monika')">📷</div>
+          </div>
+          <span class="user-card-name">Monika</span>
+          <div class="user-card-badges">
+            <span class="user-card-badge" id="faceBtn-Monika" style="display:none">🔒</span>
+            <span class="user-card-badge" id="remBtn-Monika" style="display:none">✅</span>
+          </div>
+          <span class="user-card-arrow">›</span>
+        </button>
       </div>
     </div>
   </div>
@@ -1083,21 +1098,21 @@ if (!navigator.onLine) document.getElementById('offlineBanner').classList.add('s
 loadOfflineQueue();
 
 // ── CORE STATE ───────────────────────────────────────────────────
-var PINS_DEFAULT = {'Filip':'1234','Beny':'2345','Mirka':'3456','Lubo':'4567','Martin':'5678'};
+var PINS_DEFAULT = {'Filip':'1234','Beny':'2345','Mirka':'3456','Lubo':'4567','Martin':'5678','Monika':'1212'};
 var PINS = (function(){
   try {
     var s = localStorage.getItem('pins_cache');
     return s ? JSON.parse(s) : Object.assign({}, PINS_DEFAULT);
   } catch(e) { return Object.assign({}, PINS_DEFAULT); }
 })();
-var USERS_DEFAULT = ['Filip','Beny','Mirka','Lubo','Martin'];
+var USERS_DEFAULT = ['Filip','Beny','Mirka','Lubo','Martin','Monika'];
 var USERS = (function(){
   try {
     var s = localStorage.getItem('users_list');
     return s ? JSON.parse(s) : USERS_DEFAULT.slice();
   } catch(e) { return USERS_DEFAULT.slice(); }
 })();
-var USER_COLORS_DEFAULT = {'Filip':'#007AFF','Beny':'#34C759','Mirka':'#FF2D55','Lubo':'#FF9500','Martin':'#AF52DE'};
+var USER_COLORS_DEFAULT = {'Filip':'#007AFF','Beny':'#34C759','Mirka':'#FF2D55','Lubo':'#FF9500','Martin':'#AF52DE','Monika':'#AF52DE'};
 var userColors = (function(){
   try {
     var s = localStorage.getItem('user_colors');
@@ -1262,7 +1277,7 @@ function updateHeaderAvatarInHeader(user) {
   var img = document.getElementById('headerAvatarImg');
   var wrap = document.getElementById('headerAvatarWrap');
   if (!wrap) return;
-  var colors = {Filip:'#007AFF',Beny:'#34C759',Mirka:'#FF2D55',Lubo:'#FF9500',Martin:'#AF52DE'};
+  var colors = {Filip:'#007AFF',Beny:'#34C759',Mirka:'#FF2D55',Lubo:'#FF9500',Martin:'#AF52DE',Monika:'#AF52DE'};
   var letters = {Filip:'F',Beny:'B',Mirka:'M',Lubo:'L',Martin:'M'};
   wrap.style.background = colors[user] || '#717786';
   if (initials) { initials.textContent = letters[user] || user.charAt(0); }
@@ -1358,7 +1373,7 @@ function loadData(){
     if(avatarsUpdated) loadAvatars();
     // Pre KV backend načítame avatary osobitne ak sú skryté v GET all
     if(API_URL.includes('workers.dev')){
-      ['Filip','Beny','Mirka','Lubo','Martin'].forEach(function(u){
+      ['Filip','Beny','Mirka','Lubo','Martin','Monika'].forEach(function(u){
         var key = 'avatar_' + u;
         if(!localStorage.getItem(key)){
           fetch(API_URL + '?key=' + key)
@@ -1578,7 +1593,7 @@ function showSettings(){
     +'<div class="modal-field" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;">'
       +'<div><div class="modal-label">Používateľ</div>'
         +'<select class="modal-input" id="gAdminUser" style="padding:8px;">'
-          +['Filip','Beny','Mirka','Lubo','Martin'].map(function(u){ return '<option value="'+u+'"'+(u===currentUser?' selected':'')+'>'+u+'</option>'; }).join('')
+          +['Filip','Beny','Mirka','Lubo','Martin','Monika'].map(function(u){ return '<option value="'+u+'"'+(u===currentUser?' selected':'')+'>'+u+'</option>'; }).join('')
         +'</select></div>'
       +'<div><div class="modal-label">Prac. doba (h)</div>'
         +'<input type="number" class="modal-input" id="gAdminH" value="8.5" step="0.5"></div>'
@@ -1601,7 +1616,7 @@ function showSettings(){
     +'<div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;margin-bottom:8px;">'
       +'<div><div class="modal-label">Používateľ</div>'
         +'<select class="modal-input" id="gViewUser" style="padding:8px;">'
-          +['Beny','Mirka','Lubo','Martin'].map(function(u){ return '<option value="'+u+'">'+u+'</option>'; }).join('')
+          +['Beny','Mirka','Lubo','Martin','Monika'].map(function(u){ return '<option value="'+u+'">'+u+'</option>'; }).join('')
         +'</select></div>'
       +'<button class="modal-save" style="background:#FF9500;margin-top:0;width:auto;padding:8px 14px;" onclick="closeSettings();adminViewUser()">Zobraziť</button>'
     +'</div>'
@@ -2573,7 +2588,7 @@ function applyAvatar(user, src) {
 }
 
 function loadAvatars() {
-  ['Filip','Beny','Mirka','Lubo','Martin'].forEach(function(user) {
+  ['Filip','Beny','Mirka','Lubo','Martin','Monika'].forEach(function(user) {
     var src = localStorage.getItem('avatar_' + user);
     if (src) applyAvatar(user, src);
   });

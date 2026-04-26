@@ -1,5 +1,5 @@
 // ⚠️ VERZIA — zmeň toto číslo pri každom nasadení novej verzie
-const CACHE_NAME = 'dochadzka-mars-v22';
+const CACHE_NAME = 'dochadzka-mars-v23';
 
 const urlsToCache = [
   '/navstevy-app/',

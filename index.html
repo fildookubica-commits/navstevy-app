@@ -1410,6 +1410,8 @@ function renderSummary(){
   var avgV=timeDays?(totalC/timeDays).toFixed(1):'—';
   var avgW=timeDays?Math.round(totalW/timeDays):0;
   var avgWH=timeDays?Math.floor(avgW/60)+'h'+(avgW%60>0?' '+avgW%60+'m':''):'—';
+  var avgVMH=timeDays?(totalVM/timeDays/60).toFixed(1).replace('.',','):'—';
+  var avgWHDec=timeDays?(totalW/timeDays/60).toFixed(1).replace('.',','):'—';
   // Debug: zobraz čo sa počíta
   var wG=timeDays*CIEL_P||1,vG=timeDays*CIEL_V||1,cG=timeDays*CIEL_N||1;
   var debugInfo='Dni: '+timeDays+' | Práca: '+Math.floor(totalW/60)+'h'+(totalW%60)+'m'
@@ -1422,10 +1424,12 @@ function renderSummary(){
     var r=30,ci=2*Math.PI*r,off=ci*(1-pct/100);
     return '<svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+bg+'" stroke-width="6"/><circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+ci.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg>';
   }
-  function rc(ri,pct,lbl,val,sub,sc){
+  function rc(ri,pct,lbl,val,sub,sc,circleLabel){
+    var cl=circleLabel!==undefined?circleLabel:pct+'%';
+    var fs=circleLabel!==undefined?'11px':'12px';
     return '<div class="ring-card-i"><div style="position:relative;width:72px;height:72px">'
       +'<div style="position:absolute;inset:0;transform:rotate(-90deg)">'+ri+'</div>'
-      +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1c1c1e">'+pct+'%</div>'
+      +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:'+fs+';font-weight:700;color:#1c1c1e">'+cl+'</div>'
       +'</div><div class="ring-lbl-i">'+lbl+'</div><div class="ring-val-i">'+val+'</div>'
       +'<div style="font-size:11px;font-weight:600;color:'+sc+'">'+sub+'</div></div>';
   }
@@ -1440,8 +1444,8 @@ function renderSummary(){
   document.getElementById('summary').innerHTML=''
     +'<div style="font-size:11px;color:#8e8e93;padding:4px 16px 8px;text-align:center">'+debugInfo+'</div>'
     +'<div class="ring-grid-wrap">'
-      +rc(ring(wPct,'#007AFF','#e8f0fd'),wPct,'Pracovný čas',wH2,wSub,wSC)
-      +rc(ring(vPct,'#34C759','#e2f7ee'),vPct,'Čas u zákazníka',vH2,vSub,vSC)
+      +rc(ring(wPct,'#007AFF','#e8f0fd'),wPct,'Pracovný čas',wH2,wSub,wSC,avgWHDec)
+      +rc(ring(vPct,'#34C759','#e2f7ee'),vPct,'Čas u zákazníka',vH2,vSub,vSC,avgVMH)
       +rc(ring(cPct,'#AF52DE','#f0ecfc'),cPct,'Návštevy',totalC,cSub,cSC)
       +'<div class="ring-card-i"><div style="width:44px;height:44px;border-radius:12px;background:#e8f0fd;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><circle cx="15" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><path d="M3 17c0-3 2.7-5 6-5h6c3.3 0 6 2 6 5" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="ring-lbl-i">Priemer/deň</div><div class="ring-val-i">'+avgV+'</div><div style="font-size:11px;color:#8e8e93">&nbsp;</div></div>'
     +'</div>'

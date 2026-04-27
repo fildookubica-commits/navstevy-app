@@ -1441,6 +1441,7 @@ function renderSummary(){
   var avgW=timeDays?Math.round(totalW/timeDays):0;
   var avgWH=timeDays?Math.floor(avgW/60)+'h'+(avgW%60>0?' '+avgW%60+'m':''):'—';
   var avgVMH=timeDays?(totalVM/timeDays/60).toFixed(1).replace('.',','):'—';
+  var avgWHDec=timeDays?(totalW/timeDays/60).toFixed(1).replace('.',','):'—';
   // Debug: zobraz čo sa počíta
   var wG=timeDays*CIEL_P||1,vG=timeDays*CIEL_V||1,cG=timeDays*CIEL_N||1;
   var debugInfo='Dni: '+timeDays+' | Práca: '+Math.floor(totalW/60)+'h'+(totalW%60)+'m'
@@ -1473,7 +1474,7 @@ function renderSummary(){
   document.getElementById('summary').innerHTML=''
     +'<div style="font-size:11px;color:#8e8e93;padding:4px 16px 8px;text-align:center">'+debugInfo+'</div>'
     +'<div class="ring-grid-wrap">'
-      +rc(ring(wPct,'#007AFF','#e8f0fd'),wPct,'Pracovný čas',wH2,wSub,wSC)
+      +rc(ring(wPct,'#007AFF','#e8f0fd'),wPct,'Pracovný čas',wH2,wSub,wSC,avgWHDec)
       +rc(ring(vPct,'#34C759','#e2f7ee'),vPct,'Čas u zákazníka',vH2,vSub,vSC,avgVMH)
       +rc(ring(cPct,'#AF52DE','#f0ecfc'),cPct,'Návštevy',totalC,cSub,cSC)
       +'<div class="ring-card-i"><div style="width:44px;height:44px;border-radius:12px;background:#e8f0fd;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><circle cx="15" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><path d="M3 17c0-3 2.7-5 6-5h6c3.3 0 6 2 6 5" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="ring-lbl-i">Priemer/deň</div><div class="ring-val-i">'+avgV+'</div><div style="font-size:11px;color:#8e8e93">&nbsp;</div></div>'

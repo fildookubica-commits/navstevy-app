@@ -615,21 +615,6 @@ body.dark select option{background:#3a3a3c;color:#fff}
           </div>
           <span class="user-card-arrow">›</span>
         </button>
-        <button class="user-card" onclick="startLogin('Beny')">
-          <div class="user-avatar-wrap">
-            <div class="user-avatar" id="avatarWrap-Beny">
-              <img id="avatarImg-Beny" src="" style="display:none" alt="Beny">
-              <span class="user-avatar-initials" style="background:#34C759">B</span>
-            </div>
-            <div class="user-cam-btn" onclick="event.stopPropagation();triggerAvatarUpload('Beny')">📷</div>
-          </div>
-          <span class="user-card-name">Beny</span>
-          <div class="user-card-badges">
-            <span class="user-card-badge" id="faceBtn-Beny" style="display:none">🔒</span>
-            <span class="user-card-badge" id="remBtn-Beny" style="display:none">✅</span>
-          </div>
-          <span class="user-card-arrow">›</span>
-        </button>
         <button class="user-card" onclick="startLogin('Mirka')">
           <div class="user-avatar-wrap">
             <div class="user-avatar" id="avatarWrap-Mirka">
@@ -657,21 +642,6 @@ body.dark select option{background:#3a3a3c;color:#fff}
           <div class="user-card-badges">
             <span class="user-card-badge" id="faceBtn-Lubo" style="display:none">🔒</span>
             <span class="user-card-badge" id="remBtn-Lubo" style="display:none">✅</span>
-          </div>
-          <span class="user-card-arrow">›</span>
-        </button>
-        <button class="user-card" onclick="startLogin('Martin')">
-          <div class="user-avatar-wrap">
-            <div class="user-avatar" id="avatarWrap-Martin">
-              <img id="avatarImg-Martin" src="" style="display:none" alt="Martin">
-              <span class="user-avatar-initials" style="background:#AF52DE">M</span>
-            </div>
-            <div class="user-cam-btn" onclick="event.stopPropagation();triggerAvatarUpload('Martin')">📷</div>
-          </div>
-          <span class="user-card-name">Martin</span>
-          <div class="user-card-badges">
-            <span class="user-card-badge" id="faceBtn-Martin" style="display:none">🔒</span>
-            <span class="user-card-badge" id="remBtn-Martin" style="display:none">✅</span>
           </div>
           <span class="user-card-arrow">›</span>
         </button>
@@ -1098,21 +1068,21 @@ if (!navigator.onLine) document.getElementById('offlineBanner').classList.add('s
 loadOfflineQueue();
 
 // ── CORE STATE ───────────────────────────────────────────────────
-var PINS_DEFAULT = {'Filip':'1234','Beny':'2345','Mirka':'3456','Lubo':'4567','Martin':'5678','Monika':'1212'};
+var PINS_DEFAULT = {'Filip':'1234','Mirka':'3456','Lubo':'4567','Monika':'1212'};
 var PINS = (function(){
   try {
     var s = localStorage.getItem('pins_cache');
     return s ? JSON.parse(s) : Object.assign({}, PINS_DEFAULT);
   } catch(e) { return Object.assign({}, PINS_DEFAULT); }
 })();
-var USERS_DEFAULT = ['Filip','Beny','Mirka','Lubo','Martin','Monika'];
+var USERS_DEFAULT = ['Filip','Mirka','Lubo','Monika'];
 var USERS = (function(){
   try {
     var s = localStorage.getItem('users_list');
     return s ? JSON.parse(s) : USERS_DEFAULT.slice();
   } catch(e) { return USERS_DEFAULT.slice(); }
 })();
-var USER_COLORS_DEFAULT = {'Filip':'#007AFF','Beny':'#34C759','Mirka':'#FF2D55','Lubo':'#FF9500','Martin':'#AF52DE','Monika':'#AF52DE'};
+var USER_COLORS_DEFAULT = {'Filip':'#007AFF','Mirka':'#FF2D55','Lubo':'#FF9500','Monika':'#AF52DE'};
 var userColors = (function(){
   try {
     var s = localStorage.getItem('user_colors');
@@ -1124,7 +1094,7 @@ var MONTHS = ['Január','Február','Marec','Apríl','Máj','Jún','Júl','August
 var DTYPES = {dovol:'Dovolenka',pn:'PN',meeting:'Meeting',cd:'CD'};
 var data={}, currentUser='', currentYear=new Date().getFullYear(), currentMonth=new Date().getMonth();
 var selectedDay=null, darkMode=false, pinInput='', pendingUser='';
-var userGoals={Filip:{pracovna:8.5,navstevy:5,pocet:11},Beny:{pracovna:8.5,navstevy:5,pocet:11},Mirka:{pracovna:8.5,navstevy:5,pocet:11}};
+var userGoals={Filip:{pracovna:8.5,navstevy:5,pocet:11},Mirka:{pracovna:8.5,navstevy:5,pocet:11}};
 var CIEL_P=8.5*60, CIEL_V=5*60, CIEL_N=11;
 var DEFAULT_PRODUKTY=[
   {ean:'4009900015974',nazov:'Orbit Spearmint'},
@@ -1168,7 +1138,7 @@ function allDarkBtns(){ ['darkBtn','darkBtn2','darkBtn3','darkBtn4','darkBtn5','
 function faceIdKey(user){ return 'faceid_cred_'+user; }
 function isFaceIdRegistered(user){ return !!localStorage.getItem(faceIdKey(user)); }
 function updateFaceIdBtns(){
-  ['Filip','Beny','Mirka'].forEach(function(u){
+  ['Filip','Mirka'].forEach(function(u){
     var fb=document.getElementById('faceBtn-'+u);
     var rb=document.getElementById('remBtn-'+u);
     var gb=document.getElementById('forgetBtn-'+u);
@@ -1215,7 +1185,7 @@ async function doFaceId(){
 function saveRememberMe(user){ localStorage.setItem('remember_'+user,'1'); localStorage.setItem('rememberUntil_'+user,Date.now()+30*24*60*60*1000); }
 function clearRememberMe(user){ if(user){ localStorage.removeItem('remember_'+user); localStorage.removeItem('rememberUntil_'+user); } }
 function isRemembered(user){ var v=localStorage.getItem('remember_'+user),t=parseInt(localStorage.getItem('rememberUntil_'+user)||'0'); return v==='1'&&Date.now()<t; }
-function checkRememberMe(){ var users=['Filip','Beny','Mirka']; for(var i=0;i<users.length;i++){ if(isRemembered(users[i])) return users[i]; } return null; }
+function checkRememberMe(){ var users=['Filip','Mirka']; for(var i=0;i<users.length;i++){ if(isRemembered(users[i])) return users[i]; } return null; }
 
 // ── PIN ──────────────────────────────────────────────────────────
 function startLogin(user){
@@ -1277,8 +1247,8 @@ function updateHeaderAvatarInHeader(user) {
   var img = document.getElementById('headerAvatarImg');
   var wrap = document.getElementById('headerAvatarWrap');
   if (!wrap) return;
-  var colors = {Filip:'#007AFF',Beny:'#34C759',Mirka:'#FF2D55',Lubo:'#FF9500',Martin:'#AF52DE',Monika:'#AF52DE'};
-  var letters = {Filip:'F',Beny:'B',Mirka:'M',Lubo:'L',Martin:'M'};
+  var colors = {Filip:'#007AFF',Mirka:'#FF2D55',Lubo:'#FF9500',Monika:'#AF52DE'};
+  var letters = {Filip:'F',Mirka:'M',Lubo:'L'};
   wrap.style.background = colors[user] || '#717786';
   if (initials) { initials.textContent = letters[user] || user.charAt(0); }
   var saved = localStorage.getItem('avatar_' + user);
@@ -1373,7 +1343,7 @@ function loadData(){
     if(avatarsUpdated) loadAvatars();
     // Pre KV backend načítame avatary osobitne ak sú skryté v GET all
     if(API_URL.includes('workers.dev')){
-      ['Filip','Beny','Mirka','Lubo','Martin','Monika'].forEach(function(u){
+      ['Filip','Mirka','Lubo','Monika'].forEach(function(u){
         var key = 'avatar_' + u;
         if(!localStorage.getItem(key)){
           fetch(API_URL + '?key=' + key)
@@ -1440,8 +1410,6 @@ function renderSummary(){
   var avgV=timeDays?(totalC/timeDays).toFixed(1):'—';
   var avgW=timeDays?Math.round(totalW/timeDays):0;
   var avgWH=timeDays?Math.floor(avgW/60)+'h'+(avgW%60>0?' '+avgW%60+'m':''):'—';
-  var avgVMH=timeDays?(totalVM/timeDays/60).toFixed(1).replace('.',','):'—';
-  var avgWHDec=timeDays?(totalW/timeDays/60).toFixed(1).replace('.',','):'—';
   // Debug: zobraz čo sa počíta
   var wG=timeDays*CIEL_P||1,vG=timeDays*CIEL_V||1,cG=timeDays*CIEL_N||1;
   var debugInfo='Dni: '+timeDays+' | Práca: '+Math.floor(totalW/60)+'h'+(totalW%60)+'m'
@@ -1454,12 +1422,10 @@ function renderSummary(){
     var r=30,ci=2*Math.PI*r,off=ci*(1-pct/100);
     return '<svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+bg+'" stroke-width="6"/><circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+ci.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg>';
   }
-  function rc(ri,pct,lbl,val,sub,sc,circleLabel){
-    var cl=circleLabel!==undefined?circleLabel:pct+'%';
-    var fs=circleLabel!==undefined?'11px':'12px';
+  function rc(ri,pct,lbl,val,sub,sc){
     return '<div class="ring-card-i"><div style="position:relative;width:72px;height:72px">'
       +'<div style="position:absolute;inset:0;transform:rotate(-90deg)">'+ri+'</div>'
-      +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:'+fs+';font-weight:700;color:#1c1c1e">'+cl+'</div>'
+      +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1c1c1e">'+pct+'%</div>'
       +'</div><div class="ring-lbl-i">'+lbl+'</div><div class="ring-val-i">'+val+'</div>'
       +'<div style="font-size:11px;font-weight:600;color:'+sc+'">'+sub+'</div></div>';
   }
@@ -1474,8 +1440,8 @@ function renderSummary(){
   document.getElementById('summary').innerHTML=''
     +'<div style="font-size:11px;color:#8e8e93;padding:4px 16px 8px;text-align:center">'+debugInfo+'</div>'
     +'<div class="ring-grid-wrap">'
-      +rc(ring(wPct,'#007AFF','#e8f0fd'),wPct,'Pracovný čas',wH2,wSub,wSC,avgWHDec)
-      +rc(ring(vPct,'#34C759','#e2f7ee'),vPct,'Čas u zákazníka',vH2,vSub,vSC,avgVMH)
+      +rc(ring(wPct,'#007AFF','#e8f0fd'),wPct,'Pracovný čas',wH2,wSub,wSC)
+      +rc(ring(vPct,'#34C759','#e2f7ee'),vPct,'Čas u zákazníka',vH2,vSub,vSC)
       +rc(ring(cPct,'#AF52DE','#f0ecfc'),cPct,'Návštevy',totalC,cSub,cSC)
       +'<div class="ring-card-i"><div style="width:44px;height:44px;border-radius:12px;background:#e8f0fd;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><circle cx="15" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><path d="M3 17c0-3 2.7-5 6-5h6c3.3 0 6 2 6 5" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="ring-lbl-i">Priemer/deň</div><div class="ring-val-i">'+avgV+'</div><div style="font-size:11px;color:#8e8e93">&nbsp;</div></div>'
     +'</div>'
@@ -1597,7 +1563,7 @@ function showSettings(){
     +'<div class="modal-field" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;">'
       +'<div><div class="modal-label">Používateľ</div>'
         +'<select class="modal-input" id="gAdminUser" style="padding:8px;">'
-          +['Filip','Beny','Mirka','Lubo','Martin','Monika'].map(function(u){ return '<option value="'+u+'"'+(u===currentUser?' selected':'')+'>'+u+'</option>'; }).join('')
+          +['Filip','Mirka','Lubo','Monika'].map(function(u){ return '<option value="'+u+'"'+(u===currentUser?' selected':'')+'>'+u+'</option>'; }).join('')
         +'</select></div>'
       +'<div><div class="modal-label">Prac. doba (h)</div>'
         +'<input type="number" class="modal-input" id="gAdminH" value="8.5" step="0.5"></div>'
@@ -1620,7 +1586,7 @@ function showSettings(){
     +'<div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;margin-bottom:8px;">'
       +'<div><div class="modal-label">Používateľ</div>'
         +'<select class="modal-input" id="gViewUser" style="padding:8px;">'
-          +['Beny','Mirka','Lubo','Martin','Monika'].map(function(u){ return '<option value="'+u+'">'+u+'</option>'; }).join('')
+          +['Mirka','Lubo','Monika'].map(function(u){ return '<option value="'+u+'">'+u+'</option>'; }).join('')
         +'</select></div>'
       +'<button class="modal-save" style="background:#FF9500;margin-top:0;width:auto;padding:8px 14px;" onclick="closeSettings();adminViewUser()">Zobraziť</button>'
     +'</div>'

@@ -1440,8 +1440,7 @@ function renderSummary(){
   var avgV=timeDays?(totalC/timeDays).toFixed(1):'—';
   var avgW=timeDays?Math.round(totalW/timeDays):0;
   var avgWH=timeDays?Math.floor(avgW/60)+'h'+(avgW%60>0?' '+avgW%60+'m':''):'—';
-  var avgVMMin=timeDays?Math.round(totalVM/timeDays):0;
-  var avgVMH=timeDays?(Math.floor(avgVMMin/60)+'h'+(avgVMMin%60>0?' '+avgVMMin%60+'m':'')):'\u2014';
+  var avgVMH=timeDays?(totalVM/timeDays/60).toFixed(1).replace('.',','):'—';
   // Debug: zobraz čo sa počíta
   var wG=timeDays*CIEL_P||1,vG=timeDays*CIEL_V||1,cG=timeDays*CIEL_N||1;
   var debugInfo='Dni: '+timeDays+' | Práca: '+Math.floor(totalW/60)+'h'+(totalW%60)+'m'
@@ -1456,7 +1455,7 @@ function renderSummary(){
   }
   function rc(ri,pct,lbl,val,sub,sc,circleLabel){
     var cl=circleLabel!==undefined?circleLabel:pct+'%';
-    var fs=circleLabel!==undefined?'9px':'12px';
+    var fs=circleLabel!==undefined?'11px':'12px';
     return '<div class="ring-card-i"><div style="position:relative;width:72px;height:72px">'
       +'<div style="position:absolute;inset:0;transform:rotate(-90deg)">'+ri+'</div>'
       +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:'+fs+';font-weight:700;color:#1c1c1e">'+cl+'</div>'

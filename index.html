@@ -729,6 +729,10 @@ body.dark select option{background:#3a3a3c;color:#fff}
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:2px;">
+          <button id="adminLiveBtnDoch" onclick="adminOpenLive()" style="display:none;width:36px;height:36px;border-radius:50%;border:none;background:transparent;cursor:pointer;align-items:center;justify-content:center;position:relative" title="LIVE Dashboard tímu">
+            <span style="font-size:18px">🟢</span>
+            <span style="position:absolute;top:-2px;right:-2px;background:#34C759;color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:6px;letter-spacing:0.05em">LIVE</span>
+          </button>
           <button onclick="showSettings()" style="width:36px;height:36px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Nastavenia">
             <span class="material-symbols-outlined" style="font-size:22px;color:#717786;">settings</span>
           </button>
@@ -1284,6 +1288,9 @@ function setUser(name){
   updateHeaderAvatarInHeader(name);
   document.getElementById('monthTitle').textContent=MONTHS[currentMonth]+' '+currentYear;
   var vi=document.getElementById('verInfo'); if(vi) vi.textContent='Verzia: '+APP_VERSION;
+  // Admin LIVE button - viditeľné len pre Filipa
+  var adminBtn = document.getElementById('adminLiveBtnDoch');
+  if(adminBtn) adminBtn.style.display = (name === 'Filip') ? 'flex' : 'none';
   loadData();
 }
 function switchUser(){
@@ -1294,6 +1301,10 @@ function switchUser(){
   document.getElementById('userScreen').style.display='block';
   document.getElementById('dayDetail').innerHTML='';
   switchMainTab('dochadzka');
+  // Zatvor admin LIVE dashboard ak je otvorený
+  if(typeof adminCloseLive === 'function') adminCloseLive();
+  var adminBtn = document.getElementById('adminLiveBtnDoch');
+  if(adminBtn) adminBtn.style.display = 'none';
   loadAvatars();
   updateFaceIdBtns();
 }
@@ -1595,36 +1606,9 @@ function showSettings(){
     +'</div>'
     +'<button class="modal-save" style="background:#34C759;margin-top:4px;" onclick="saveAdminGoals()">Uložiť ciele</button>'
     +'<div style="margin:14px 0 6px;border-top:1px solid #e5e5ea;padding-top:12px;">'
-      +'<div class="modal-label" style="font-size:11px;color:#8e8e93;margin-bottom:8px;">Prehľad a reporty</div>'
-    +'</div>'
-    +'<button class="modal-save" style="background:#007AFF;margin-top:0;" onclick="closeSettings();adminShowTeam()">👥 Prehľad tímu dnes</button>'
-    +'<button class="modal-save" style="background:#5856D6;margin-top:8px;" onclick="closeSettings();adminExportCSV()">📊 Export mesiaca do CSV</button>'
-    +'<div style="margin:14px 0 6px;border-top:1px solid #e5e5ea;padding-top:12px;">'
-      +'<div class="modal-label" style="font-size:11px;color:#8e8e93;margin-bottom:8px;">Zobraziť kalendár kolegu</div>'
-    +'</div>'
-    +'<div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;margin-bottom:8px;">'
-      +'<div><div class="modal-label">Používateľ</div>'
-        +'<select class="modal-input" id="gViewUser" style="padding:8px;">'
-          +['Mirka','Lubo','Monika','Ivana'].map(function(u){ return '<option value="'+u+'">'+u+'</option>'; }).join('')
-        +'</select></div>'
-      +'<button class="modal-save" style="background:#FF9500;margin-top:0;width:auto;padding:8px 14px;" onclick="closeSettings();adminViewUser()">Zobraziť</button>'
-    +'</div>'
-    +'<div style="margin:14px 0 6px;border-top:1px solid #e5e5ea;padding-top:12px;">'
       +'<div class="modal-label" style="font-size:11px;color:#ff3b30;margin-bottom:8px;">Nebezpečná zóna</div>'
     +'</div>'
     +'<button class="modal-save" style="background:#FF3B30;margin-top:0;" onclick="adminClearDay()">🗑️ Vymazať vybraný deň</button>'
-    +'<div style="margin:14px 0 6px;border-top:1px solid #e5e5ea;padding-top:12px;">'
-      +'<div class="modal-label" style="font-size:11px;color:#8e8e93;margin-bottom:8px;">➕ Pridať nového užívateľa</div>'
-    +'</div>'
-    +'<div class="modal-field"><div class="modal-label">Meno</div>'
-      +'<input type="text" class="modal-input" id="gNewUserName" placeholder="napr. Jana" maxlength="20"></div>'
-    +'<div class="modal-field" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
-      +'<div><div class="modal-label">PIN (4 číslice)</div>'
-        +'<input type="number" class="modal-input" id="gNewUserPin" placeholder="1234"></div>'
-      +'<div><div class="modal-label">Farba avatara</div>'
-        +'<input type="color" class="modal-input" id="gNewUserColor" value="#34C759" style="height:38px;padding:4px;"></div>'
-    +'</div>'
-    +'<button class="modal-save" style="background:#30D158;margin-top:4px;" onclick="adminAddUser()">➕ Pridať užívateľa</button>'
     : ''
   var darkLabel = darkMode ? '☀️ Svetlý režim' : '🌙 Tmavý režim';
   document.getElementById('settingsModal').style.display='block';
@@ -1691,6 +1675,200 @@ function adminShowTeam(){
     +'<div style="font-size:11px;color:#8e8e93;margin-top:8px;text-align:center">Dáta z lokálnej cache — nie vždy aktuálne v reálnom čase</div>'
     +'<button class="modal-cancel" style="margin-top:12px" onclick="closeSettings()">Zavrieť</button>'
     +'</div></div>';
+}
+
+// ── ADMIN LIVE DASHBOARD ──────────────────────────────────────────
+var adminLiveInterval = null;
+function adminOpenLive(){
+  closeSettings();
+  // Vytvor overlay ak neexistuje
+  var ov = document.getElementById('adminLiveOverlay');
+  if(!ov){
+    ov = document.createElement('div');
+    ov.id = 'adminLiveOverlay';
+    ov.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#f2f2f7;z-index:300;overflow-y:auto;';
+    ov.innerHTML = '<div style="max-width:480px;margin:0 auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom));">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">'
+        +'<div><div style="font-size:22px;font-weight:700;color:#1c1c1e">👥 Live Tím</div>'
+        +'<div id="alLastUpdate" style="font-size:11px;color:#8e8e93;margin-top:2px">Načítavam...</div></div>'
+        +'<button onclick="adminCloseLive()" style="background:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.08)">✕</button>'
+      +'</div>'
+      +'<div id="alDateBar" style="background:#fff;border-radius:14px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:8px">'
+        +'<button onclick="adminLiveChangeDay(-1)" style="background:#f2f2f7;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer">‹</button>'
+        +'<div id="alDateLabel" style="font-size:15px;font-weight:600;color:#1c1c1e;text-align:center;flex:1"></div>'
+        +'<button onclick="adminLiveChangeDay(1)" style="background:#f2f2f7;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer">›</button>'
+        +'<button onclick="adminLiveToday()" style="background:#007AFF;border:none;border-radius:18px;padding:6px 12px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;margin-left:4px">Dnes</button>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'
+        +'<button id="alToggleAddBtn" onclick="adminToggleAddUser()" style="background:#30D158;border:none;border-radius:12px;padding:11px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">➕ Pridať užívateľa</button>'
+        +'<button onclick="adminExportCSV()" style="background:#5856D6;border:none;border-radius:12px;padding:11px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">📊 Export CSV</button>'
+      +'</div>'
+      +'<div id="alAddUserForm" style="display:none;background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:12px;border:2px solid #30D158">'
+        +'<div style="font-size:13px;font-weight:700;color:#1a7431;margin-bottom:10px">➕ Nový užívateľ</div>'
+        +'<div style="margin-bottom:8px"><div style="font-size:12px;color:#8e8e93;margin-bottom:4px">Meno</div>'
+          +'<input type="text" id="alNewUserName" placeholder="napr. Jana" maxlength="20" style="border:1px solid #e5e5ea;border-radius:10px;padding:9px 12px;font-size:14px;width:100%;background:#f2f2f7;color:#1c1c1e"></div>'
+        +'<div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:10px">'
+          +'<div><div style="font-size:12px;color:#8e8e93;margin-bottom:4px">PIN (4 číslice) <button onclick="adminGenPin()" style="background:none;border:none;color:#007AFF;font-size:11px;cursor:pointer;padding:0 4px">🎲 generuj</button></div>'
+            +'<input type="number" id="alNewUserPin" placeholder="1234" style="border:1px solid #e5e5ea;border-radius:10px;padding:9px 12px;font-size:14px;width:100%;background:#f2f2f7;color:#1c1c1e"></div>'
+          +'<div><div style="font-size:12px;color:#8e8e93;margin-bottom:4px">Farba</div>'
+            +'<input type="color" id="alNewUserColor" value="#34C759" style="border:1px solid #e5e5ea;border-radius:10px;padding:4px;height:38px;width:100%;background:#f2f2f7;cursor:pointer"></div>'
+        +'</div>'
+        +'<button onclick="adminAddUser()" style="width:100%;padding:11px;background:#30D158;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">✓ Vytvoriť užívateľa</button>'
+        +'<div style="font-size:11px;color:#8e8e93;margin-top:8px;text-align:center">Master PIN 1234 bude fungovať pre všetkých automaticky</div>'
+      +'</div>'
+      +'<div id="alRefreshBar" style="display:flex;align-items:center;justify-content:space-between;padding:0 4px 10px;font-size:11px;color:#8e8e93">'
+        +'<span>🔄 Auto-refresh každých 30s</span>'
+        +'<button onclick="adminLiveRefresh()" style="background:none;border:none;color:#007AFF;font-size:13px;font-weight:600;cursor:pointer">↻ Obnoviť</button>'
+      +'</div>'
+      +'<div id="alContent"></div>'
+      +'<div style="font-size:11px;color:#8e8e93;margin-top:16px;text-align:center;padding:12px">Priamo z Cloudflare KV • Aktualizuje sa každých 30 sekúnd</div>'
+      +'</div>';
+    document.body.appendChild(ov);
+  }
+  ov.style.display = 'block';
+  // Reset dátumu na dnes
+  window.adminLiveDate = new Date();
+  adminLiveRefresh();
+  // Auto-refresh každých 30s
+  if(adminLiveInterval) clearInterval(adminLiveInterval);
+  adminLiveInterval = setInterval(adminLiveRefresh, 30000);
+}
+
+function adminCloseLive(){
+  var ov = document.getElementById('adminLiveOverlay');
+  if(ov) ov.style.display = 'none';
+  if(adminLiveInterval){ clearInterval(adminLiveInterval); adminLiveInterval = null; }
+}
+
+function adminLiveChangeDay(delta){
+  if(!window.adminLiveDate) window.adminLiveDate = new Date();
+  window.adminLiveDate.setDate(window.adminLiveDate.getDate() + delta);
+  adminLiveRefresh();
+}
+
+function adminLiveToday(){
+  window.adminLiveDate = new Date();
+  adminLiveRefresh();
+}
+
+function adminLiveRefresh(){
+  var d = window.adminLiveDate || new Date();
+  var yr = d.getFullYear(), mo = d.getMonth(), day = d.getDate();
+  var dateLabel = document.getElementById('alDateLabel');
+  if(dateLabel){
+    var todayStr = new Date().toDateString();
+    var isToday = d.toDateString() === todayStr;
+    dateLabel.textContent = (isToday?'📅 Dnes • ':'') + day + '.' + (mo+1) + '.' + yr + ' (' + ['Ne','Po','Ut','St','Št','Pi','So'][d.getDay()] + ')';
+  }
+  var lastUpd = document.getElementById('alLastUpdate');
+  if(lastUpd) lastUpd.textContent = '⏳ Načítavam z KV...';
+  var content = document.getElementById('alContent');
+  if(!content) return;
+  // Fetch priamo z KV
+  fetch(API_URL)
+    .then(function(r){ return r.json(); })
+    .then(function(kv){
+      var dateStr = yr + '-' + String(mo+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+      var html = '';
+      USERS.forEach(function(u){
+        // Hľadaj záznam pre tento deň
+        var keyShort = u + '_' + dateStr;
+        var keyD = u + '_d_' + dateStr;
+        var dayData = null;
+        if(kv[keyShort]){ try{ dayData = JSON.parse(kv[keyShort]); }catch(e){} }
+        else if(kv[keyD]){ try{ dayData = JSON.parse(kv[keyD]); }catch(e){} }
+        // Nájdi posledný update v KV pre tohto usera (akýkoľvek záznam za dnešný deň)
+        var lastActivity = null;
+        Object.keys(kv).forEach(function(k){
+          if(k.indexOf(u+'_') === 0 && k.indexOf(dateStr) > -1){
+            lastActivity = dateStr;
+          }
+        });
+        // Spočítaj štatistiky
+        var stats = null;
+        if(dayData){
+          try{
+            if(!dayData.visits) dayData.visits = [];
+            stats = {
+              tw: (dayData.start && dayData.end) ? (tMin(dayData.end) - tMin(dayData.start)) : 0,
+              vm: dayData.visits.reduce(function(s,v){return s + (parseInt(v.mins)||0);},0),
+              vc: dayData.visits.length
+            };
+          }catch(e){}
+        }
+        // Goals pre používateľa
+        var g = userGoals[u] || {pracovna:8.5, navstevy:5, pocet:11};
+        if(kv['goals_'+u]){ try{ g = JSON.parse(kv['goals_'+u]); }catch(e){} }
+        // Status
+        var statusIcon='⬜', statusText='Žiadne dáta', statusColor='#8e8e93', cardBg='#fff', borderColor='transparent';
+        if(dayData){
+          if(dayData.type==='dovol'){ statusIcon='🏖'; statusText='Dovolenka'; statusColor='#007AFF'; }
+          else if(dayData.type==='pn'){ statusIcon='🤒'; statusText='PN'; statusColor='#FF9500'; }
+          else if(dayData.type==='meeting'){ statusIcon='📋'; statusText='Meeting'; statusColor='#AF52DE'; }
+          else if(dayData.type==='cd'){ statusIcon='🏠'; statusText='CD/Home Office'; statusColor='#8e8e93'; }
+          else if(dayData.start && !dayData.end){ statusIcon='🟢'; statusText='Pracuje teraz'; statusColor='#34C759'; borderColor='#34C759'; }
+          else if(dayData.start && dayData.end){ statusIcon='✅'; statusText='Hotový'; statusColor='#1a7431'; }
+          else if(dayData.visits && dayData.visits.length>0){ statusIcon='📝'; statusText='Iba návštevy'; statusColor='#007AFF'; }
+        }
+        // Farba avatara
+        var ucol = (userColors && userColors[u]) || '#717786';
+        // Karta - klikateľná pre cudzích používateľov (otvorí ich kalendár)
+        var clickAttr = (u !== currentUser) ? ' onclick="adminViewUserFromLive(\''+u+'\')" style="cursor:pointer;' : ' style="';
+        html += '<div'+clickAttr+'background:'+cardBg+';border-radius:14px;padding:14px 16px;margin-bottom:10px;border-left:4px solid '+(borderColor!=='transparent'?borderColor:ucol)+';box-shadow:0 1px 3px rgba(0,0,0,0.04)" onmouseover="this.style.transform=\'translateY(-1px)\'" onmouseout="this.style.transform=\'\'">';
+        // Header riadok: meno + status
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:'+(dayData?'10px':'0')+'">';
+        html += '<div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:50%;background:'+ucol+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">'+u.charAt(0)+'</div><div style="font-size:16px;font-weight:600;color:#1c1c1e">'+u+(u!==currentUser?' <span style="color:#c1c6d7;font-weight:400;font-size:13px">›</span>':'')+'</div></div>';
+        html += '<div style="font-size:12px;font-weight:600;color:'+statusColor+';white-space:nowrap">'+statusIcon+' '+statusText+'</div>';
+        html += '</div>';
+        if(dayData && stats){
+          // Časy
+          var startT = dayData.start || '—';
+          var endT = dayData.end || (dayData.start ? '...' : '—');
+          html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
+          html += '<div style="background:#f2f2f7;border-radius:10px;padding:8px 10px"><div style="font-size:10px;color:#8e8e93;font-weight:600;text-transform:uppercase;letter-spacing:0.04em">Príchod</div><div style="font-size:15px;font-weight:700;color:#1c1c1e">'+startT+'</div></div>';
+          html += '<div style="background:#f2f2f7;border-radius:10px;padding:8px 10px"><div style="font-size:10px;color:#8e8e93;font-weight:600;text-transform:uppercase;letter-spacing:0.04em">Odchod</div><div style="font-size:15px;font-weight:700;color:#1c1c1e">'+endT+'</div></div>';
+          html += '</div>';
+          // Štatistiky
+          var twTxt = stats.tw>0 ? Math.floor(stats.tw/60)+'h '+(stats.tw%60)+'m' : (dayData.start && !dayData.end ? 'prebieha' : '—');
+          var vmTxt = stats.vm>0 ? Math.floor(stats.vm/60)+'h '+(stats.vm%60)+'m' : '—';
+          var twOk = stats.tw >= g.pracovna*60;
+          var vmOk = stats.vm >= g.navstevy*60;
+          var vcOk = stats.vc >= g.pocet;
+          html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">';
+          html += '<div style="background:'+(twOk?'#d1f2d8':'#fff3d6')+';border-radius:10px;padding:8px 8px;text-align:center"><div style="font-size:9px;color:#8e8e93;font-weight:700;text-transform:uppercase">Práca</div><div style="font-size:13px;font-weight:700;color:'+(twOk?'#1a7431':'#b36200')+'">'+twTxt+'</div><div style="font-size:9px;color:#8e8e93">cieľ '+g.pracovna+'h</div></div>';
+          html += '<div style="background:'+(vmOk?'#d1f2d8':'#fff3d6')+';border-radius:10px;padding:8px 8px;text-align:center"><div style="font-size:9px;color:#8e8e93;font-weight:700;text-transform:uppercase">U zák.</div><div style="font-size:13px;font-weight:700;color:'+(vmOk?'#1a7431':'#b36200')+'">'+vmTxt+'</div><div style="font-size:9px;color:#8e8e93">cieľ '+g.navstevy+'h</div></div>';
+          html += '<div style="background:'+(vcOk?'#d1f2d8':'#ffd6d6')+';border-radius:10px;padding:8px 8px;text-align:center"><div style="font-size:9px;color:#8e8e93;font-weight:700;text-transform:uppercase">Návštevy</div><div style="font-size:13px;font-weight:700;color:'+(vcOk?'#1a7431':'#c0392b')+'">'+stats.vc+'</div><div style="font-size:9px;color:#8e8e93">cieľ '+g.pocet+'</div></div>';
+          html += '</div>';
+          // Detail návštev ak sú
+          if(dayData.visits && dayData.visits.length>0){
+            html += '<details style="margin-top:8px"><summary style="font-size:11px;color:#007AFF;cursor:pointer;padding:4px 0">Detail návštev ('+dayData.visits.length+')</summary>';
+            html += '<div style="margin-top:6px;padding:8px;background:#f9f9fb;border-radius:8px">';
+            dayData.visits.forEach(function(v,i){
+              var vm = parseInt(v.mins)||0;
+              var vmt = vm>0 ? Math.floor(vm/60)+'h '+(vm%60)+'m' : '—';
+              html += '<div style="font-size:11px;padding:3px 0;color:#414755">'+(i+1)+'. '+(v.miesto||'—')+' · '+vmt+'</div>';
+            });
+            html += '</div></details>';
+          }
+          // Poznámka
+          if(dayData.note){
+            html += '<div style="margin-top:8px;padding:8px;background:#fff3d6;border-radius:8px;font-size:11px;color:#414755;line-height:1.4">📝 '+dayData.note.replace(/</g,'&lt;')+'</div>';
+          }
+        }
+        html += '</div>';
+      });
+      content.innerHTML = html;
+      var lu = document.getElementById('alLastUpdate');
+      if(lu){
+        var now = new Date();
+        lu.textContent = '🟢 Aktualizované o ' + String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
+      }
+    })
+    .catch(function(e){
+      content.innerHTML = '<div style="background:#fff;border-radius:14px;padding:20px;text-align:center;color:#FF3B30">❌ Chyba pri načítaní z KV<br><span style="font-size:12px;color:#8e8e93">'+(e.message||'')+'</span></div>';
+      var lu = document.getElementById('alLastUpdate');
+      if(lu) lu.textContent = '❌ Chyba pri načítaní';
+    });
 }
 
 function adminExportCSV(){
@@ -1772,10 +1950,57 @@ function saveAdminGoals(){
   setStatus('✅ Ciele uložené pre '+user+'!');
   closeSettings();
 }
+function adminToggleAddUser(){
+  var form = document.getElementById('alAddUserForm');
+  if(!form) return;
+  var btn = document.getElementById('alToggleAddBtn');
+  if(form.style.display === 'none' || !form.style.display){
+    form.style.display = 'block';
+    // Auto-generuj náhodný PIN
+    var pin = document.getElementById('alNewUserPin');
+    if(pin && !pin.value){ pin.value = Math.floor(1000 + Math.random()*9000); }
+    if(btn) btn.textContent = '✕ Zrušiť';
+  } else {
+    form.style.display = 'none';
+    if(btn) btn.textContent = '➕ Pridať užívateľa';
+  }
+}
+
+function adminGenPin(){
+  var pin = document.getElementById('alNewUserPin');
+  if(pin) pin.value = Math.floor(1000 + Math.random()*9000);
+}
+
+function adminViewUserFromLive(userName){
+  // Volaná z karty v LIVE dashboarde - prepne na čítanie kalendára danej osoby
+  adminCloseLive();
+  var origUser = currentUser;
+  // Načítame cache vybraného
+  try{ var c=JSON.parse(localStorage.getItem('cache_'+userName)||'null'); if(c){data=c.data||{};} }catch(e){}
+  currentUser = userName;
+  applyGoals();
+  renderCalendar();
+  setStatus('👁 Zobrazujem dáta: '+userName+' (len čítanie)');
+  // Banner s tlačidlom späť
+  var banner = document.createElement('div');
+  banner.id = 'viewUserBanner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999;background:#FF9500;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:14px;';
+  banner.innerHTML = '👁 Dáta: '+userName+' (len čítanie)'
+    +'<button onclick="adminRestoreUser(\''+origUser+'\')" style="background:rgba(0,0,0,0.2);border:none;color:#fff;padding:6px 12px;border-radius:8px;font-weight:600;cursor:pointer">← Späť na '+origUser+'</button>';
+  document.body.appendChild(banner);
+}
+
 function adminAddUser(){
-  var name=(document.getElementById('gNewUserName').value||'').trim();
-  var pin=String(document.getElementById('gNewUserPin').value||'').trim();
-  var color=document.getElementById('gNewUserColor').value||'#34C759';
+  var pinEl = document.getElementById('alNewUserPin');
+  var colorEl = document.getElementById('alNewUserColor');
+  // Fallback na pôvodné IDs (ak by sa volalo z iného miesta)
+  if(!nameEl) nameEl = document.getElementById('gNewUserName');
+  if(!pinEl) pinEl = document.getElementById('gNewUserPin');
+  if(!colorEl) colorEl = document.getElementById('gNewUserColor');
+  if(!nameEl){ setStatus('⚠️ Formulár nie je otvorený'); return; }
+  var name=(nameEl.value||'').trim();
+  var pin=String(pinEl.value||'').trim();
+  var color=colorEl.value||'#34C759';
   if(!name||name.length<2){setStatus('⚠️ Zadaj meno (min. 2 znaky)');return;}
   if(pin.length!==4||isNaN(Number(pin))){setStatus('⚠️ PIN musia byť 4 číslice');return;}
   if(USERS.includes(name)){setStatus('⚠️ Používateľ '+name+' už existuje');return;}
@@ -1791,8 +2016,25 @@ function adminAddUser(){
     localStorage.setItem('pins_cache',JSON.stringify(PINS));
   }catch(e){}
   setStatus('✅ Užívateľ '+name+' bol pridaný!');
-  closeSettings();
-  setTimeout(function(){location.reload();},1200);
+  // Ak sme v LIVE dashboarde - len ho obnov, inak zatvor Settings a reload
+  if(document.getElementById('adminLiveOverlay') && document.getElementById('adminLiveOverlay').style.display !== 'none'){
+    // Vyčisti polia
+    if(nameEl) nameEl.value = '';
+    if(pinEl) pinEl.value = '';
+    if(colorEl) colorEl.value = '#34C759';
+    // Skry formulár ak je otvorený
+    var form = document.getElementById('alAddUserForm');
+    if(form) form.style.display = 'none';
+    // Obnov LIVE
+    adminLiveRefresh();
+    setTimeout(function(){
+      setStatus('✅ '+name+' pridaná — reload pre úplné načítanie');
+      setTimeout(function(){location.reload();},1500);
+    },300);
+  } else {
+    closeSettings();
+    setTimeout(function(){location.reload();},1200);
+  }
 }
 
 function adminClearDay(){

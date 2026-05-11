@@ -1153,7 +1153,7 @@ function allDarkBtns(){ ['darkBtn','darkBtn2','darkBtn3','darkBtn4','darkBtn5','
 function faceIdKey(user){ return 'faceid_cred_'+user; }
 function isFaceIdRegistered(user){ return !!localStorage.getItem(faceIdKey(user)); }
 function updateFaceIdBtns(){
-  ['Filip','Mirka'].forEach(function(u){
+  ['Filip','Mirka','Lubo','Monika','Ivana'].forEach(function(u){
     var fb=document.getElementById('faceBtn-'+u);
     var rb=document.getElementById('remBtn-'+u);
     var gb=document.getElementById('forgetBtn-'+u);
@@ -1200,7 +1200,7 @@ async function doFaceId(){
 function saveRememberMe(user){ localStorage.setItem('remember_'+user,'1'); localStorage.setItem('rememberUntil_'+user,Date.now()+30*24*60*60*1000); }
 function clearRememberMe(user){ if(user){ localStorage.removeItem('remember_'+user); localStorage.removeItem('rememberUntil_'+user); } }
 function isRemembered(user){ var v=localStorage.getItem('remember_'+user),t=parseInt(localStorage.getItem('rememberUntil_'+user)||'0'); return v==='1'&&Date.now()<t; }
-function checkRememberMe(){ var users=['Filip','Mirka']; for(var i=0;i<users.length;i++){ if(isRemembered(users[i])) return users[i]; } return null; }
+function checkRememberMe(){ var users=['Filip','Mirka','Lubo','Monika','Ivana']; for(var i=0;i<users.length;i++){ if(isRemembered(users[i])) return users[i]; } return null; }
 
 // ── PIN ──────────────────────────────────────────────────────────
 function startLogin(user){

@@ -1207,14 +1207,48 @@ var USERS_DEFAULT = ['Filip','Mirka','Lubo','Monika','Ivana'];
 var USERS = (function(){
   try {
     var s = localStorage.getItem('users_list');
-    return s ? JSON.parse(s) : USERS_DEFAULT.slice();
+    var arr = s ? JSON.parse(s) : null;
+    // Sanitácia: vyhoď staré mená a doplň aktuálne
+    var INVALID = ['Beny','Martin','TEST','Test','test'];
+    var needsReset = false;
+    if(!arr || !Array.isArray(arr)){
+      arr = USERS_DEFAULT.slice();
+      needsReset = true;
+    } else {
+      // Vyhoď neplatné mená
+      var origLen = arr.length;
+      arr = arr.filter(function(u){ return INVALID.indexOf(u) < 0; });
+      if(arr.length !== origLen) needsReset = true;
+      // Doplň chýbajúcich z defaults
+      USERS_DEFAULT.forEach(function(u){
+        if(arr.indexOf(u) < 0){ arr.push(u); needsReset = true; }
+      });
+      // Zachovaj poradie z defaults
+      var ordered = [];
+      USERS_DEFAULT.forEach(function(u){ if(arr.indexOf(u)>=0) ordered.push(u); });
+      arr.forEach(function(u){ if(ordered.indexOf(u)<0) ordered.push(u); });
+      arr = ordered;
+    }
+    if(needsReset){
+      try { localStorage.setItem('users_list', JSON.stringify(arr)); } catch(e){}
+    }
+    return arr;
   } catch(e) { return USERS_DEFAULT.slice(); }
 })();
 var USER_COLORS_DEFAULT = {'Filip':'#007AFF','Mirka':'#FF2D55','Lubo':'#FF9500','Monika':'#AF52DE','Ivana':'#5AC8FA'};
 var userColors = (function(){
   try {
     var s = localStorage.getItem('user_colors');
-    return s ? Object.assign({}, USER_COLORS_DEFAULT, JSON.parse(s)) : Object.assign({}, USER_COLORS_DEFAULT);
+    var saved = s ? JSON.parse(s) : {};
+    var INVALID = ['Beny','Martin','TEST','Test','test'];
+    var clean = {};
+    Object.keys(saved||{}).forEach(function(k){
+      if(INVALID.indexOf(k) < 0) clean[k] = saved[k];
+    });
+    var merged = Object.assign({}, USER_COLORS_DEFAULT, clean);
+    // Uložím vyčistenú verziu späť
+    try { localStorage.setItem('user_colors', JSON.stringify(merged)); } catch(e){}
+    return merged;
   } catch(e) { return Object.assign({}, USER_COLORS_DEFAULT); }
 })();
 var MASTER = '1234';
@@ -1837,7 +1871,10 @@ function adminOpenLive(){
       +'</div>'
       +'<div id="alRefreshBar" style="display:flex;align-items:center;justify-content:space-between;padding:0 4px 10px;font-size:11px;color:#8e8e93">'
         +'<span>🔄 Auto-refresh každých 30s</span>'
-        +'<button onclick="adminLiveRefresh()" style="background:none;border:none;color:#007AFF;font-size:13px;font-weight:600;cursor:pointer">↻ Obnoviť</button>'
+        +'<div style="display:flex;gap:10px;align-items:center">'
+          +'<button onclick="adminResetCache()" style="background:none;border:none;color:#FF9500;font-size:11px;font-weight:600;cursor:pointer" title="Vyčistí lokálnu cache mien a obnoví appku">🧹 Reset cache</button>'
+          +'<button onclick="adminLiveRefresh()" style="background:none;border:none;color:#007AFF;font-size:13px;font-weight:600;cursor:pointer">↻ Obnoviť</button>'
+        +'</div>'
       +'</div>'
       +'<div id="alContent"></div>'
       +'<div style="font-size:11px;color:#8e8e93;margin-top:16px;text-align:center;padding:12px">Priamo z Cloudflare KV • Aktualizuje sa každých 30 sekúnd</div>'
@@ -1870,6 +1907,21 @@ function adminLiveToday(){
   adminLiveRefresh();
 }
 
+function adminResetCache(){
+  if(!confirm('Vyčistiť lokálnu cache?\n\nOdstráni sa zoznam užívateľov a farieb z localStorage. Appka sa potom obnoví a načíta správny zoznam z kódu.\n\nDáta v Cloudflare KV ostanú nedotknuté.')) return;
+  try {
+    localStorage.removeItem('users_list');
+    localStorage.removeItem('user_colors');
+    localStorage.removeItem('pins_cache');
+    // Zachovaj remember_me a osobné dáta, len vyčisti cache_*
+    Object.keys(localStorage).forEach(function(k){
+      if(k.indexOf('cache_') === 0) localStorage.removeItem(k);
+    });
+  } catch(e){}
+  alert('✅ Cache vyčistená. Appka sa obnoví.');
+  location.reload();
+}
+
 function adminLiveRefresh(){
   var d = window.adminLiveDate || new Date();
   var yr = d.getFullYear(), mo = d.getMonth(), day = d.getDate();
@@ -1889,7 +1941,9 @@ function adminLiveRefresh(){
     .then(function(kv){
       var dateStr = yr + '-' + String(mo+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
       var html = '';
-      USERS.forEach(function(u){
+      // FIXNÝ zoznam — nezávislý od localStorage/KV cache (chráni proti starým záznamom Beny/Martin/TEST)
+      var LIVE_USERS = ['Filip','Mirka','Lubo','Monika','Ivana'];
+      LIVE_USERS.forEach(function(u){
         // Hľadaj záznam pre tento deň
         var keyShort = u + '_' + dateStr;
         var keyD = u + '_d_' + dateStr;
@@ -1994,7 +2048,9 @@ function adminExportCSV(){
   var mo = currentMonth, yr = currentYear;
   var EXCL=['dovol','pn'], SKIP=['cd','meeting'];
   var lines = [['Meno','Dátum','Začiatok','Koniec','Prac. čas (min)','Návštevy','Čas návštev (min)','Typ'].join(';')];
-  USERS.forEach(function(u){
+  // FIXNÝ zoznam (chráni proti starým záznamom)
+  var EXPORT_USERS = ['Filip','Mirka','Lubo','Monika','Ivana'];
+  EXPORT_USERS.forEach(function(u){
     var cached = null;
     try{ var c=JSON.parse(localStorage.getItem('cache_'+u)||'null'); if(c) cached=c.data; }catch(e){}
     if(!cached) return;

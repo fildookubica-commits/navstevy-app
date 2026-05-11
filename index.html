@@ -3031,11 +3031,20 @@ function kadParseExcelDate(v){
   }
   if(typeof v === 'string'){
     var s = v.trim();
-    // formáty: 1.7.2026, 01.07.2026, 1.7.26
+    if(!s || s === 'x' || s === '-') return null;
+    // formáty s bodkami: 1.7.2026, 01.07.2026, 1.7.26, typo 1.7.206
     var m = s.match(/^(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{2,4})$/);
+    if(!m){
+      // formát so slash-mi: 07/05/26, 11/05/2026
+      m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+    }
     if(m){
       var day=parseInt(m[1],10), mon=parseInt(m[2],10)-1, yr=parseInt(m[3],10);
-      if(yr<100) yr += 2000;
+      // Oprava roku:
+      //  - 26 → 2026 (2-ciferné)
+      //  - 206 → 2026, 219 → 2039 (typo: chýba cifra v roku 20XX)
+      if(yr < 100) yr += 2000;
+      else if(yr >= 200 && yr < 230) yr += 1820;  // 206→2026, 219→2039
       var d = new Date(Date.UTC(yr, mon, day));
       return isNaN(d.getTime())?null:d;
     }
@@ -3063,6 +3072,12 @@ function kadNormalizeChain(c){
   if(u.indexOf('TERNO')>=0) return 'TERNO';
   if(u.indexOf('LIBEX')>=0) return 'LIBEX';
   if(u.indexOf('METRO')>=0) return 'Metro';
+  if(u.indexOf('LIDL')>=0) return 'Lidl';
+  if(u.indexOf('LABAŠ')>=0 || u.indexOf('LABAS')>=0) return 'Labaš';
+  if(u.indexOf('FRESH')>=0) return 'FRESH';
+  if(u.indexOf('MILK')>=0) return 'Milk Agro';
+  if(u.indexOf('ČS')>=0 || u==='CS' || u.indexOf('CERPACIA')>=0) return 'ČS';
+  if(u.indexOf('DROG')>=0) return 'Drogéria';
   return c;
 }
 
@@ -3083,48 +3098,87 @@ function kadHandleUpload(ev){
     try {
       var data = new Uint8Array(e.target.result);
       var workbook = XLSX.read(data, {type:'array', cellDates:true});
-      var sheet = workbook.Sheets[workbook.SheetNames[0]];
-      var rows = XLSX.utils.sheet_to_json(sheet, {header:1, raw:false, defval:''});
-      // Hľadáme header riadok (obsahuje 'Chain' alebo 'Reťazec' alebo 'Akcia Od')
+      // Vyber hárok: prefer KADMEMO, inak prvý
+      var sheetName = workbook.SheetNames.indexOf('KADMEMO')>=0 ? 'KADMEMO' : workbook.SheetNames[0];
+      var sheet = workbook.Sheets[sheetName];
+      var rows = XLSX.utils.sheet_to_json(sheet, {header:1, raw:true, defval:''});
+      // ── METADATA: hľadám "Platnosť mema:" a "Týždeň X" v prvých 5 riadkoch
+      var metaOd = null, metaDo = null, weekFromMeta = null;
+      for(var mi=0; mi<Math.min(rows.length,5); mi++){
+        var mrow = rows[mi]; if(!mrow) continue;
+        for(var mj=0; mj<mrow.length; mj++){
+          var cv = String(mrow[mj]||'').trim();
+          if(/platnosť|platnost/i.test(cv)){
+            // Ďalšie 2 bunky = od/do dátumy
+            metaOd = kadParseExcelDate(mrow[mj+1]);
+            metaDo = kadParseExcelDate(mrow[mj+2]);
+          }
+          var wm = cv.match(/t[ýyi]?(?:žd|zd)e[ňn]?\s*(\d{1,2})/i);
+          if(wm) weekFromMeta = parseInt(wm[1],10);
+        }
+      }
+      // ── HEADER DETEKCIA: hľadáme riadok obsahujúci "Chain" + "Akcia"
+      function normHdr(s){ return String(s||'').toLowerCase().replace(/\s+/g,' ').replace(/\n/g,' ').trim(); }
       var headerIdx = -1;
       for(var i=0;i<Math.min(rows.length,30);i++){
         var r = rows[i];
         if(!r || !r.length) continue;
-        var line = r.map(function(c){return String(c||'').toLowerCase();}).join('|');
-        if((line.indexOf('chain')>=0 || line.indexOf('reťazec')>=0 || line.indexOf('retazec')>=0) && (line.indexOf('akcia')>=0 || line.indexOf('produkt')>=0 || line.indexOf('product')>=0)){
+        var line = r.map(normHdr).join('|');
+        if(line.indexOf('chain')>=0 && (line.indexOf('akcia')>=0 || line.indexOf('od dátumu')>=0 || line.indexOf('produkt')>=0)){
+          headerIdx = i; break;
+        }
+        // Špecificky pre Mars formát: hlavičky s newline "Akcia\nOd"
+        if(line.indexOf('chain')>=0 && line.indexOf('typ - výrobku')>=0){
           headerIdx = i; break;
         }
       }
-      if(headerIdx < 0){
-        // Fallback: pokus o 1. riadok
-        headerIdx = 0;
-      }
-      var headers = rows[headerIdx].map(function(c){return String(c||'').toLowerCase().trim();});
-      function colIdx(/*names*/){
+      if(headerIdx < 0) headerIdx = 0;
+      var headers = rows[headerIdx].map(normHdr);
+      console.log('KAD: hárok='+sheetName+', header riadok R'+(headerIdx+1)+', hlavičky:', headers);
+      function colIdx(/*názvy hlavičiek*/){
         for(var k=0;k<arguments.length;k++){
+          var needle = arguments[k];
           for(var j=0;j<headers.length;j++){
-            if(headers[j].indexOf(arguments[k]) >= 0) return j;
+            if(headers[j].indexOf(needle) >= 0) return j;
           }
         }
         return -1;
       }
+      var cKAM     = colIdx('kam');
       var cChain   = colIdx('chain','reťazec','retazec','sieť','siet');
       var cChain2  = colIdx('chain 2','chain2','sub');
-      var cSeg     = colIdx('segment','format','typ');
-      var cProd    = colIdx('produkt','product','názov','nazov','tovar');
-      var cFrom    = colIdx('akcia od','od dátumu','od datumu','start');
-      var cTo      = colIdx('akcia do','do dátumu','do datumu','end','koniec');
+      var cSeg     = colIdx('segment');
+      var cBuyFrom = colIdx('nákup od','nakup od');
+      var cProd    = colIdx('typ - výrobku','typ - vyrobku','produkt','product','názov','nazov','tovar');
+      var cFrom    = colIdx('akcia od','akcia\nod','od dátumu','od datumu','akcia');
+      // Akcia Do nesmie zachytiť "Akcia Od" preto hľadáme aj samostatne
+      var cTo      = -1;
+      for(var jj=0; jj<headers.length; jj++){
+        if(headers[jj].indexOf('akcia do')>=0 || headers[jj].indexOf('do dátumu')>=0 || headers[jj].indexOf('do datumu')>=0){ cTo=jj; break; }
+        if(headers[jj] === 'do' || /^akcia\s+do$/i.test(headers[jj])){ cTo=jj; break; }
+      }
+      // Fallback: ak nemáme cTo a cFrom je nájdený, vezmi nasledujúci stĺpec
+      if(cTo === -1 && cFrom >= 0 && cFrom+1 < headers.length){
+        if(headers[cFrom+1].indexOf('do')>=0) cTo = cFrom+1;
+      }
       var cStatus  = colIdx('status','stav');
+      var cTypDU   = colIdx('typ du','typ du');
       var cBrief   = colIdx('brief','popis','description');
-      var cMech    = colIdx('mechanika','mechanism','mechanizmus');
-      var cPrice   = colIdx('cena','price','akčná','akcna');
+      var cPozn    = colIdx('poznámka','poznamka','note');
       var arr = [];
+      var KAMs = {};
       for(var k=headerIdx+1;k<rows.length;k++){
         var r = rows[k];
         if(!r) continue;
         var chain = cChain>=0?String(r[cChain]||'').trim():'';
         var prod  = cProd>=0?String(r[cProd]||'').trim():'';
+        // Preskočiť prázdne riadky
         if(!chain && !prod) continue;
+        var kam = cKAM>=0?String(r[cKAM]||'').trim():'';
+        if(kam) KAMs[kam] = (KAMs[kam]||0)+1;
+        // Brief - môže byť číslo aj text
+        var briefVal = cBrief>=0 ? r[cBrief] : '';
+        if(briefVal === null || briefVal === undefined) briefVal = '';
         var item = {
           chain:    kadNormalizeChain(chain),
           chainOrig: chain,
@@ -3134,24 +3188,32 @@ function kadHandleUpload(ev){
           akciaOd:  cFrom>=0?kadParseExcelDate(r[cFrom]):null,
           akciaDo:  cTo>=0?kadParseExcelDate(r[cTo]):null,
           status:   cStatus>=0?String(r[cStatus]||'').trim():'',
-          brief:    cBrief>=0?String(r[cBrief]||'').trim():'',
-          mechanika:cMech>=0?String(r[cMech]||'').trim():'',
-          cena:     cPrice>=0?String(r[cPrice]||'').trim():''
+          mechanika:cTypDU>=0?String(r[cTypDU]||'').trim():'',
+          brief:    cPozn>=0?String(r[cPozn]||'').trim():'',  // Poznámka má bohatý obsah, zobrazujem ju ako brief
+          briefNum: String(briefVal).trim(),                    // Brief číslo
+          kam:      kam,
+          cena:     ''
         };
         arr.push(item);
       }
       if(arr.length === 0){
-        setStatus('⚠️ Žiadne akcie nenájdené v súbore');
+        setStatus('⚠️ Žiadne akcie nenájdené. Skontroluj formát súboru.');
+        console.warn('KAD: parsed 0 rows. Header idx:', headerIdx, 'cols:', {chain:cChain, prod:cProd, from:cFrom, to:cTo});
         return;
       }
-      // Zistím týždeň (z názvu súboru alebo z dátumu)
+      // Týždeň: z metadát, inak z názvu súboru
       var weekMatch = file.name.match(/w(\d{1,2})/i);
-      var weekNum = weekMatch ? parseInt(weekMatch[1],10) : null;
+      var weekFromFile = weekMatch ? parseInt(weekMatch[1],10) : null;
+      var weekNum = weekFromMeta || weekFromFile;
       var meta = {
         fileName: file.name,
+        sheetName: sheetName,
         uploadedBy: currentUser,
         uploadedAt: new Date().toISOString(),
         weekNumber: weekNum,
+        validFrom: metaOd ? metaOd.toISOString() : null,
+        validTo:   metaDo ? metaDo.toISOString() : null,
+        kams: Object.keys(KAMs).sort(),
         count: arr.length
       };
       // Serializujem dáta (Date -> ISO string)
@@ -3166,7 +3228,9 @@ function kadHandleUpload(ev){
           akciaDo: x.akciaDo?x.akciaDo.toISOString():null,
           status: x.status,
           brief: x.brief,
+          briefNum: x.briefNum,
           mechanika: x.mechanika,
+          kam: x.kam,
           cena: x.cena
         };
       });
@@ -3178,12 +3242,13 @@ function kadHandleUpload(ev){
       kadUpdateInfo();
       kadBuildChainFilter();
       kadRender();
-      setStatus('✅ '+arr.length+' akcií nahraných (zdieľané s tímom)');
+      var withDates = arr.filter(function(x){return x.akciaOd && x.akciaDo;}).length;
+      setStatus('✅ '+arr.length+' akcií ('+withDates+' s dátumom) • zdieľané s tímom');
       // Reset file input
       document.getElementById('akcieFileInput').value = '';
     } catch(err){
       console.error('KAD parse error:', err);
-      setStatus('⚠️ Chyba pri parsovaní: '+err.message);
+      setStatus('⚠️ Chyba: '+err.message);
     }
   };
   reader.readAsArrayBuffer(file);
@@ -3206,7 +3271,9 @@ function kadLoadFromKV(jsonStr){
         akciaDo: x.akciaDo ? new Date(x.akciaDo) : null,
         status: x.status || '',
         brief: x.brief || '',
+        briefNum: x.briefNum || '',
         mechanika: x.mechanika || '',
+        kam: x.kam || '',
         cena: x.cena || ''
       };
     });
@@ -3225,7 +3292,13 @@ function kadUpdateInfo(){
     return;
   }
   var w = KAD_META.weekNumber ? 'Týždeň '+KAD_META.weekNumber : (KAD_META.fileName || 'KAD memo');
-  val.textContent = w+' • '+KAD_DATA.length+' akcií';
+  // Pridaj platnosť mema ak je k dispozícii
+  var validity = '';
+  if(KAD_META.validFrom && KAD_META.validTo){
+    var vf = new Date(KAD_META.validFrom), vt = new Date(KAD_META.validTo);
+    validity = ' (' + kadFmtDate(vf) + ' – ' + kadFmtDate(vt) + ')';
+  }
+  val.textContent = w + validity + ' • ' + KAD_DATA.length + ' akcií';
   var d = KAD_META.uploadedAt ? new Date(KAD_META.uploadedAt) : null;
   var who = KAD_META.uploadedBy || 'Filip';
   meta.textContent = d ? ('Nahral '+who+' '+kadFmtDate(new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())))+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')) : '';
@@ -3396,12 +3469,14 @@ function kadShowDetail(idx){
   var rows = '';
   rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">Sieť</span><span class="akcie-detail-val" style="color:'+color+';font-weight:700">'+escapeHtml(x.chain)+'</span></div>';
   if(x.chain2) rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">Pod-sieť</span><span class="akcie-detail-val">'+escapeHtml(x.chain2)+'</span></div>';
+  if(x.kam) rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">KAM</span><span class="akcie-detail-val">'+escapeHtml(x.kam)+'</span></div>';
   if(x.segment) rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">Segment</span><span class="akcie-detail-val">'+escapeHtml(x.segment)+'</span></div>';
   rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">Trvanie</span><span class="akcie-detail-val">'+dateStr+'</span></div>';
   if(x.status) rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">Status</span><span class="akcie-detail-val">'+escapeHtml(x.status)+'</span></div>';
   if(x.cena) rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">Akčná cena</span><span class="akcie-detail-val" style="font-weight:700">'+escapeHtml(x.cena)+'</span></div>';
   if(x.mechanika) rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">Mechanika</span><span class="akcie-detail-val">'+escapeHtml(x.mechanika)+'</span></div>';
-  if(x.brief) rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">Brief</span><span class="akcie-detail-val">'+escapeHtml(x.brief)+'</span></div>';
+  if(x.briefNum) rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">Brief č.</span><span class="akcie-detail-val">'+escapeHtml(x.briefNum)+'</span></div>';
+  if(x.brief) rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">Poznámka</span><span class="akcie-detail-val">'+escapeHtml(x.brief)+'</span></div>';
   document.getElementById('akcieModal').style.display = 'block';
   document.getElementById('akcieModal').innerHTML = '<div class="akcie-modal-overlay" onclick="kadCloseDetail()">'
     +'<div class="akcie-modal" onclick="event.stopPropagation()">'

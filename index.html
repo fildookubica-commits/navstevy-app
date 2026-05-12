@@ -1877,8 +1877,11 @@ function adminOpenLive(){
         +'<button onclick="adminLiveChangeDay(1)" style="background:#f2f2f7;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer">›</button>'
         +'<button onclick="adminLiveToday()" style="background:#007AFF;border:none;border-radius:18px;padding:6px 12px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;margin-left:4px">Dnes</button>'
       +'</div>'
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
         +'<button id="alToggleAddBtn" onclick="adminToggleAddUser()" style="background:#30D158;border:none;border-radius:12px;padding:11px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">➕ Pridať užívateľa</button>'
+        +'<button id="alToggleDelBtn" onclick="adminToggleDelUser()" style="background:#FF3B30;border:none;border-radius:12px;padding:11px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🗑️ Vymazať užívateľa</button>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:12px">'
         +'<button onclick="adminExportCSV()" style="background:#5856D6;border:none;border-radius:12px;padding:11px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">📊 Export CSV</button>'
       +'</div>'
       +'<div id="alAddUserForm" style="display:none;background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:12px;border:2px solid #30D158">'
@@ -1893,6 +1896,13 @@ function adminOpenLive(){
         +'</div>'
         +'<button onclick="adminAddUser()" style="width:100%;padding:11px;background:#30D158;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">✓ Vytvoriť užívateľa</button>'
         +'<div style="font-size:11px;color:#8e8e93;margin-top:8px;text-align:center">Master PIN 1234 bude fungovať pre všetkých automaticky</div>'
+      +'</div>'
+      +'<div id="alDelUserForm" style="display:none;background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:12px;border:2px solid #FF3B30">'
+        +'<div style="font-size:13px;font-weight:700;color:#c41010;margin-bottom:10px">🗑️ Vymazať užívateľa</div>'
+        +'<div style="margin-bottom:10px"><div style="font-size:12px;color:#8e8e93;margin-bottom:4px">Vyber užívateľa</div>'
+          +'<select id="alDelUserSelect" style="border:1px solid #e5e5ea;border-radius:10px;padding:9px 12px;font-size:14px;width:100%;background:#f2f2f7;color:#1c1c1e"></select></div>'
+        +'<div style="font-size:11px;color:#FF3B30;margin-bottom:10px;padding:10px;background:#fff5f5;border-radius:8px;line-height:1.4">⚠️ <strong>Trvalo vymaže:</strong> meno, PIN, farbu, ciele a Face ID údaje zo zoznamu. <br>Záznamy dochádzky a obchody zostanú v Cloudflare KV (môžu byť dohľadané neskôr ak treba).</div>'
+        +'<button onclick="adminDelUser()" style="width:100%;padding:11px;background:#FF3B30;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🗑️ Vymazať</button>'
       +'</div>'
       +'<div id="alRefreshBar" style="display:flex;align-items:center;justify-content:space-between;padding:0 4px 10px;font-size:11px;color:#8e8e93">'
         +'<span>🔄 Auto-refresh každých 30s</span>'
@@ -2154,6 +2164,13 @@ function adminToggleAddUser(){
   var form = document.getElementById('alAddUserForm');
   if(!form) return;
   var btn = document.getElementById('alToggleAddBtn');
+  // Ak je otvorený delete form, zatvor ho
+  var delForm = document.getElementById('alDelUserForm');
+  var delBtn = document.getElementById('alToggleDelBtn');
+  if(delForm && delForm.style.display === 'block'){
+    delForm.style.display = 'none';
+    if(delBtn) delBtn.textContent = '🗑️ Vymazať užívateľa';
+  }
   if(form.style.display === 'none' || !form.style.display){
     form.style.display = 'block';
     // Auto-generuj náhodný PIN
@@ -2164,6 +2181,76 @@ function adminToggleAddUser(){
     form.style.display = 'none';
     if(btn) btn.textContent = '➕ Pridať užívateľa';
   }
+}
+
+function adminToggleDelUser(){
+  var form = document.getElementById('alDelUserForm');
+  if(!form) return;
+  var btn = document.getElementById('alToggleDelBtn');
+  // Ak je otvorený add form, zatvor ho
+  var addForm = document.getElementById('alAddUserForm');
+  var addBtn = document.getElementById('alToggleAddBtn');
+  if(addForm && addForm.style.display === 'block'){
+    addForm.style.display = 'none';
+    if(addBtn) addBtn.textContent = '➕ Pridať užívateľa';
+  }
+  if(form.style.display === 'none' || !form.style.display){
+    form.style.display = 'block';
+    // Naplň select aktuálnymi užívateľmi (okrem Filipa - admin sa nemôže vymazať)
+    var sel = document.getElementById('alDelUserSelect');
+    if(sel){
+      var opts = '<option value="">— vyber —</option>';
+      USERS.forEach(function(u){
+        if(u !== 'Filip') opts += '<option value="'+u+'">'+u+'</option>';
+      });
+      sel.innerHTML = opts;
+    }
+    if(btn) btn.textContent = '✕ Zrušiť';
+  } else {
+    form.style.display = 'none';
+    if(btn) btn.textContent = '🗑️ Vymazať užívateľa';
+  }
+}
+
+function adminDelUser(){
+  var sel = document.getElementById('alDelUserSelect');
+  if(!sel){ setStatus('⚠️ Formulár nie je otvorený'); return; }
+  var name = (sel.value || '').trim();
+  if(!name){ setStatus('⚠️ Vyber užívateľa zo zoznamu'); return; }
+  if(name === 'Filip'){ setStatus('⚠️ Admin sa nemôže vymazať'); return; }
+  if(!USERS.includes(name)){ setStatus('⚠️ Užívateľ '+name+' neexistuje'); return; }
+  if(!confirm('Naozaj trvalo vymazať užívateľa "'+name+'"?\n\n'
+    + 'Odstráni sa z prihlasovacích kariet, vyčistia sa lokálne preferencie a serverové údaje (PIN, ciele, avatar, Face ID).\n\n'
+    + 'Záznamy dochádzky a obchody zostanú v databáze (pre prípad obnovy).\n\n'
+    + 'Túto akciu nemožno cez UI vrátiť späť.')) return;
+  // 1) Odstráň zo zoznamu USERS
+  USERS = USERS.filter(function(u){ return u !== name; });
+  // 2) Vymaž lokálne preferencie
+  delete userColors[name];
+  delete userGoals[name];
+  delete PINS[name];
+  try {
+    localStorage.setItem('users_list', JSON.stringify(USERS));
+    localStorage.setItem('user_colors', JSON.stringify(userColors));
+    localStorage.setItem('pins_cache', JSON.stringify(PINS));
+    localStorage.removeItem('cache_'+name);
+    localStorage.removeItem('faceid_cred_'+name);
+  } catch(e){}
+  // 3) Vyčisti serverové dáta (KV) - PIN, goals, avatar
+  apiSet('pin_'+name, '');
+  apiSet('goals_'+name, '');
+  apiSet('avatar_'+name, '');
+  apiSet('druhotky_'+name, '');
+  setStatus('✅ Užívateľ '+name+' bol vymazaný — reload o 2s');
+  // Reset form
+  sel.value = '';
+  var form = document.getElementById('alDelUserForm');
+  if(form) form.style.display = 'none';
+  var btn = document.getElementById('alToggleDelBtn');
+  if(btn) btn.textContent = '🗑️ Vymazať užívateľa';
+  // Obnov LIVE a po chvíli reload pre úplné prečistenie UI
+  if(typeof adminLiveRefresh === 'function') adminLiveRefresh();
+  setTimeout(function(){ location.reload(); }, 2000);
 }
 
 function adminGenPin(){
@@ -2191,6 +2278,7 @@ function adminViewUserFromLive(userName){
 }
 
 function adminAddUser(){
+  var nameEl = document.getElementById('alNewUserName');
   var pinEl = document.getElementById('alNewUserPin');
   var colorEl = document.getElementById('alNewUserColor');
   // Fallback na pôvodné IDs (ak by sa volalo z iného miesta)

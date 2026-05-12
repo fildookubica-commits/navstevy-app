@@ -1017,7 +1017,10 @@ body.dark select option{background:#3a3a3c;color:#fff}
             <div class="akcie-info-val" id="akcieInfoVal">Žiadne dáta</div>
             <div class="akcie-info-meta" id="akcieInfoMeta"></div>
           </div>
-          <button class="akcie-upload-btn" id="akcieUploadBtn" onclick="document.getElementById('akcieFileInput').click()" style="display:none;">📤 Nahrať</button>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+            <button class="akcie-upload-btn" id="akcieUploadBtn" onclick="document.getElementById('akcieFileInput').click()" style="display:none;">📤 Nahrať</button>
+            <button id="akcieDeleteBtn" onclick="kadDeleteMemo()" style="display:none;background:none;border:none;color:#FF3B30;font-size:11px;font-weight:600;cursor:pointer;padding:4px 8px">🗑️ Zmazať memo</button>
+          </div>
           <input type="file" id="akcieFileInput" accept=".xlsx,.xls" style="display:none" onchange="kadHandleUpload(event)">
         </div>
         <div class="akcie-filter-row" id="akcieChainFilter"></div>
@@ -1284,6 +1287,28 @@ function apiSet(k,v){
   }).then(function(d){
     if(!d.ok) { offlineQueue.push({k:k,v:v}); saveOfflineQueue(); }
   }).catch(function(){ offlineQueue.push({k:k,v:v}); saveOfflineQueue(); });
+}
+// POST verzia pre veľké payload (KAD memo, atď.) - obíde URL limit (~16 KB)
+function apiSetLarge(k, v, cb){
+  if(!navigator.onLine){
+    offlineQueue.push({k:k,v:v}); saveOfflineQueue();
+    setStatus('📵 Uložené lokálne (offline)');
+    if(cb) cb({ok:false, offline:true});
+    return;
+  }
+  fetch(API_URL, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({key:k, value:v})
+  }).then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d || !d.ok){ offlineQueue.push({k:k,v:v}); saveOfflineQueue(); }
+      if(cb) cb(d||{ok:false});
+    })
+    .catch(function(err){
+      offlineQueue.push({k:k,v:v}); saveOfflineQueue();
+      if(cb) cb({ok:false, error:err && err.message});
+    });
 }
 function setStatus(msg){ var s=document.getElementById('statusBar'); if(s){s.textContent=msg; setTimeout(function(){s.textContent='';},2500);} }
 function applyGoals(){ var g=userGoals[currentUser]||{pracovna:8.5,navstevy:5,pocet:11}; CIEL_P=g.pracovna*60; CIEL_V=g.navstevy*60; CIEL_N=g.pocet; }
@@ -3237,13 +3262,26 @@ function kadHandleUpload(ev){
       KAD_DATA = arr;
       KAD_META = meta;
       var payload = JSON.stringify({meta:meta, data:serialized});
-      apiSet('kad_memo_data', payload);
+      var sizeKB = (payload.length/1024).toFixed(1);
+      // Lokálne najprv (rýchla odozva)
       try{ localStorage.setItem('kad_memo_data', payload); }catch(e){}
       kadUpdateInfo();
       kadBuildChainFilter();
       kadRender();
       var withDates = arr.filter(function(x){return x.akciaOd && x.akciaDo;}).length;
-      setStatus('✅ '+arr.length+' akcií ('+withDates+' s dátumom) • zdieľané s tímom');
+      setStatus('⏳ '+arr.length+' akcií parsovaných • ukladám na server ('+sizeKB+' KB)...');
+      // Server cez POST (obíde URL limit ~16 KB)
+      apiSetLarge('kad_memo_data', payload, function(res){
+        if(res && res.ok){
+          setStatus('✅ '+arr.length+' akcií uložených na server • tím vidí po reload ('+sizeKB+' KB)');
+        } else {
+          var reason = res && res.offline ? 'offline – uloží sa keď bude internet'
+                     : res && res.error ? ('chyba: '+res.error)
+                     : 'server odmietol';
+          setStatus('⚠️ '+arr.length+' akcií lokálne, server: '+reason);
+          console.warn('KAD POST result:', res);
+        }
+      });
       // Reset file input
       document.getElementById('akcieFileInput').value = '';
     } catch(err){
@@ -3348,6 +3386,9 @@ function kadRender(){
   // Upload button visible len pre Filipa
   var btn = document.getElementById('akcieUploadBtn');
   if(btn) btn.style.display = (currentUser==='Filip') ? 'inline-block' : 'none';
+  // Delete button visible len pre Filipa keď sú dáta
+  var delBtn = document.getElementById('akcieDeleteBtn');
+  if(delBtn) delBtn.style.display = (currentUser==='Filip' && KAD_DATA.length>0) ? 'inline-block' : 'none';
 
   if(!KAD_DATA.length){
     list.innerHTML = '<div class="akcie-empty"><div class="akcie-empty-emoji">📅</div>'
@@ -3494,6 +3535,30 @@ function kadShowDetail(idx){
 function kadCloseDetail(){
   document.getElementById('akcieModal').style.display = 'none';
   document.getElementById('akcieModal').innerHTML = '';
+}
+
+function kadDeleteMemo(){
+  if(currentUser !== 'Filip'){
+    setStatus('⚠️ Iba Filip môže mazať KAD memo');
+    return;
+  }
+  if(!confirm('Naozaj zmazať aktuálne KAD memo?\n\nVymaže sa zo servera aj z tvojho zariadenia. Tím prestane vidieť dáta po reload.')) return;
+  setStatus('⏳ Mažem KAD memo...');
+  // Zmaž z localStorage hneď
+  try{ localStorage.removeItem('kad_memo_data'); }catch(e){}
+  KAD_DATA = [];
+  KAD_META = null;
+  kadUpdateInfo();
+  kadBuildChainFilter();
+  kadRender();
+  // Zmaž zo servera (POST s prázdnym value)
+  apiSetLarge('kad_memo_data', '', function(res){
+    if(res && res.ok){
+      setStatus('✅ KAD memo zmazané (server + zariadenie)');
+    } else {
+      setStatus('⚠️ Zmazané lokálne, server: '+(res && res.error || 'chyba'));
+    }
+  });
 }
 
 // ── NAVIGÁCIA ────────────────────────────────────────────────────

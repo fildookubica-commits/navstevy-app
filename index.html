@@ -1024,13 +1024,6 @@ body.dark select option{background:#3a3a3c;color:#fff}
           <input type="file" id="akcieFileInput" accept=".xlsx,.xls" style="display:none" onchange="kadHandleUpload(event)">
         </div>
         <div class="akcie-filter-row" id="akcieChainFilter"></div>
-        <div class="akcie-filter-row" id="akciePeriodFilter">
-          <button class="akcie-fbtn active" data-period="active" onclick="kadSetPeriod('active')">🔥 Aktívne dnes</button>
-          <button class="akcie-fbtn" data-period="nakup" onclick="kadSetPeriod('nakup')">📦 Nákup teraz</button>
-          <button class="akcie-fbtn" data-period="week" onclick="kadSetPeriod('week')">📆 Tento týždeň</button>
-          <button class="akcie-fbtn" data-period="future" onclick="kadSetPeriod('future')">⏭ Budúce</button>
-          <button class="akcie-fbtn" data-period="all" onclick="kadSetPeriod('all')">Všetky</button>
-        </div>
         <div class="akcie-filter-row" id="akcieStatusFilter">
           <button class="akcie-fbtn active" data-status="all" onclick="kadSetStatus('all')">Všetko</button>
           <button class="akcie-fbtn" data-status="approved" onclick="kadSetStatus('approved')">✅ Schválené</button>
@@ -3132,7 +3125,7 @@ var KAD_CHAIN_COLORS = {
 var KAD_DATA = [];      // [{chain, chain2, segment, produkt, akciaOd, akciaDo, status, brief, mechanika, cena}, ...]
 var KAD_META = null;    // {uploadedBy, uploadedAt, weekNumber, fileName}
 var kadFilterChain = 'all';
-var kadFilterPeriod = 'active';
+var kadFilterPeriod = 'all';
 var kadFilterStatus = 'all';
 
 function kadParseExcelDate(v){

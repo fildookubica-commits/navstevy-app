@@ -1026,6 +1026,7 @@ body.dark select option{background:#3a3a3c;color:#fff}
         <div class="akcie-filter-row" id="akcieChainFilter"></div>
         <div class="akcie-filter-row" id="akciePeriodFilter">
           <button class="akcie-fbtn active" data-period="active" onclick="kadSetPeriod('active')">🔥 Aktívne dnes</button>
+          <button class="akcie-fbtn" data-period="nakup" onclick="kadSetPeriod('nakup')">📦 Nákup teraz</button>
           <button class="akcie-fbtn" data-period="week" onclick="kadSetPeriod('week')">📆 Tento týždeň</button>
           <button class="akcie-fbtn" data-period="future" onclick="kadSetPeriod('future')">⏭ Budúce</button>
           <button class="akcie-fbtn" data-period="all" onclick="kadSetPeriod('all')">Všetky</button>
@@ -3298,6 +3299,7 @@ function kadHandleUpload(ev){
           chain2:   cChain2>=0?String(r[cChain2]||'').trim():'',
           segment:  cSeg>=0?String(r[cSeg]||'').trim():'',
           produkt:  prod,
+          nakupOd:  cBuyFrom>=0?kadParseExcelDate(r[cBuyFrom]):null,  // Nákup od (pred-objednávkový dátum)
           akciaOd:  cFrom>=0?kadParseExcelDate(r[cFrom]):null,
           akciaDo:  cTo>=0?kadParseExcelDate(r[cTo]):null,
           status:   cStatus>=0?String(r[cStatus]||'').trim():'',
@@ -3337,6 +3339,7 @@ function kadHandleUpload(ev){
           chain2: x.chain2,
           segment: x.segment,
           produkt: x.produkt,
+          nakupOd: x.nakupOd?x.nakupOd.toISOString():null,
           akciaOd: x.akciaOd?x.akciaOd.toISOString():null,
           akciaDo: x.akciaDo?x.akciaDo.toISOString():null,
           status: x.status,
@@ -3393,6 +3396,7 @@ function kadLoadFromKV(jsonStr){
         chain2: x.chain2 || '',
         segment: x.segment || '',
         produkt: x.produkt || '',
+        nakupOd: x.nakupOd ? new Date(x.nakupOd) : null,
         akciaOd: x.akciaOd ? new Date(x.akciaOd) : null,
         akciaDo: x.akciaDo ? new Date(x.akciaDo) : null,
         status: x.status || '',
@@ -3506,13 +3510,19 @@ function kadRender(){
     }
     // Period
     if(kadFilterPeriod !== 'all'){
-      if(!x.akciaOd || !x.akciaDo) return kadFilterPeriod==='all';
-      if(kadFilterPeriod==='active'){
-        if(!(x.akciaOd <= todayUTC && x.akciaDo >= todayUTC)) return false;
-      } else if(kadFilterPeriod==='week'){
-        if(!(x.akciaOd <= weekEnd && x.akciaDo >= todayUTC)) return false;
-      } else if(kadFilterPeriod==='future'){
-        if(!(x.akciaOd > todayUTC)) return false;
+      if(kadFilterPeriod==='nakup'){
+        // Nákupné okno: máme nakupOd, dnes je medzi nakupOd a akciaOd
+        if(!x.nakupOd) return false;
+        if(!(x.nakupOd <= todayUTC && (!x.akciaOd || todayUTC < x.akciaOd))) return false;
+      } else {
+        if(!x.akciaOd || !x.akciaDo) return kadFilterPeriod==='all';
+        if(kadFilterPeriod==='active'){
+          if(!(x.akciaOd <= todayUTC && x.akciaDo >= todayUTC)) return false;
+        } else if(kadFilterPeriod==='week'){
+          if(!(x.akciaOd <= weekEnd && x.akciaDo >= todayUTC)) return false;
+        } else if(kadFilterPeriod==='future'){
+          if(!(x.akciaOd > todayUTC)) return false;
+        }
       }
     }
     // Search
@@ -3574,6 +3584,16 @@ function kadRender(){
     if(x.segment) html += '<span>•</span><span>'+escapeHtml(x.segment)+'</span>';
     html +=   '</div>';
     html +=   '<div class="akcie-card-dates">📅 '+dateStr+'</div>';
+    if(x.nakupOd){
+      // Nákup od - dôležitý pre-akčný dátum
+      var nakupStr = kadFmtDate(x.nakupOd);
+      var nakupColor = '#FF9500';  // oranžová
+      if(x.akciaOd && x.nakupOd <= todayUTC && x.akciaOd > todayUTC){
+        // Sme v nákupnom okne pred akciou
+        nakupColor = '#34C759';  // zelená
+      }
+      html += '<div class="akcie-card-nakup" style="font-size:11px;font-weight:600;color:'+nakupColor+';margin-top:3px">📦 Nákup od '+nakupStr+'</div>';
+    }
     if(dayInfo) html += '<div class="akcie-card-progress">'+dayInfo+'</div>';
     html += '</div>';
   });
@@ -3601,6 +3621,25 @@ function kadShowDetail(idx){
   if(x.kam) rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">KAM</span><span class="akcie-detail-val">'+escapeHtml(x.kam)+'</span></div>';
   if(x.segment) rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">Segment</span><span class="akcie-detail-val">'+escapeHtml(x.segment)+'</span></div>';
   rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">Trvanie</span><span class="akcie-detail-val">'+dateStr+'</span></div>';
+  if(x.nakupOd){
+    // Smart status: koľko dní do nákupu / koľko dní už beží nákupné okno
+    var nakupStr = kadFmtDate(x.nakupOd);
+    var now = new Date();
+    var todayU = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    var nakupExtra = '';
+    var nakupCol = '#FF9500';
+    if(x.nakupOd > todayU){
+      var daysTo = Math.round((x.nakupOd - todayU)/86400000);
+      nakupExtra = ' • o '+daysTo+' dní';
+    } else if(x.akciaOd && todayU >= x.nakupOd && todayU < x.akciaOd){
+      nakupExtra = ' • 🟢 nákupné okno otvorené';
+      nakupCol = '#34C759';
+    } else if(x.akciaOd && todayU >= x.akciaOd){
+      nakupExtra = ' • akcia beží';
+      nakupCol = '#8e8e93';
+    }
+    rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">📦 Nákup od</span><span class="akcie-detail-val" style="color:'+nakupCol+';font-weight:700">'+nakupStr+nakupExtra+'</span></div>';
+  }
   if(x.status) rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">Status</span><span class="akcie-detail-val">'+escapeHtml(x.status)+'</span></div>';
   if(x.cena) rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">Akčná cena</span><span class="akcie-detail-val" style="font-weight:700">'+escapeHtml(x.cena)+'</span></div>';
   if(x.mechanika) rows += '<div class="akcie-detail-row"><span class="akcie-detail-label">Mechanika</span><span class="akcie-detail-val">'+escapeHtml(x.mechanika)+'</span></div>';

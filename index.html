@@ -599,8 +599,16 @@ body.dark .druh-foto-btn{background:#2c2c2e;border-color:#48484a}
 
 .clockout-card{background:#fff;border-radius:16px;padding:14px 16px;margin:0 16px 10px}
 body.dark .clockout-card{background:#2c2c2e}
-.clockout-title{font-size:15px;font-weight:600;color:#1c1c1e;margin-bottom:10px}
+.clockout-title{font-size:15px;font-weight:600;color:#1c1c1e;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 body.dark .clockout-title{color:#fff}
+.clockout-title .ct-date{flex:1;min-width:140px}
+.period-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;background:#e7f2ff;color:#0058bc;font-size:12px;font-weight:700;line-height:1.1;white-space:nowrap}
+.period-badge.warn{background:#fff5e0;color:#cc7a00}
+.period-badge.crit{background:#ffe9e7;color:#c41010}
+body.dark .period-badge{background:#1a3a5c;color:#7fb8ff}
+body.dark .period-badge.warn{background:#4a3a1a;color:#ffc875}
+body.dark .period-badge.crit{background:#5a1a1a;color:#ff8a85}
+.period-badge .pb-end{font-weight:500;opacity:0.85;font-size:10px}
 .co-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .co-row.triple{grid-template-columns:1fr 1fr 1fr}
 .co-group{display:flex;flex-direction:column;gap:3px}
@@ -1570,6 +1578,102 @@ function dKey(y,m,d){ return currentUser+'_d_'+y+'-'+String(m+1).padStart(2,'0')
 function getDay(y,m,d){ var k=dKey(y,m,d); if(!data[k]) data[k]={start:'',end:'',visits:[],note:'',type:''}; return data[k]; }
 function tMin(t){ if(!t) return 0; var p=t.split(':').map(Number); return p[0]*60+p[1]; }
 function mToT(m){ var h=Math.floor(m/60)%24; var min=m%60; return String(h).padStart(2,'0')+':'+String(min).padStart(2,'0'); }
+
+// ── MARS PERIÓDY ────────────────────────────────────────────────
+// Mars 13-period kalendár: každá perióda = 28 dní (4 týždne), nedeľa → sobota
+// Známe začiatky P1 (potvrdené z reálneho Mars kalendára):
+//  2024: P1 začala 31.12.2023
+//  2025: P1 začala 29.12.2024
+//  2026: P1 začala 28.12.2025 (potvrdené Filipom 12.5.2026 = P5 W4)
+//  2027: P1 začala 27.12.2026 (vypočítané: 13×28 = 364 dní → posun -1 deň)
+// Pravidlo: P1 začína v poslednú nedeľu pred 1.1. daného roka.
+function getMarsPeriod(date){
+  if(!date) date = new Date();
+  // Známe začiatky P1 (lokálny čas, nie UTC, kvôli zhode s prehliadačom)
+  var P1_STARTS = {
+    2023: new Date(2023, 0, 1),   // 1.1.2023 (nedeľa)
+    2024: new Date(2023, 11, 31), // 31.12.2023 (nedeľa)
+    2025: new Date(2024, 11, 29), // 29.12.2024 (nedeľa)
+    2026: new Date(2025, 11, 28), // 28.12.2025 (nedeľa)
+    2027: new Date(2026, 11, 27), // 27.12.2026 (nedeľa)
+    2028: new Date(2028, 0, 2),   // 2.1.2028 (po 1 dňovom dorovnaní)
+    2029: new Date(2028, 11, 31), // 31.12.2028
+    2030: new Date(2029, 11, 30)  // 30.12.2029
+  };
+  // Normalizuj date na začiatok dňa lokálneho času
+  var d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  // Nájdi správny rok periódy (môže byť aj predchádzajúci ak sme v decembri pred P1)
+  var yr = d.getFullYear();
+  var p1 = P1_STARTS[yr];
+  if(p1 && d < p1){
+    // Sme ešte v poslednej perióde minulého roka
+    yr = yr - 1;
+    p1 = P1_STARTS[yr];
+  } else if(yr+1 in P1_STARTS){
+    // Skontroluj či sme už v P1 nasledujúceho roka (posledné dni decembra)
+    var nextP1 = P1_STARTS[yr+1];
+    if(d >= nextP1){
+      yr = yr + 1;
+      p1 = nextP1;
+    }
+  }
+  if(!p1){ return null; }
+  // Spočítaj počet dní od P1
+  var daysSinceP1 = Math.floor((d - p1) / 86400000);
+  if(daysSinceP1 < 0){ return null; }
+  // Perióda 1-13, perióda = floor(days/28)+1
+  // P13 má 29 dní v rokoch keď to vychádza (kvôli 365 ↔ 364), inak 28
+  var pNum = Math.floor(daysSinceP1 / 28) + 1;
+  if(pNum > 13) pNum = 13;
+  var pStart = new Date(p1);
+  pStart.setDate(p1.getDate() + (pNum-1)*28);
+  // Koniec periódy: pre P1-P12 = +27 dní, pre P13 = do dňa pred ďalším P1
+  var pEnd;
+  if(pNum < 13){
+    pEnd = new Date(pStart);
+    pEnd.setDate(pStart.getDate() + 27);
+  } else {
+    // P13: koniec = deň pred P1 nasledujúceho roka, ak je k dispozícii
+    var nextYr = yr + 1;
+    if(P1_STARTS[nextYr]){
+      pEnd = new Date(P1_STARTS[nextYr]);
+      pEnd.setDate(pEnd.getDate() - 1);
+    } else {
+      pEnd = new Date(pStart);
+      pEnd.setDate(pStart.getDate() + 27);
+    }
+  }
+  // Deň v perióde 1-28(29)
+  var dayInP = daysSinceP1 - (pNum-1)*28 + 1;
+  // Týždeň 1-4 (5 ak P13 má extra deň)
+  var wNum = Math.min(4, Math.floor((dayInP-1)/7) + 1);
+  // Začiatok aktuálneho týždňa
+  var wStart = new Date(pStart);
+  wStart.setDate(pStart.getDate() + (wNum-1)*7);
+  // Koniec týždňa: pStart + wNum*7 - 1 (sobota), ale pre posledný týždeň P13 = pEnd
+  var wEnd = new Date(wStart);
+  wEnd.setDate(wStart.getDate() + 6);
+  if(wEnd > pEnd) wEnd = new Date(pEnd);
+  var daysLeftInP = Math.floor((pEnd - d)/86400000);
+  var daysLeftInW = Math.floor((wEnd - d)/86400000);
+  return {
+    year: yr,
+    p: pNum,
+    w: wNum,
+    dayInP: dayInP,
+    dayInW: ((d - wStart)/86400000) | 0 + 1,
+    daysLeftInP: daysLeftInP,
+    daysLeftInW: daysLeftInW,
+    pStart: pStart,
+    pEnd: pEnd,
+    wStart: wStart,
+    wEnd: wEnd
+  };
+}
+function fmtPeriodEnd(d){
+  if(!d) return '';
+  return d.getDate()+'.'+(d.getMonth()+1)+'.';
+}
 function mToH(m){ var a=Math.abs(m); var h=Math.floor(a/60); var min=a%60; return (m<0?'-':'+')+h+'h'+(min>0?min+'m':''); }
 function getDayStats(d){ var tw=(d.start&&d.end)?tMin(d.end)-tMin(d.start):0; var vm=d.visits.reduce(function(s,v){return s+(parseInt(v.mins)||0);},0); var saved=!!(d.start||d.end||d.visits.length||d.type); return {tw:tw,vm:vm,vc:d.visits.length,saved:saved}; }
 function renderCalendar(){
@@ -1660,18 +1764,27 @@ function renderSummary(){
   var dows2=['Nedeľa','Pondelok','Utorok','Streda','Štvrtok','Piatok','Sobota'];
   var mn2=['januára','februára','marca','apríla','mája','júna','júla','augusta','septembra','októbra','novembra','decembra'];
   var tlabel=dows2[today.getDay()]+', '+today.getDate()+'. '+mn2[today.getMonth()];
+  // Mars perióda badge
+  var pInfo = getMarsPeriod(today);
+  var periodHtml = '';
+  if(pInfo){
+    var pClass = pInfo.daysLeftInP <= 2 ? 'crit' : (pInfo.daysLeftInP <= 7 ? 'warn' : '');
+    var endStr = fmtPeriodEnd(pInfo.pEnd);
+    periodHtml = '<div class="period-badge'+(pClass?' '+pClass:'')+'" title="P'+pInfo.p+' W'+pInfo.w+' • deň '+pInfo.dayInP+'/28 • končí '+endStr+'">📅 P'+pInfo.p+' W'+pInfo.w+' <span class="pb-end">do '+endStr+'</span></div>';
+  }
+  var titleHtml = '<div class="ct-date">Dnes, '+tlabel+'</div>'+periodHtml;
   var nowT=String(today.getHours()).padStart(2,'0')+':'+String(today.getMinutes()).padStart(2,'0');
   var predpRaw=tMin(td.start||nowT)+CIEL_P;
   var predpK=predpRaw<1440?mToT(predpRaw):'';
   if(!td.start){
-    cc.innerHTML='<div class="clockout-card"><div class="clockout-title">Dnes, '+tlabel+'</div>'
+    cc.innerHTML='<div class="clockout-card"><div class="clockout-title">'+titleHtml+'</div>'
       +'<div class="co-row"><div class="co-group"><div class="co-lbl">Začiatok</div>'
       +'<input type="time" class="co-inp" id="co-start-inp" value="'+nowT+'" oninput="coLivePredp(this.value)"></div>'
       +(predpK?'<div class="co-group"><div class="co-lbl">Predp. koniec</div>'
       +'<input type="time" class="co-inp" id="co-predp-inp" value="'+predpK+'" readonly></div>':'')
       +'</div><button class="clockin-btn" onclick="clockIn()">&#x2192; Clock In</button></div>';
   } else if(!td.end){
-    cc.innerHTML='<div class="clockout-card"><div class="clockout-title">Dnes, '+tlabel+'</div>'
+    cc.innerHTML='<div class="clockout-card"><div class="clockout-title">'+titleHtml+'</div>'
       +'<div class="co-row"><div class="co-group"><div class="co-lbl">Začiatok</div>'
       +'<input type="time" class="co-inp" id="co-start-inp" value="'+td.start+'" onchange="coUpdateStart(this.value)"></div>'
       +(predpK?'<div class="co-group"><div class="co-lbl">Predp. koniec</div>'
@@ -1680,7 +1793,7 @@ function renderSummary(){
   } else {
     var trv=tMin(td.end)-tMin(td.start);
     var trvS=trv>0?Math.floor(trv/60)+'h '+(trv%60)+'m':'—';
-    cc.innerHTML='<div class="clockout-card"><div class="clockout-title">Dnes, '+tlabel+'</div>'
+    cc.innerHTML='<div class="clockout-card"><div class="clockout-title">'+titleHtml+'</div>'
       +'<div class="co-row triple"><div class="co-group"><div class="co-lbl">Začiatok</div>'
       +'<input type="time" class="co-inp" id="co-start-inp" value="'+td.start+'" onchange="coUpdateStart(this.value)"></div>'
       +'<div class="co-group"><div class="co-lbl">Koniec</div>'

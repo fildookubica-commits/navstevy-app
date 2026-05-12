@@ -1503,7 +1503,7 @@ function setUser(name){
   if(adminBtn) adminBtn.style.display = (name === 'Filip') ? 'flex' : 'none';
   // Akcie tab - skrytý pre Mirku
   var akcieTab = document.getElementById('mtab-akcie');
-  if(akcieTab) akcieTab.style.display = (name === 'Mirka') ? 'none' : 'flex';
+  if(akcieTab) akcieTab.style.display = 'flex';  // Všetci vidia tab (Mirka má svoje memo, Filip pre tím)
   loadData();
 }
 function switchUser(){
@@ -1559,12 +1559,13 @@ function loadData(){
     }
     // Načítaj názov appky zo Sheets
     loadAppTitleFromSheets(result);
-    // Načítaj KAD memo akcie (zdieľané pre tím)
-    if(result['kad_memo_data']){
-      kadLoadFromKV(result['kad_memo_data']);
+    // Načítaj KAD memo akcie (Mirka má svoje, ostatní zdieľajú Filipove)
+    var kadKey = kadStorageKey();
+    if(result[kadKey]){
+      kadLoadFromKV(result[kadKey]);
     } else {
-      // Skús localStorage cache
-      try { var c = localStorage.getItem('kad_memo_data'); if(c) kadLoadFromKV(c); } catch(e){}
+      // Skús localStorage cache pod správnym kľúčom
+      try { var c = localStorage.getItem(kadKey); if(c) kadLoadFromKV(c); } catch(e){}
     }
     // Aktualizuj PINS z KV
   Object.keys(result).forEach(function(k){
@@ -3443,6 +3444,14 @@ var kadFilterChain = 'all';
 var kadFilterPeriod = 'all';
 var kadFilterStatus = 'all';
 
+// Mirka má svoje vlastné memo, ostatní (Filip/Lubo/Monika/Ivana) zdieľajú Filipove
+function kadStorageKey(){
+  return (currentUser === 'Mirka') ? 'kad_memo_data_Mirka' : 'kad_memo_data';
+}
+function kadCanUpload(){
+  return currentUser === 'Filip' || currentUser === 'Mirka';
+}
+
 function kadParseExcelDate(v){
   if(!v) return null;
   if(v instanceof Date) return v;
@@ -3506,8 +3515,8 @@ function kadNormalizeChain(c){
 function kadHandleUpload(ev){
   var file = ev.target.files && ev.target.files[0];
   if(!file) return;
-  if(currentUser !== 'Filip'){
-    setStatus('⚠️ Iba Filip môže nahrávať KAD memo');
+  if(!kadCanUpload()){
+    setStatus('⚠️ KAD memo môže nahrávať iba Filip (pre tím) alebo Mirka (svoje)');
     return;
   }
   if(typeof XLSX === 'undefined'){
@@ -3662,17 +3671,19 @@ function kadHandleUpload(ev){
       KAD_META = meta;
       var payload = JSON.stringify({meta:meta, data:serialized});
       var sizeKB = (payload.length/1024).toFixed(1);
+      var kadKey = kadStorageKey();
       // Lokálne najprv (rýchla odozva)
-      try{ localStorage.setItem('kad_memo_data', payload); }catch(e){}
+      try{ localStorage.setItem(kadKey, payload); }catch(e){}
       kadUpdateInfo();
       kadBuildChainFilter();
       kadRender();
       var withDates = arr.filter(function(x){return x.akciaOd && x.akciaDo;}).length;
+      var audience = currentUser === 'Mirka' ? 'pre teba' : 'pre tím (Filip+Lubo+Monika+Ivana)';
       setStatus('⏳ '+arr.length+' akcií parsovaných • ukladám na server ('+sizeKB+' KB)...');
       // Server cez POST (obíde URL limit ~16 KB)
-      apiSetLarge('kad_memo_data', payload, function(res){
+      apiSetLarge(kadKey, payload, function(res){
         if(res && res.ok){
-          setStatus('✅ '+arr.length+' akcií uložených na server • tím vidí po reload ('+sizeKB+' KB)');
+          setStatus('✅ '+arr.length+' akcií uložených '+audience+' ('+sizeKB+' KB)');
         } else {
           var reason = res && res.offline ? 'offline – uloží sa keď bude internet'
                      : res && res.error ? ('chyba: '+res.error)
@@ -3726,7 +3737,7 @@ function kadUpdateInfo(){
   if(!val || !meta) return;
   if(!KAD_META || !KAD_DATA.length){
     val.textContent = 'Žiadne dáta';
-    meta.textContent = currentUser==='Filip' ? 'Klikni na 📤 Nahrať pre import .xlsx' : 'Filip ešte nenahral KAD memo';
+    meta.textContent = kadCanUpload() ? 'Klikni na 📤 Nahrať pre import .xlsx' : 'Filip ešte nenahral KAD memo';
     return;
   }
   var w = KAD_META.weekNumber ? 'Týždeň '+KAD_META.weekNumber : (KAD_META.fileName || 'KAD memo');
@@ -3783,19 +3794,22 @@ function kadRender(){
   var count = document.getElementById('akcieCount');
   if(!list) return;
   kadUpdateInfo();
-  // Upload button visible len pre Filipa
+  // Upload button visible pre Filipa a Mirku
+  var canUp = kadCanUpload();
   var btn = document.getElementById('akcieUploadBtn');
-  if(btn) btn.style.display = (currentUser==='Filip') ? 'inline-block' : 'none';
-  // Delete button visible len pre Filipa keď sú dáta
+  if(btn) btn.style.display = canUp ? 'inline-block' : 'none';
+  // Delete button visible pre Filipa a Mirku keď sú dáta
   var delBtn = document.getElementById('akcieDeleteBtn');
-  if(delBtn) delBtn.style.display = (currentUser==='Filip' && KAD_DATA.length>0) ? 'inline-block' : 'none';
+  if(delBtn) delBtn.style.display = (canUp && KAD_DATA.length>0) ? 'inline-block' : 'none';
 
   if(!KAD_DATA.length){
-    list.innerHTML = '<div class="akcie-empty"><div class="akcie-empty-emoji">📅</div>'
-      + (currentUser==='Filip'
-        ? 'Zatiaľ neboli nahrané žiadne KAD akcie.<br>Klikni na <strong>📤 Nahrať</strong> a vyber .xlsx súbor.'
-        : 'Filip ešte nenahral KAD memo.<br>Skús neskôr.')
-      + '</div>';
+    var emptyMsg;
+    if(canUp){
+      emptyMsg = 'Zatiaľ neboli nahrané žiadne KAD akcie.<br>Klikni na <strong>📤 Nahrať</strong> a vyber .xlsx súbor.';
+    } else {
+      emptyMsg = 'Filip ešte nenahral KAD memo pre tím.<br>Skús neskôr.';
+    }
+    list.innerHTML = '<div class="akcie-empty"><div class="akcie-empty-emoji">📅</div>'+emptyMsg+'</div>';
     if(count) count.textContent = '';
     return;
   }
@@ -3973,21 +3987,23 @@ function kadCloseDetail(){
 }
 
 function kadDeleteMemo(){
-  if(currentUser !== 'Filip'){
-    setStatus('⚠️ Iba Filip môže mazať KAD memo');
+  if(!kadCanUpload()){
+    setStatus('⚠️ KAD memo môže mazať iba Filip alebo Mirka');
     return;
   }
-  if(!confirm('Naozaj zmazať aktuálne KAD memo?\n\nVymaže sa zo servera aj z tvojho zariadenia. Tím prestane vidieť dáta po reload.')) return;
+  var who = currentUser === 'Mirka' ? 'tvoje' : 'tímové';
+  if(!confirm('Naozaj zmazať '+who+' KAD memo?\n\nVymaže sa zo servera aj z tvojho zariadenia.')) return;
   setStatus('⏳ Mažem KAD memo...');
+  var kadKey = kadStorageKey();
   // Zmaž z localStorage hneď
-  try{ localStorage.removeItem('kad_memo_data'); }catch(e){}
+  try{ localStorage.removeItem(kadKey); }catch(e){}
   KAD_DATA = [];
   KAD_META = null;
   kadUpdateInfo();
   kadBuildChainFilter();
   kadRender();
   // Zmaž zo servera (POST s prázdnym value)
-  apiSetLarge('kad_memo_data', '', function(res){
+  apiSetLarge(kadKey, '', function(res){
     if(res && res.ok){
       setStatus('✅ KAD memo zmazané (server + zariadenie)');
     } else {

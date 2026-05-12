@@ -173,6 +173,46 @@ body.dark .stat-row{border-bottom-color:#3a3a3c}
 .stat-r.ok{color:#34C759}
 .stat-r.bad{color:#FF3B30}
 .visit-row{display:grid;grid-template-columns:30px 1fr 36px;gap:8px;align-items:center;margin-bottom:8px}
+.visit-shop-row{display:grid;grid-template-columns:30px 1fr 36px;gap:8px;align-items:center;margin-bottom:12px;margin-top:-4px}
+.visit-shop-btn{grid-column:2;background:#f2f2f7;border:1px solid #e5e5ea;border-radius:10px;padding:8px 12px;font-size:13px;color:#1c1c1e;text-align:left;cursor:pointer;display:flex;align-items:center;gap:6px;overflow:hidden}
+.visit-shop-btn:hover{background:#e9e9ed}
+.visit-shop-btn.empty{color:#8e8e93;font-style:italic}
+.visit-shop-btn .vsb-icon{flex-shrink:0;font-size:14px}
+.visit-shop-btn .vsb-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.visit-shop-btn .vsb-meta{flex-shrink:0;font-size:11px;color:#8e8e93;font-weight:400}
+body.dark .visit-shop-btn{background:#3a3a3c;border-color:#48484a;color:#fff}
+body.dark .visit-shop-btn:hover{background:#48484a}
+body.dark .visit-shop-btn .vsb-meta{color:#8e8e93}
+.shop-picker-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center}
+.shop-picker-modal{background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:85vh;display:flex;flex-direction:column;padding:16px;animation:slideUp 0.25s ease-out}
+body.dark .shop-picker-modal{background:#1c1c1e;color:#fff}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #e5e5ea}
+body.dark .sp-head{border-color:#3a3a3c}
+.sp-title{font-size:18px;font-weight:700;color:#1c1c1e}
+body.dark .sp-title{color:#fff}
+.sp-close{background:none;border:none;font-size:28px;color:#8e8e93;cursor:pointer;line-height:1;padding:0 4px}
+.sp-search{width:100%;padding:12px 14px;border:1px solid #e5e5ea;border-radius:12px;font-size:16px;background:#f2f2f7;margin-bottom:10px;color:#1c1c1e}
+body.dark .sp-search{background:#3a3a3c;border-color:#48484a;color:#fff}
+.sp-filters{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.sp-fbtn{flex-shrink:0;padding:6px 12px;border-radius:14px;border:1px solid #e5e5ea;background:#fff;color:#1c1c1e;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.sp-fbtn.active{background:#007AFF;color:#fff;border-color:#007AFF}
+body.dark .sp-fbtn{background:#2c2c2e;border-color:#48484a;color:#fff}
+body.dark .sp-fbtn.active{background:#0a84ff;border-color:#0a84ff}
+.sp-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sp-item{padding:10px 12px;border-bottom:1px solid #f2f2f7;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.sp-item:hover{background:#f2f2f7}
+.sp-item.selected{background:#e7f2ff}
+body.dark .sp-item{border-color:#2c2c2e}
+body.dark .sp-item:hover{background:#2c2c2e}
+body.dark .sp-item.selected{background:#1a3a5c}
+.sp-item-name{font-size:14px;font-weight:600;color:#1c1c1e}
+body.dark .sp-item-name{color:#fff}
+.sp-item-meta{font-size:12px;color:#8e8e93;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.sp-item-chip{display:inline-block;padding:1px 6px;border-radius:6px;background:#f2f2f7;color:#1c1c1e;font-weight:600;font-size:10px}
+body.dark .sp-item-chip{background:#3a3a3c;color:#fff}
+.sp-clear-btn{padding:10px 14px;background:#FF3B30;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;width:100%;margin-top:8px}
+.sp-empty{padding:30px 16px;text-align:center;color:#8e8e93;font-size:14px}
 .vnum{font-size:14px;font-weight:600;color:#8e8e93;text-align:center}
 input[type="number"]{border:1px solid #e5e5ea;border-radius:12px;padding:12px 14px;font-size:18px;width:100%;background:#f2f2f7;color:#1c1c1e;-webkit-appearance:none}
 body.dark input[type="number"]{background:#3a3a3c;border-color:#48484a;color:#fff}
@@ -1812,7 +1852,24 @@ function renderDetail(){
   var wH=s.tw?Math.floor(s.tw/60)+'h '+(s.tw%60)+'m':'—',vH=s.vm?Math.floor(s.vm/60)+'h '+(s.vm%60)+'m':'—';
   var hint=dd.start?'Koniec o '+mToT(tMin(dd.start)+CIEL_P):'';
   var typeBtns=Object.keys(DTYPES).map(function(t){return '<div class="dtype-btn'+(dd.type===t?' active-'+t:'')+'" onclick="setType(\''+t+'\')">'+DTYPES[t]+'</div>';}).join('');
-  var visits=dd.visits.map(function(v,i){return '<div class="visit-row"><div class="vnum">'+(i+1)+'.</div><input type="number" min="1" max="999" value="'+(v.mins||'')+'" placeholder="min" onchange="updateVisit('+i+',this.value)" onkeydown="if(event.key===\'Enter\'){updateVisit('+i+',this.value);this.blur();}"><button class="del-v" onclick="removeVisit('+i+')">×</button></div>';}).join('');
+  var visits=dd.visits.map(function(v,i){
+    var row1 = '<div class="visit-row"><div class="vnum">'+(i+1)+'.</div><input type="number" min="1" max="999" value="'+(v.mins||'')+'" placeholder="min" onchange="updateVisit('+i+',this.value)" onkeydown="if(event.key===\'Enter\'){updateVisit('+i+',this.value);this.blur();}"><button class="del-v" onclick="removeVisit('+i+')">×</button></div>';
+    // Shop picker iba pre Filipa (zatiaľ)
+    if(currentUser !== 'Filip') return row1;
+    var shopBtn;
+    if(v.obchodId){
+      var shop = findShop(v.obchodId);
+      if(shop){
+        shopBtn = '<button class="visit-shop-btn" onclick="openShopPicker('+i+')"><span class="vsb-icon">🏪</span><span class="vsb-name">'+escapeHtmlSimple(shop.n)+'</span><span class="vsb-meta">'+escapeHtmlSimple(shop.m||'')+'</span></button>';
+      } else {
+        shopBtn = '<button class="visit-shop-btn empty" onclick="openShopPicker('+i+')"><span class="vsb-icon">⚠️</span><span class="vsb-name">Neznámy obchod ('+v.obchodId+')</span></button>';
+      }
+    } else {
+      shopBtn = '<button class="visit-shop-btn empty" onclick="openShopPicker('+i+')"><span class="vsb-icon">📍</span><span class="vsb-name">Priradiť obchod…</span></button>';
+    }
+    var row2 = '<div class="visit-shop-row"><div></div>'+shopBtn+'<div></div></div>';
+    return row1 + row2;
+  }).join('');
   document.getElementById('dayDetail').innerHTML='<div class="detail"><div class="detail-header"><div class="detail-title">'+title+'</div><button class="close-x" onclick="closeDetail()">×</button></div><div class="slabel">Typ dňa</div><div class="day-types">'+typeBtns+'</div><div class="slabel">Pracovná doba</div><div class="time-row"><div class="fg"><label>Začiatok</label><input type="time" value="'+(dd.start||'')+'" onblur="updateWork(\'start\',this.value)" oninput="updateHint(this.value)"></div><div class="fg"><label>Koniec</label><input type="time" value="'+(dd.end||'')+'" onblur="updateWork(\'end\',this.value)"></div></div><div class="end-hint" id="endHint">'+hint+'</div><div class="stat-row"><span class="stat-l">Celkom</span><span class="stat-r '+(wOk?'ok':'bad')+'">'+wH+' / cieľ '+Math.floor(CIEL_P/60)+'h'+(CIEL_P%60>0?CIEL_P%60+'m':'')+'</span></div><div class="slabel">Návštevy (min)</div><div id="visitsList">'+visits+'</div><div class="quick-btns"><div class="qbtn" onclick="addQuick(20)">+20 min</div><div class="qbtn" onclick="addQuick(30)">+30 min</div><div class="qbtn" onclick="addQuick(45)">+45 min</div></div><div class="add-v-btn" onclick="addVisit()">+ Vlastný čas</div><div class="stat-row" style="margin-top:10px;"><span class="stat-l">Čas návštev</span><span class="stat-r '+(vOk?'ok':'bad')+'">'+vH+' / cieľ '+Math.floor(CIEL_V/60)+'h'+(CIEL_V%60>0?CIEL_V%60+'m':'')+'</span></div><div class="stat-row"><span class="stat-l">Počet návštev</span><span class="stat-r '+(nOk?'ok':'bad')+'">'+s.vc+' / cieľ '+CIEL_N+'</span></div><div class="slabel">Poznámka</div><textarea class="note-input" placeholder="Voliteľná poznámka..." onblur="updateNote(this.value)">'+(dd.note||'')+'</textarea><button class="save-day-btn" onclick="saveDay()">Uložiť deň</button><button class="del-day-btn" onclick="deleteDay()">Vymazať deň</button></div>';
 }
 function updateHint(v){}
@@ -1854,6 +1911,131 @@ function coUpdateEnd(v){
 }
 function updateVisit(i,v){ var n=parseInt(v)||0; if(n>0){getDay(currentYear,currentMonth,selectedDay).visits[i].mins=n; renderDetail(); renderCalendar(); autoSave();} }
 function addQuick(m){ getDay(currentYear,currentMonth,selectedDay).visits.push({mins:m}); renderDetail(); renderCalendar(); autoSave(); }
+
+// ── SHOP PICKER pre návštevy ───────────────────────────────────
+function escapeHtmlSimple(s){ if(s===undefined||s===null) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function findShop(id){
+  var all = (OBCHODY && OBCHODY[currentUser]) ? OBCHODY[currentUser] : [];
+  for(var i=0;i<all.length;i++){ if(all[i].id === id) return all[i]; }
+  return null;
+}
+var _shopPickerVisitIdx = -1;
+var _shopPickerSearch = '';
+var _shopPickerFilter = 'all';
+
+function openShopPicker(visitIdx){
+  if(currentUser !== 'Filip'){ return; }  // Zatiaľ iba pre Filipa
+  _shopPickerVisitIdx = visitIdx;
+  _shopPickerSearch = '';
+  _shopPickerFilter = 'all';
+  renderShopPicker();
+}
+function closeShopPicker(){
+  var el = document.getElementById('shopPickerModal');
+  if(el) el.remove();
+  _shopPickerVisitIdx = -1;
+}
+function renderShopPicker(){
+  var existing = document.getElementById('shopPickerModal');
+  if(existing) existing.remove();
+  var all = (OBCHODY && OBCHODY[currentUser]) ? OBCHODY[currentUser] : [];
+  // Reťazce v užívateľových obchodoch (pre filter)
+  var chainsCount = {};
+  all.forEach(function(s){ if(s.r) chainsCount[s.r] = (chainsCount[s.r]||0)+1; });
+  var chains = Object.keys(chainsCount).sort();
+  // Filtrácia
+  var q = _shopPickerSearch.toLowerCase().trim();
+  var filtered = all.filter(function(s){
+    if(_shopPickerFilter !== 'all' && s.r !== _shopPickerFilter) return false;
+    if(q){
+      var hay = ((s.n||'')+' '+(s.m||'')+' '+(s.a||'')+' '+(s.r||'')+' '+(s.id||'')).toLowerCase();
+      if(hay.indexOf(q) < 0) return false;
+    }
+    return true;
+  });
+  // Aktuálne zvolený obchod (pre zvýraznenie)
+  var dd = getDay(currentYear,currentMonth,selectedDay);
+  var current = (dd.visits[_shopPickerVisitIdx] || {}).obchodId || '';
+  // Filter buttons
+  var filterHtml = '<button class="sp-fbtn '+(_shopPickerFilter==='all'?'active':'')+'" onclick="setShopPickerFilter(\'all\')">Všetky <span style="opacity:0.6">('+all.length+')</span></button>';
+  chains.forEach(function(c){
+    filterHtml += '<button class="sp-fbtn '+(_shopPickerFilter===c?'active':'')+'" onclick="setShopPickerFilter('+JSON.stringify(c)+')">'+escapeHtmlSimple(c)+' <span style="opacity:0.6">('+chainsCount[c]+')</span></button>';
+  });
+  // Items
+  var itemsHtml = '';
+  if(filtered.length === 0){
+    itemsHtml = '<div class="sp-empty">🔍 Žiadny obchod nezodpovedá filtrom</div>';
+  } else {
+    filtered.slice(0, 300).forEach(function(s){
+      var sel = s.id === current ? ' selected' : '';
+      itemsHtml += '<div class="sp-item'+sel+'" onclick="selectShop('+JSON.stringify(s.id)+')">'
+        +'<div class="sp-item-name">'+escapeHtmlSimple(s.n||'(bez názvu)')+'</div>'
+        +'<div class="sp-item-meta">'
+          +(s.r?'<span class="sp-item-chip">'+escapeHtmlSimple(s.r)+'</span>':'')
+          +'<span>📍 '+escapeHtmlSimple(s.m||'?')+(s.a?' • '+escapeHtmlSimple(s.a):'')+'</span>'
+        +'</div>'
+      +'</div>';
+    });
+    if(filtered.length > 300){
+      itemsHtml += '<div class="sp-empty">… a ďalších '+(filtered.length-300)+' obchodov, spresni vyhľadávanie</div>';
+    }
+  }
+  var html = '<div class="shop-picker-overlay" id="shopPickerModal" onclick="if(event.target===this)closeShopPicker()">'
+    +'<div class="shop-picker-modal" onclick="event.stopPropagation()">'
+      +'<div class="sp-head">'
+        +'<div class="sp-title">📍 Vyber obchod</div>'
+        +'<button class="sp-close" onclick="closeShopPicker()">×</button>'
+      +'</div>'
+      +'<input type="text" class="sp-search" id="sp-search-input" placeholder="🔍 Hľadať podľa názvu, mesta, adresy…" value="'+escapeHtmlSimple(_shopPickerSearch)+'" oninput="setShopPickerSearch(this.value)">'
+      +'<div class="sp-filters">'+filterHtml+'</div>'
+      +'<div class="sp-list">'+itemsHtml+'</div>'
+      +(current?'<button class="sp-clear-btn" onclick="clearShop()">🗑️ Odstrániť priradenie obchodu</button>':'')
+    +'</div>'
+  +'</div>';
+  document.body.insertAdjacentHTML('beforeend', html);
+  // Focus na search input pre rýchle písanie
+  setTimeout(function(){
+    var i = document.getElementById('sp-search-input');
+    if(i && !_shopPickerSearch){ /* iba auto-focus pri prvom otvorení */ i.focus(); }
+  }, 50);
+}
+function setShopPickerSearch(v){
+  _shopPickerSearch = v;
+  // Re-render len listu (zachová cursor v inpute)
+  var existing = document.getElementById('shopPickerModal');
+  if(!existing) return;
+  // Zachovaj fokus
+  var hadFocus = document.activeElement && document.activeElement.id === 'sp-search-input';
+  var caretPos = hadFocus ? document.activeElement.selectionStart : -1;
+  renderShopPicker();
+  if(hadFocus){
+    var n = document.getElementById('sp-search-input');
+    if(n){ n.focus(); try{ n.setSelectionRange(caretPos, caretPos); }catch(e){} }
+  }
+}
+function setShopPickerFilter(c){
+  _shopPickerFilter = c;
+  renderShopPicker();
+}
+function selectShop(id){
+  if(_shopPickerVisitIdx < 0) return;
+  var dd = getDay(currentYear,currentMonth,selectedDay);
+  if(!dd.visits[_shopPickerVisitIdx]) return;
+  dd.visits[_shopPickerVisitIdx].obchodId = id;
+  closeShopPicker();
+  renderDetail();
+  autoSave();
+}
+function clearShop(){
+  if(_shopPickerVisitIdx < 0) return;
+  var dd = getDay(currentYear,currentMonth,selectedDay);
+  if(!dd.visits[_shopPickerVisitIdx]) return;
+  delete dd.visits[_shopPickerVisitIdx].obchodId;
+  closeShopPicker();
+  renderDetail();
+  autoSave();
+}
+
 function addVisit(){ getDay(currentYear,currentMonth,selectedDay).visits.push({mins:''}); renderDetail(); setTimeout(function(){ var ii=document.querySelectorAll('#visitsList input'); if(ii.length) ii[ii.length-1].focus(); },50); }
 function removeVisit(i){ getDay(currentYear,currentMonth,selectedDay).visits.splice(i,1); renderDetail(); renderCalendar(); autoSave(); }
 function updateNote(v){ getDay(currentYear,currentMonth,selectedDay).note=v; autoSave(); }

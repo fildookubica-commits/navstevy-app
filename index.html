@@ -313,6 +313,19 @@ body.dark .stat-year-val{color:#fff}
 body.dark .stat-card{background:#2c2c2e}
 .stat-card-label{font-size:12px;color:#8e8e93;margin-bottom:4px;font-weight:500}
 .stat-card-val{font-size:22px;font-weight:700}
+/* Karty s časom v štýle dochádzky: veľké realné + decimálny priemer pod */
+.stat-card-main{font-size:22px;font-weight:700;color:#1c1c1e;line-height:1.1}
+body.dark .stat-card-main{color:#fff}
+.stat-card-main.blue{color:#007AFF}
+.stat-card-main.green{color:#34C759}
+.stat-card-sub{font-size:12px;color:#8e8e93;margin-top:4px;font-weight:500}
+.stat-card-sub b{color:#1c1c1e;font-weight:700}
+body.dark .stat-card-sub b{color:#fff}
+.stat-card-diff{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;margin-left:6px}
+.stat-card-diff.green{background:#d1f2d8;color:#1a7431}
+.stat-card-diff.red{background:#ffd6d6;color:#c0392b}
+body.dark .stat-card-diff.green{background:#1a3a23;color:#4cd964}
+body.dark .stat-card-diff.red{background:#3a1a1a;color:#ff6b6b}
 .stat-section-title{font-size:13px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:0.05em;margin:16px 0 10px}
 .stat-month-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
 .stat-month-row{background:#fff;border-radius:12px;padding:12px 16px}
@@ -2749,7 +2762,7 @@ function getMonthStats(year,month){
   var days=Object.keys(data).filter(function(k){ if(!k.startsWith(currentUser+'_d_')) return false; var p=k.replace(currentUser+'_d_','').split('-').map(Number); return p[0]===year&&p[1]===month+1; });
   var EXCL_TYPES=['dovol','pn'];
   var SKIP_TIME_TYPES=['cd','meeting'];
-  var wDiff=0,vDiff=0,cDiff=0,wDays=0,timeDays=0,totalW=0,totalC=0;
+  var wDiff=0,vDiff=0,cDiff=0,wDays=0,timeDays=0,totalW=0,totalC=0,totalVM=0;
   days.forEach(function(k){
     var d=data[k],s=getDayStats(d),t=d.type||'';
     if(!s.saved) return;
@@ -2757,9 +2770,9 @@ function getMonthStats(year,month){
     wDays++;
     if(SKIP_TIME_TYPES.indexOf(t)>=0) return;
     timeDays++;
-    wDiff+=s.tw-CIEL_P;vDiff+=s.vm-CIEL_V;cDiff+=s.vc-CIEL_N;totalW+=s.tw;totalC+=s.vc;
+    wDiff+=s.tw-CIEL_P;vDiff+=s.vm-CIEL_V;cDiff+=s.vc-CIEL_N;totalW+=s.tw;totalC+=s.vc;totalVM+=s.vm;
   });
-  return {wDays:wDays,timeDays:timeDays,wDiff:wDiff,vDiff:vDiff,cDiff:cDiff,totalW:totalW,totalC:totalC};
+  return {wDays:wDays,timeDays:timeDays,wDiff:wDiff,vDiff:vDiff,cDiff:cDiff,totalW:totalW,totalC:totalC,totalVM:totalVM};
 }
 // ── FREKVENCIA NÁVŠTEV (podľa kategórie obchodov) ────────────────
 // Mars štandard pre kategórie - dni medzi návštevami
@@ -2896,12 +2909,52 @@ function renderFrequencyStats(){
 
 function renderStat(){
   var months=QUARTERS[statPeriod]||QUARTERS['Q1'];
-  var totalDays=0,totalTimeDays=0,totalWDiff=0,totalVDiff=0,totalCDiff=0,totalW=0,totalC=0;
-  months.forEach(function(m){ var s=getMonthStats(statYear,m); totalDays+=s.wDays;totalTimeDays+=(s.timeDays||0);totalWDiff+=s.wDiff;totalVDiff+=s.vDiff;totalCDiff+=s.cDiff;totalW+=s.totalW;totalC+=s.totalC; });
-  var avgV=totalTimeDays?(totalC/totalTimeDays).toFixed(1):'—',avgWMin=totalTimeDays?Math.round(totalW/totalTimeDays):0,avgWH=totalTimeDays?Math.floor(avgWMin/60)+'h'+(avgWMin%60>0?avgWMin%60+'m':''):'—';
+  var totalDays=0,totalTimeDays=0,totalWDiff=0,totalVDiff=0,totalCDiff=0,totalW=0,totalC=0,totalVM=0;
+  months.forEach(function(m){ var s=getMonthStats(statYear,m); totalDays+=s.wDays;totalTimeDays+=(s.timeDays||0);totalWDiff+=s.wDiff;totalVDiff+=s.vDiff;totalCDiff+=s.cDiff;totalW+=s.totalW;totalC+=s.totalC;totalVM+=(s.totalVM||0); });
+  // Helpery na formátovanie
+  function fmtHM(min){ if(!min) return '—'; var h=Math.floor(min/60); var m=min%60; return h+'h'+(m>0?' '+m+'m':''); }
+  function fmtDec(min, days){ if(!days) return '—'; return (min/days/60).toFixed(1).replace('.',','); }
+  // Karty s časom: veľké realné + decimálny priemer + diff oproti cieľu
+  var workMain = totalTimeDays ? fmtHM(totalW) : '—';
+  var workAvg  = fmtDec(totalW, totalTimeDays);
+  var workDiff = totalTimeDays ? mToH(totalWDiff) : '';
+  var visitMain = totalTimeDays ? fmtHM(totalVM) : '—';
+  var visitAvg  = fmtDec(totalVM, totalTimeDays);
+  var visitDiff = totalTimeDays ? mToH(totalVDiff) : '';
+  var avgVDec = totalTimeDays ? (totalC/totalTimeDays).toFixed(1).replace('.',',') : '—';
   var periodBtns=['Q1','Q2','Q3','Q4','Rok'].map(function(p){ return '<button class="spbtn'+(statPeriod===p?' active':'')+'" onclick="statSetPeriod(\''+p+'\')">'+p+'</button>'; }).join('');
   var yearRow='<div class="stat-year-row"><button class="stat-year-btn" onclick="statChangeYear(-1)">‹</button><div class="stat-year-val">'+statYear+'</div><button class="stat-year-btn" onclick="statChangeYear(1)">›</button></div>';
-  var summaryCards=[{l:'Pracovná doba',v:totalTimeDays?mToH(totalWDiff):'—',c:totalWDiff>=0?'green':'red'},{l:'Čas návštev',v:totalTimeDays?mToH(totalVDiff):'—',c:totalVDiff>=0?'green':'red'},{l:'Počet návštev',v:totalTimeDays?(totalCDiff>=0?'+':'')+totalCDiff:'—',c:totalCDiff>=0?'green':'red'},{l:'Priemer návštev',v:avgV,c:'blue'},{l:'Priemer prac.',v:avgWH,c:'blue'},{l:'Pracovné dni',v:totalDays,c:'gray'}].map(function(c){return '<div class="stat-card"><div class="stat-card-label">'+c.l+'</div><div class="stat-card-val '+c.c+'">'+c.v+'</div></div>';}).join('');
+  // Postavím cards manuálne
+  var workDiffCls = totalWDiff>=0 ? 'green' : 'red';
+  var visitDiffCls = totalVDiff>=0 ? 'green' : 'red';
+  var cntDiffCls = totalCDiff>=0 ? 'green' : 'red';
+  var card1 = '<div class="stat-card">'
+    + '<div class="stat-card-label">Pracovná doba</div>'
+    + '<div class="stat-card-main blue">'+workMain+'</div>'
+    + '<div class="stat-card-sub">Priemer/deň: <b>'+workAvg+' h</b>'
+      + (workDiff?'<span class="stat-card-diff '+workDiffCls+'">'+workDiff+'</span>':'')
+    + '</div>'
+    +'</div>';
+  var card2 = '<div class="stat-card">'
+    + '<div class="stat-card-label">Čas návštev</div>'
+    + '<div class="stat-card-main green">'+visitMain+'</div>'
+    + '<div class="stat-card-sub">Priemer/deň: <b>'+visitAvg+' h</b>'
+      + (visitDiff?'<span class="stat-card-diff '+visitDiffCls+'">'+visitDiff+'</span>':'')
+    + '</div>'
+    +'</div>';
+  var card3 = '<div class="stat-card">'
+    + '<div class="stat-card-label">Počet návštev</div>'
+    + '<div class="stat-card-main">'+(totalTimeDays?totalC:'—')+'</div>'
+    + '<div class="stat-card-sub">Priemer/deň: <b>'+avgVDec+'</b>'
+      + (totalTimeDays?'<span class="stat-card-diff '+cntDiffCls+'">'+(totalCDiff>=0?'+':'')+totalCDiff+'</span>':'')
+    + '</div>'
+    +'</div>';
+  var card4 = '<div class="stat-card">'
+    + '<div class="stat-card-label">Pracovné dni</div>'
+    + '<div class="stat-card-main">'+totalDays+'</div>'
+    + '<div class="stat-card-sub">'+(totalTimeDays?totalTimeDays+' dní s časom':'—')+'</div>'
+    +'</div>';
+  var summaryCards = card1 + card2 + card3 + card4;
   var maxC=1,maxW2=1;
   months.forEach(function(m){ var s=getMonthStats(statYear,m); if(s.totalC>maxC) maxC=s.totalC; if(s.totalW/60>maxW2) maxW2=s.totalW/60; });
   var bars=months.map(function(m){ var s=getMonthStats(statYear,m),pct=maxC>0?Math.round(s.totalC/maxC*100):0,col=s.wDays>0?'#007AFF':'#e5e5ea'; return '<div class="bar-col"><div style="flex:1;display:flex;align-items:flex-end;width:100%"><div class="bar-col-inner" style="height:'+pct+'%;background:'+col+'"></div></div><div class="bar-label">'+MONTHS[m].slice(0,3)+'</div><div class="bar-val">'+(s.totalC||'')+'</div></div>'; }).join('');

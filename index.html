@@ -1969,20 +1969,60 @@ function openShopPicker(visitIdx){
   _shopPickerFilter = 'all';
   renderShopPicker();
 }
-function closeShopPicker(){
-  var el = document.getElementById('shopPickerModal');
-  if(el) el.remove();
-  _shopPickerVisitIdx = -1;
-}
 function renderShopPicker(){
   var existing = document.getElementById('shopPickerModal');
   if(existing) existing.remove();
+  // Lock body scroll - aby písanie do searchu nehopkalo stránkou pod modalom
+  document.body.style.overflow = 'hidden';
   var all = (OBCHODY && OBCHODY[currentUser]) ? OBCHODY[currentUser] : [];
   // Reťazce v užívateľových obchodoch (pre filter)
   var chainsCount = {};
   all.forEach(function(s){ if(s.r) chainsCount[s.r] = (chainsCount[s.r]||0)+1; });
   var chains = Object.keys(chainsCount).sort();
-  // Filtrácia
+  function escAttr(s){ return String(s||'').replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  // Filter buttons (renderujú sa raz pri otvorení; pri zmene filtra sa znovu)
+  var filterHtml = '<button class="sp-fbtn '+(_shopPickerFilter==='all'?'active':'')+'" data-filter="all">Všetky <span style="opacity:0.6">('+all.length+')</span></button>';
+  chains.forEach(function(c){
+    filterHtml += '<button class="sp-fbtn '+(_shopPickerFilter===c?'active':'')+'" data-filter="'+escAttr(c)+'">'+escapeHtmlSimple(c)+' <span style="opacity:0.6">('+chainsCount[c]+')</span></button>';
+  });
+  var html = '<div class="shop-picker-overlay" id="shopPickerModal" onclick="if(event.target===this)closeShopPicker()">'
+    +'<div class="shop-picker-modal" onclick="event.stopPropagation()">'
+      +'<div class="sp-head">'
+        +'<div class="sp-title">📍 Vyber obchod</div>'
+        +'<button class="sp-close" onclick="closeShopPicker()">×</button>'
+      +'</div>'
+      +'<input type="text" class="sp-search" id="sp-search-input" placeholder="🔍 Hľadať podľa názvu, mesta, adresy…" value="'+escapeHtmlSimple(_shopPickerSearch)+'" oninput="onShopPickerSearchInput(this.value)">'
+      +'<div class="sp-filters" id="sp-filters">'+filterHtml+'</div>'
+      +'<div class="sp-list" id="sp-list"></div>'
+      +'<div id="sp-clear-wrap"></div>'
+    +'</div>'
+  +'</div>';
+  document.body.insertAdjacentHTML('beforeend', html);
+  // Vykresli list a clear button
+  renderShopPickerList();
+  // Event listenery pre filtre
+  var modal = document.getElementById('shopPickerModal');
+  if(modal){
+    modal.querySelectorAll('.sp-fbtn').forEach(function(el){
+      el.addEventListener('click', function(){
+        var f = el.getAttribute('data-filter');
+        if(f !== null) setShopPickerFilter(f);
+      });
+    });
+  }
+  // Focus na search input pre rýchle písanie
+  setTimeout(function(){
+    var i = document.getElementById('sp-search-input');
+    if(i && !_shopPickerSearch){ i.focus(); }
+  }, 50);
+}
+
+function renderShopPickerList(){
+  // Re-renderuje len list (pri písaní do searchu) - nezasahuje do searchu ani filterov, nemení DOM mimo .sp-list
+  var listEl = document.getElementById('sp-list');
+  var clearWrap = document.getElementById('sp-clear-wrap');
+  if(!listEl) return;
+  var all = (OBCHODY && OBCHODY[currentUser]) ? OBCHODY[currentUser] : [];
   var q = _shopPickerSearch.toLowerCase().trim();
   var filtered = all.filter(function(s){
     if(_shopPickerFilter !== 'all' && s.r !== _shopPickerFilter) return false;
@@ -1992,17 +2032,9 @@ function renderShopPicker(){
     }
     return true;
   });
-  // Aktuálne zvolený obchod (pre zvýraznenie)
   var dd = getDay(currentYear,currentMonth,selectedDay);
   var current = (dd.visits[_shopPickerVisitIdx] || {}).obchodId || '';
-  // Filter buttons
-  // Filter buttons - používame escaped onclick atribút (single quotes)
   function escAttr(s){ return String(s||'').replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  var filterHtml = '<button class="sp-fbtn '+(_shopPickerFilter==='all'?'active':'')+'" data-filter="all">Všetky <span style="opacity:0.6">('+all.length+')</span></button>';
-  chains.forEach(function(c){
-    filterHtml += '<button class="sp-fbtn '+(_shopPickerFilter===c?'active':'')+'" data-filter="'+escAttr(c)+'">'+escapeHtmlSimple(c)+' <span style="opacity:0.6">('+chainsCount[c]+')</span></button>';
-  });
-  // Items - používame data-id atribút namiesto inline onclick (vyhne sa escape problémom)
   var itemsHtml = '';
   if(filtered.length === 0){
     itemsHtml = '<div class="sp-empty">🔍 Žiadny obchod nezodpovedá filtrom</div>';
@@ -2021,68 +2053,62 @@ function renderShopPicker(){
       itemsHtml += '<div class="sp-empty">… a ďalších '+(filtered.length-300)+' obchodov, spresni vyhľadávanie</div>';
     }
   }
-  var html = '<div class="shop-picker-overlay" id="shopPickerModal" onclick="if(event.target===this)closeShopPicker()">'
-    +'<div class="shop-picker-modal" onclick="event.stopPropagation()">'
-      +'<div class="sp-head">'
-        +'<div class="sp-title">📍 Vyber obchod</div>'
-        +'<button class="sp-close" onclick="closeShopPicker()">×</button>'
-      +'</div>'
-      +'<input type="text" class="sp-search" id="sp-search-input" placeholder="🔍 Hľadať podľa názvu, mesta, adresy…" value="'+escapeHtmlSimple(_shopPickerSearch)+'" oninput="setShopPickerSearch(this.value)">'
-      +'<div class="sp-filters">'+filterHtml+'</div>'
-      +'<div class="sp-list">'+itemsHtml+'</div>'
-      +(current?'<button class="sp-clear-btn" onclick="clearShop()">🗑️ Odstrániť priradenie obchodu</button>':'')
-    +'</div>'
-  +'</div>';
-  document.body.insertAdjacentHTML('beforeend', html);
-  // Event listenery (cez delegation, vyhne sa onclick escape problémom)
-  var modal = document.getElementById('shopPickerModal');
-  if(modal){
-    // Klik na obchod
-    modal.querySelectorAll('.sp-item').forEach(function(el){
-      el.addEventListener('click', function(){
-        var id = el.getAttribute('data-shopid');
-        if(id) selectShop(id);
-      });
-    });
-    // Klik na filter
-    modal.querySelectorAll('.sp-fbtn').forEach(function(el){
-      el.addEventListener('click', function(){
-        var f = el.getAttribute('data-filter');
-        if(f !== null) setShopPickerFilter(f);
-      });
-    });
+  listEl.innerHTML = itemsHtml;
+  if(clearWrap){
+    clearWrap.innerHTML = current ? '<button class="sp-clear-btn" onclick="clearShop()">🗑️ Odstrániť priradenie obchodu</button>' : '';
   }
-  // Focus na search input pre rýchle písanie
-  setTimeout(function(){
-    var i = document.getElementById('sp-search-input');
-    if(i && !_shopPickerSearch){ i.focus(); }
-  }, 50);
+  // Event listenery pre nové items
+  listEl.querySelectorAll('.sp-item').forEach(function(el){
+    el.addEventListener('click', function(){
+      var id = el.getAttribute('data-shopid');
+      if(id) selectShop(id);
+    });
+  });
 }
-function setShopPickerSearch(v){
+
+// Throttle search re-render aby písanie nezamŕzalo
+var _shopSearchTimer = null;
+function onShopPickerSearchInput(v){
   _shopPickerSearch = v;
-  // Re-render len listu (zachová cursor v inpute)
-  var existing = document.getElementById('shopPickerModal');
-  if(!existing) return;
-  // Zachovaj fokus
-  var hadFocus = document.activeElement && document.activeElement.id === 'sp-search-input';
-  var caretPos = hadFocus ? document.activeElement.selectionStart : -1;
-  renderShopPicker();
-  if(hadFocus){
-    var n = document.getElementById('sp-search-input');
-    if(n){ n.focus(); try{ n.setSelectionRange(caretPos, caretPos); }catch(e){} }
-  }
+  if(_shopSearchTimer) clearTimeout(_shopSearchTimer);
+  _shopSearchTimer = setTimeout(renderShopPickerList, 120);
+}
+
+function setShopPickerSearch(v){
+  // Legacy fallback - presmerujem na nový handler
+  onShopPickerSearchInput(v);
 }
 function setShopPickerFilter(c){
   _shopPickerFilter = c;
-  renderShopPicker();
+  // Refresh aktívnu triedu na filter tlačidlách bez re-renderu (zachová scroll)
+  var modal = document.getElementById('shopPickerModal');
+  if(modal){
+    modal.querySelectorAll('.sp-fbtn').forEach(function(el){
+      var f = el.getAttribute('data-filter');
+      el.className = 'sp-fbtn'+(f===c?' active':'');
+    });
+  }
+  renderShopPickerList();
+}
+function closeShopPicker(){
+  var el = document.getElementById('shopPickerModal');
+  if(el) el.remove();
+  _shopPickerVisitIdx = -1;
+  // Vrátiť body scroll
+  document.body.style.overflow = '';
+  if(_shopSearchTimer){ clearTimeout(_shopSearchTimer); _shopSearchTimer = null; }
 }
 function selectShop(id){
   if(_shopPickerVisitIdx < 0) return;
   var dd = getDay(currentYear,currentMonth,selectedDay);
   if(!dd.visits[_shopPickerVisitIdx]) return;
   dd.visits[_shopPickerVisitIdx].obchodId = id;
+  // Zachovaj scroll pozíciu pred re-renderom
+  var sy = window.scrollY || window.pageYOffset || 0;
   closeShopPicker();
   renderDetail();
+  // Obnov scroll po DOM update
+  window.scrollTo({top: sy, behavior: 'instant'});
   autoSave();
 }
 function clearShop(){
@@ -2090,8 +2116,10 @@ function clearShop(){
   var dd = getDay(currentYear,currentMonth,selectedDay);
   if(!dd.visits[_shopPickerVisitIdx]) return;
   delete dd.visits[_shopPickerVisitIdx].obchodId;
+  var sy = window.scrollY || window.pageYOffset || 0;
   closeShopPicker();
   renderDetail();
+  window.scrollTo({top: sy, behavior: 'instant'});
   autoSave();
 }
 

@@ -183,10 +183,14 @@ body.dark .stat-row{border-bottom-color:#3a3a3c}
 body.dark .visit-shop-btn{background:#3a3a3c;border-color:#48484a;color:#fff}
 body.dark .visit-shop-btn:hover{background:#48484a}
 body.dark .visit-shop-btn .vsb-meta{color:#8e8e93}
-.shop-picker-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center}
-.shop-picker-modal{background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:85vh;display:flex;flex-direction:column;padding:16px;animation:slideUp 0.25s ease-out}
+.shop-picker-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:stretch;justify-content:center;overflow:hidden}
+.shop-picker-modal{background:#fff;border-radius:0;width:100%;max-width:600px;height:100%;height:100dvh;display:flex;flex-direction:column;padding:14px 14px 8px;animation:slideUp 0.2s ease-out;box-sizing:border-box;overflow:hidden}
+@media (min-width:601px){
+  .shop-picker-overlay{align-items:center;padding:20px}
+  .shop-picker-modal{height:auto;max-height:90vh;border-radius:18px}
+}
 body.dark .shop-picker-modal{background:#1c1c1e;color:#fff}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 .sp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #e5e5ea}
 body.dark .sp-head{border-color:#3a3a3c}
 .sp-title{font-size:18px;font-weight:700;color:#1c1c1e}
@@ -199,7 +203,7 @@ body.dark .sp-search{background:#3a3a3c;border-color:#48484a;color:#fff}
 .sp-fbtn.active{background:#007AFF;color:#fff;border-color:#007AFF}
 body.dark .sp-fbtn{background:#2c2c2e;border-color:#48484a;color:#fff}
 body.dark .sp-fbtn.active{background:#0a84ff;border-color:#0a84ff}
-.sp-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sp-list{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .sp-item{padding:10px 12px;border-bottom:1px solid #f2f2f7;cursor:pointer;display:flex;flex-direction:column;gap:2px}
 .sp-item:hover{background:#f2f2f7}
 .sp-item.selected{background:#e7f2ff}

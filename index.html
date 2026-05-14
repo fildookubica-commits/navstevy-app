@@ -1144,10 +1144,6 @@ body.dark select option{background:#3a3a3c;color:#fff}
       <span class="ms-icon material-symbols-outlined">calendar_today</span>
       <span>Dochádz.</span>
     </button>
-    <button class="btab" onclick="switchMainTab('sklad')" id="mtab-sklad">
-      <span class="ms-icon material-symbols-outlined">inventory_2</span>
-      <span>Sklad</span>
-    </button>
     <button class="btab" onclick="switchMainTab('stat')" id="mtab-stat">
       <span class="ms-icon material-symbols-outlined">leaderboard</span>
       <span>Štat.</span>
@@ -1179,7 +1175,7 @@ var OBCHODY={"Filip":[{"id":"SK002284","n":"POT J-LM 053 MIX","m":"PARTIZANSKA L
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'FKAPP-MARS-001';
+var APP_VERSION = 'FKAPP-MARS-002';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;

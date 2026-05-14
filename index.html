@@ -1179,7 +1179,7 @@ var OBCHODY={"Filip":[{"id":"SK002284","n":"POT J-LM 053 MIX","m":"PARTIZANSKA L
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v39-cf';
+var APP_VERSION = 'dochadzka-mars-v40-cf';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -1580,7 +1580,7 @@ function loadData(){
       try{
         if(!result[k]) continue;
         var val=result[k];
-        if(k.startsWith(currentUser+'_')&&/\d{4}-\d{2}-\d{2}$/.test(k)){ data[currentUser+'_d_'+k.slice(currentUser.length+1)]=JSON.parse(val); }
+        if(k.startsWith(currentUser+'_')&&!k.startsWith(currentUser+'_d_')&&/\d{4}-\d{2}-\d{2}$/.test(k)){ data[currentUser+'_d_'+k.slice(currentUser.length+1)]=JSON.parse(val); }
         else if(k.startsWith(currentUser+'_d_')){ data[k]=JSON.parse(val); }
         else if(k.startsWith(currentUser+'_zasoba_')){ zasoby[k.replace(currentUser+'_zasoba_','')]=JSON.parse(val); }
         else if(k.startsWith('zasoba_')){ var ean=k.replace('zasoba_',''); if(zasoby[ean]===undefined) zasoby[ean]=JSON.parse(val); }
@@ -1764,7 +1764,7 @@ function fmtPeriodEnd(d){
   return d.getDate()+'.'+(d.getMonth()+1)+'.';
 }
 function mToH(m){ var a=Math.abs(m); var h=Math.floor(a/60); var min=a%60; return (m<0?'-':'+')+h+'h'+(min>0?min+'m':''); }
-function getDayStats(d){ var tw=(d.start&&d.end)?tMin(d.end)-tMin(d.start):0; var vm=d.visits.reduce(function(s,v){return s+(parseInt(v.mins)||0);},0); var saved=!!(d.start||d.end||d.visits.length||d.type); return {tw:tw,vm:vm,vc:d.visits.length,saved:saved}; }
+function getDayStats(d){ if(!d) return {tw:0,vm:0,vc:0,saved:false}; var visits=Array.isArray(d.visits)?d.visits:[]; var tw=(d.start&&d.end)?tMin(d.end)-tMin(d.start):0; var vm=visits.reduce(function(s,v){return s+(parseInt(v&&v.mins)||0);},0); var saved=!!(d.start||d.end||visits.length||d.type); return {tw:tw,vm:vm,vc:visits.length,saved:saved}; }
 function renderCalendar(){
   var fd=new Date(currentYear,currentMonth,1).getDay(),dim=new Date(currentYear,currentMonth+1,0).getDate(),off=(fd+6)%7,today=new Date(),html='';
   for(var i=0;i<off;i++) html+='<div class="cal-day empty"></div>';
@@ -2134,12 +2134,12 @@ function clearShop(){
 }
 
 function addVisit(){ getDay(currentYear,currentMonth,selectedDay).visits.push({mins:''}); renderDetail(); setTimeout(function(){ var ii=document.querySelectorAll('#visitsList input'); if(ii.length) ii[ii.length-1].focus(); },50); }
-function removeVisit(i){ getDay(currentYear,currentMonth,selectedDay).visits.splice(i,1); renderDetail(); renderCalendar(); autoSave(); }
+function removeVisit(i){ var dd=getDay(currentYear,currentMonth,selectedDay); var v=dd.visits[i]||{}; var info=v.mins?(v.mins+' min'):'túto návštevu'; if(!confirm('Vymazať návštevu č. '+(i+1)+' ('+info+')?')) return; dd.visits.splice(i,1); renderDetail(); renderCalendar(); autoSave(); }
 function updateNote(v){ getDay(currentYear,currentMonth,selectedDay).note=v; autoSave(); }
 function setType(t){ var dd=getDay(currentYear,currentMonth,selectedDay); dd.type=dd.type===t?'':t; autoSave(); renderDetail(); renderCalendar(); }
 function autoSave(){ var k=key(currentYear,currentMonth,selectedDay),dk=dKey(currentYear,currentMonth,selectedDay); apiSet(k,JSON.stringify(data[dk]||{})); setStatus('Uložené'); }
 function saveDay(){ autoSave(); }
-function deleteDay(){ var k=key(currentYear,currentMonth,selectedDay),dk=dKey(currentYear,currentMonth,selectedDay); delete data[dk]; apiSet(k,''); closeDetail(); renderCalendar(); }
+function deleteDay(){ if(!confirm('Vymazať celý deň '+selectedDay+'. '+MONTHS[currentMonth]+' '+currentYear+'?\n\nVymažú sa všetky návštevy a časy.')) return; var k=key(currentYear,currentMonth,selectedDay),dk=dKey(currentYear,currentMonth,selectedDay); delete data[dk]; apiSet(k,''); closeDetail(); renderCalendar(); setStatus('🗑️ Deň vymazaný'); }
 function closeDetail(){ document.getElementById('dayDetail').innerHTML=''; selectedDay=null; }
 function changeMonth(dir){ currentMonth+=dir; if(currentMonth>11){currentMonth=0;currentYear++;} if(currentMonth<0){currentMonth=11;currentYear--;} closeDetail(); renderCalendar(); document.getElementById('monthTitle').textContent=MONTHS[currentMonth]+' '+currentYear; }
 function showSettings(){
@@ -2756,12 +2756,20 @@ function loadAppTitleFromSheets(result){
 // ── ŠTATISTIKY ───────────────────────────────────────────────────
 var QUARTERS={'Q1':[0,1,2],'Q2':[3,4,5],'Q3':[6,7,8],'Q4':[9,10,11],'Rok':[0,1,2,3,4,5,6,7,8,9,10,11]};
 function getMonthStats(year,month){
-  var days=Object.keys(data).filter(function(k){ if(!k.startsWith(currentUser+'_d_')) return false; var p=k.replace(currentUser+'_d_','').split('-').map(Number); return p[0]===year&&p[1]===month+1; });
+  var prefix = currentUser+'_d_';
+  var days=Object.keys(data).filter(function(k){
+    if(!k.startsWith(prefix)) return false;
+    var rest = k.slice(prefix.length);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(rest)) return false;  // odfiltruj poškodené kľúče (napr. _d_d_...)
+    var p = rest.split('-').map(Number);
+    return p[0]===year && p[1]===month+1;
+  });
   var EXCL_TYPES=['dovol','pn'];
   var SKIP_TIME_TYPES=['cd','meeting'];
   var wDiff=0,vDiff=0,cDiff=0,wDays=0,timeDays=0,totalW=0,totalC=0,totalVM=0;
   days.forEach(function(k){
-    var d=data[k],s=getDayStats(d),t=d.type||'';
+    var d=data[k]; if(!d) return;
+    var s=getDayStats(d),t=d.type||'';
     if(!s.saved) return;
     if(EXCL_TYPES.indexOf(t)>=0) return;
     wDays++;

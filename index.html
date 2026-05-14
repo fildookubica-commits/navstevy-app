@@ -112,6 +112,114 @@ body.dark .sk-stab{background:#2c2c2e;border-color:#38383a;color:#8e8e93}
 /* BOTTOM TABS */
 .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
 .bottom-tabs{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(250,249,254,0.75);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:none;display:flex;justify-content:space-around;align-items:center;padding:12px 16px calc(12px + env(safe-area-inset-bottom)) 16px;box-shadow:0 -8px 24px rgba(0,88,188,0.08);border-radius:24px 24px 0 0}
+/* ── PREHĽAD (úvodná obrazovka) ──────────────────────────────── */
+.preh-seg{display:flex;gap:6px;padding:8px 16px 0}
+.preh-seg-btn{flex:1;padding:7px 10px;border-radius:18px;border:1px solid #d6d4dd;background:transparent;font-size:13px;font-weight:500;color:#1c1c1e;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.15s}
+.preh-seg-btn.active{background:#1c1c1e;color:#fff;border-color:#1c1c1e}
+body.dark .preh-seg-btn{color:#fff;border-color:#3a3a3c}
+body.dark .preh-seg-btn.active{background:#fff;color:#1c1c1e;border-color:#fff}
+.preh-week{display:flex;gap:5px;padding:10px 16px 0}
+.preh-day{flex:1;aspect-ratio:0.85;background:#f2f2f7;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative;cursor:pointer;transition:transform 0.1s}
+.preh-day:active{transform:scale(0.95)}
+body.dark .preh-day{background:#2c2c2e}
+.preh-day.today{color:#fff !important}
+.preh-day-dow{font-size:10px;color:#8e8e93;text-transform:uppercase;letter-spacing:0.04em;font-weight:500}
+.preh-day.today .preh-day-dow{color:rgba(255,255,255,0.85)}
+.preh-day-num{font-size:16px;font-weight:600;color:#1c1c1e}
+body.dark .preh-day-num{color:#fff}
+.preh-day.today .preh-day-num{color:#fff}
+.preh-day.faded{opacity:0.45}
+.preh-day-bar{width:18px;height:3px;border-radius:2px;background:#c1c6d7}
+.preh-day-sub{font-size:9px;color:#8e8e93;height:11px;line-height:1}
+.preh-day.today .preh-day-sub{color:rgba(255,255,255,0.85)}
+.preh-day-badge{position:absolute;top:3px;right:3px;width:14px;height:14px;border-radius:50%;background:#34C759;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:700}
+.preh-day.today .preh-day-badge{background:rgba(255,255,255,0.95);color:#34C759}
+.preh-section-lbl{font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:0.04em;font-weight:600;padding:14px 16px 8px;display:flex;justify-content:space-between;align-items:baseline}
+.preh-section-sub{font-size:11px;font-weight:600;text-transform:none;letter-spacing:0}
+.preh-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px}
+.preh-card{background:#f2f2f7;border-radius:12px;padding:12px 14px}
+body.dark .preh-card{background:#2c2c2e}
+.preh-card-lbl{font-size:11px;color:#8e8e93;margin-bottom:4px;font-weight:500}
+.preh-card-val{font-size:22px;font-weight:700;color:#1c1c1e}
+body.dark .preh-card-val{color:#fff}
+.preh-card-sub{font-size:11px;margin-top:2px;font-weight:500}
+.preh-today-card{margin:8px 16px 0;background:#f2f2f7;border-radius:16px;padding:16px;text-align:center}
+body.dark .preh-today-card{background:#2c2c2e}
+.preh-today-icon{width:56px;height:56px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:28px}
+.preh-today-empty-title{font-size:15px;font-weight:600;color:#1c1c1e;margin-bottom:4px}
+body.dark .preh-today-empty-title{color:#fff}
+.preh-today-empty-sub{font-size:12px;color:#8e8e93;margin-bottom:14px}
+.preh-today-active{display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer}
+.preh-today-active-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px}
+.preh-today-active-main{font-size:14px;font-weight:600;color:#1c1c1e}
+body.dark .preh-today-active-main{color:#fff}
+.preh-today-active-sub{font-size:12px;color:#8e8e93;margin-top:2px}
+.preh-cta-row{display:flex;gap:8px;margin-top:10px}
+.preh-cta{flex:1;padding:10px;border-radius:12px;border:none;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:transform 0.1s}
+.preh-cta:active{transform:scale(0.97)}
+.preh-cta-primary{background:#007AFF;color:#fff}
+.preh-cta-secondary{background:#fff;color:#1c1c1e;border:1px solid #d6d4dd}
+body.dark .preh-cta-secondary{background:#3a3a3c;color:#fff;border-color:#48484a}
+.preh-tip{margin:14px 16px 0;background:#e8f0fd;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;font-size:12px;color:#0c447c;line-height:1.4}
+body.dark .preh-tip{background:#1a3a5c;color:#adc6ff}
+.preh-detail-link{margin:12px 16px 16px;padding:10px;border-radius:12px;border:1px solid #d6d4dd;background:#f9f9fb;font-size:13px;color:#1c1c1e;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-family:'Inter',sans-serif}
+body.dark .preh-detail-link{background:#2c2c2e;border-color:#3a3a3c;color:#fff}
+.preh-mini-cal{padding:0 16px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.preh-mini-day{aspect-ratio:1;border-radius:8px;background:#f2f2f7;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#1c1c1e;position:relative}
+body.dark .preh-mini-day{background:#2c2c2e;color:#fff}
+.preh-mini-day.empty{background:transparent}
+.preh-mini-day.weekend{opacity:0.45}
+.preh-mini-day.today{outline:2px solid #007AFF;outline-offset:1px}
+.preh-mini-dh{font-size:10px;color:#8e8e93;text-align:center;font-weight:600;text-transform:uppercase;padding:8px 0 4px}
+/* RING for Statistika tab (smaller cards) */
+.preh-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px}
+.preh-stat-card{background:#fff;border:1px solid #e5e5ea;border-radius:14px;padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:6px}
+body.dark .preh-stat-card{background:#2c2c2e;border-color:#3a3a3c}
+.preh-stat-lbl{font-size:11px;color:#8e8e93;text-transform:uppercase;letter-spacing:0.04em;font-weight:600}
+.preh-stat-val{font-size:16px;font-weight:700;color:#1c1c1e}
+body.dark .preh-stat-val{color:#fff}
+.preh-stat-sub{font-size:11px;font-weight:600;height:13px}
+.preh-quick-chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.preh-chip{flex:1;min-width:54px;padding:8px 4px;border-radius:10px;border:1px solid #d6d4dd;background:#fff;font-size:13px;font-weight:600;color:#1c1c1e;font-family:'Inter',sans-serif;cursor:pointer;transition:transform 0.1s,background 0.15s}
+.preh-chip:active{transform:scale(0.94);background:#e8f0fd}
+body.dark .preh-chip{background:#3a3a3c;color:#fff;border-color:#48484a}
+body.dark .preh-chip:active{background:#48484a}
+.preh-live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#34C759;margin-right:6px;animation:prehPulse 1.6s ease-in-out infinite;vertical-align:middle}
+@keyframes prehPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(0.85)}}
+/* Add Visit modal */
+.preh-av-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:2000;display:flex;align-items:flex-end;justify-content:center;padding:0;animation:prehAvFadeIn 0.2s ease}
+@media(min-width:520px){.preh-av-overlay{align-items:center;padding:20px}}
+@keyframes prehAvFadeIn{from{opacity:0}to{opacity:1}}
+.preh-av-modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;animation:prehAvSlideUp 0.25s ease;padding-bottom:env(safe-area-inset-bottom)}
+@media(min-width:520px){.preh-av-modal{border-radius:20px}}
+body.dark .preh-av-modal{background:#1c1c1e;color:#fff}
+@keyframes prehAvSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.preh-av-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 8px;border-bottom:1px solid #f0f0f5}
+body.dark .preh-av-head{border-color:#2c2c2e}
+.preh-av-title{font-size:17px;font-weight:700;color:#1c1c1e}
+body.dark .preh-av-title{color:#fff}
+.preh-av-close{background:transparent;border:none;font-size:18px;color:#8e8e93;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.preh-av-close:active{background:#f0f0f5}
+.preh-av-body{padding:14px 18px 4px}
+.preh-av-label{font-size:11px;color:#8e8e93;text-transform:uppercase;letter-spacing:0.04em;font-weight:600;margin-bottom:8px}
+.preh-av-chips{display:flex;gap:6px;flex-wrap:wrap}
+.preh-av-chip{flex:1;min-width:44px;padding:10px 4px;border-radius:10px;border:1px solid #d6d4dd;background:#fff;font-size:14px;font-weight:600;color:#1c1c1e;font-family:'Inter',sans-serif;cursor:pointer;transition:transform 0.1s}
+.preh-av-chip:active{transform:scale(0.94)}
+.preh-av-chip.active{background:#007AFF;color:#fff;border-color:#007AFF}
+body.dark .preh-av-chip{background:#3a3a3c;color:#fff;border-color:#48484a}
+body.dark .preh-av-chip.active{background:#007AFF;border-color:#007AFF}
+.preh-av-input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid #d6d4dd;background:#fff;font-size:14px;color:#1c1c1e;font-family:'Inter',sans-serif;-webkit-appearance:none;appearance:none}
+body.dark .preh-av-input{background:#3a3a3c;color:#fff;border-color:#48484a}
+.preh-av-input:focus{outline:none;border-color:#007AFF}
+.preh-av-actions{display:flex;gap:8px;padding:14px 18px 18px}
+/* VIAC view list */
+.viac-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:#fff;border:1px solid #e5e5ea;border-radius:14px;cursor:pointer;font-family:'Inter',sans-serif;text-align:left;width:100%;transition:transform 0.1s}
+body.dark .viac-item{background:#2c2c2e;border-color:#3a3a3c}
+.viac-item:active{transform:scale(0.98)}
+.viac-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.viac-lbl{flex:1;font-size:15px;font-weight:600;color:#1c1c1e}
+body.dark .viac-lbl{color:#fff}
+.viac-arrow{font-size:18px;color:#c1c6d7;font-weight:600}
 body.dark .bottom-tabs{background:rgba(26,27,31,0.8)}
 .btab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 4px;border-radius:16px;cursor:pointer;font-size:10px;font-weight:600;color:#717786;border:none;background:none;font-family:'Inter',sans-serif;letter-spacing:0.04em;text-transform:uppercase;transition:all 0.2s;min-width:0}
 .btab:active{transform:scale(0.9)}
@@ -132,7 +240,9 @@ body.dark .scard{background:#2c2c2e}
 .cal-days-header{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px}
 .cal-dh{text-align:center;font-size:12px;color:#8e8e93;font-weight:500;padding:4px 0}
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
-.cal-day{border-radius:10px;padding:6px 2px;text-align:center;min-height:56px;cursor:pointer;background:#fff}
+.cal-day{border-radius:10px;padding:6px 2px;text-align:center;min-height:56px;cursor:pointer;background:#fff;position:relative}
+.cal-day-badge{position:absolute;top:3px;right:3px;width:13px;height:13px;border-radius:50%;background:#34C759;color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 1px 2px rgba(0,0,0,0.15);z-index:2}
+body.dark .cal-day-badge{box-shadow:0 1px 3px rgba(0,0,0,0.5)}
 body.dark .cal-day{background:#2c2c2e}
 .cal-day:active{opacity:0.7}
 .cal-day.empty{background:transparent;cursor:default}
@@ -877,6 +987,33 @@ body.dark select option{background:#3a3a3c;color:#fff}
 <div id="mainApp" style="display:none;">
   <div class="app">
 
+    <!-- HEADER PREHĽAD -->
+    <div class="app-header" id="headerPrehlad" style="display:none;">
+      <div class="header-top">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="position:relative;width:40px;height:40px;border-radius:50%;overflow:hidden;border:1.5px solid rgba(193,198,215,0.4);flex-shrink:0;background:#eeedf3;cursor:pointer;" onclick="switchUser()" id="headerAvatarWrapP">
+            <img id="headerAvatarImgP" src="" style="width:100%;height:100%;object-fit:cover;display:none;" alt="">
+            <div id="headerAvatarInitialsP" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;font-family:'Inter',sans-serif;"></div>
+          </div>
+          <div>
+            <div style="font-size:18px;font-weight:700;color:#1a1b1f;letter-spacing:-0.3px;font-family:'Inter',sans-serif;" id="prehGreeting">Prehľad</div>
+            <div style="display:flex;align-items:center;gap:5px;margin-top:1px;">
+              <div style="font-size:12px;color:#717786;font-weight:500;" id="prehSubtitle"></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:2px;">
+          <button id="adminLiveBtnPreh" onclick="adminOpenLive()" style="display:none;width:36px;height:36px;border-radius:50%;border:none;background:transparent;cursor:pointer;align-items:center;justify-content:center;position:relative" title="LIVE Dashboard tímu">
+            <span style="font-size:18px">🟢</span>
+            <span style="position:absolute;top:-2px;right:-2px;background:#34C759;color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:6px;letter-spacing:0.05em">LIVE</span>
+          </button>
+          <button onclick="showSettings()" style="width:36px;height:36px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Nastavenia">
+            <span class="material-symbols-outlined" style="font-size:22px;color:#717786;">settings</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- HEADER DOCHÁDZKA -->
     <div class="app-header" id="headerDochadzka">
       <div class="header-top">
@@ -1000,6 +1137,16 @@ body.dark select option{background:#3a3a3c;color:#fff}
           <button class="hbtn" id="darkBtn3" onclick="toggleDark()">🌙</button>
         </div>
       </div>
+    </div>
+
+    <!-- PREHĽAD VIEW (defaultná obrazovka) -->
+    <div id="viewPrehlad" style="display:none;">
+      <div class="preh-seg">
+        <button class="preh-seg-btn active" id="prehSegTyzden" onclick="prehSwitchSeg('tyzden')">Týždeň</button>
+        <button class="preh-seg-btn" id="prehSegMesiac" onclick="prehSwitchSeg('mesiac')">Mesiac</button>
+        <button class="preh-seg-btn" id="prehSegStat" onclick="prehSwitchSeg('stat')">Štatistika</button>
+      </div>
+      <div id="prehContent"></div>
     </div>
 
     <!-- DOCHÁDZKA VIEW -->
@@ -1133,6 +1280,43 @@ body.dark select option{background:#3a3a3c;color:#fff}
     <!-- Modal pre detail akcie -->
     <div id="akcieModal" style="display:none"></div>
 
+    <!-- VIAC VIEW (rozcestník) -->
+    <div id="viewViac" style="display:none;">
+      <div style="padding:18px 20px 8px;font-size:22px;font-weight:700;color:#1a1b1f;font-family:'Inter',sans-serif;letter-spacing:-0.3px">Viac</div>
+      <div style="padding:8px 16px 16px;display:flex;flex-direction:column;gap:8px">
+        <button class="viac-item" onclick="switchMainTab('druhotky')">
+          <span class="viac-icon" style="background:#fff4e0;color:#FF9500"><span class="material-symbols-outlined" style="font-size:24px">sell</span></span>
+          <span class="viac-lbl">Druhotky</span>
+          <span class="viac-arrow">›</span>
+        </button>
+        <button class="viac-item" onclick="switchMainTab('akcie')">
+          <span class="viac-icon" style="background:#e8f0fd;color:#007AFF"><span class="material-symbols-outlined" style="font-size:24px">campaign</span></span>
+          <span class="viac-lbl">Akcie (KAD memo)</span>
+          <span class="viac-arrow">›</span>
+        </button>
+        <button class="viac-item" onclick="switchMainTab('poznamky')">
+          <span class="viac-icon" style="background:#f0ecfc;color:#AF52DE"><span class="material-symbols-outlined" style="font-size:24px">description</span></span>
+          <span class="viac-lbl">Poznámky</span>
+          <span class="viac-arrow">›</span>
+        </button>
+        <button class="viac-item" onclick="showSettings()">
+          <span class="viac-icon" style="background:#e5e5ea;color:#717786"><span class="material-symbols-outlined" style="font-size:24px">settings</span></span>
+          <span class="viac-lbl">Nastavenia</span>
+          <span class="viac-arrow">›</span>
+        </button>
+        <button class="viac-item" onclick="toggleDark()">
+          <span class="viac-icon" style="background:#1c1c1e;color:#fff"><span class="material-symbols-outlined" style="font-size:24px">dark_mode</span></span>
+          <span class="viac-lbl">Tmavá téma</span>
+          <span class="viac-arrow" id="viacDarkState">—</span>
+        </button>
+        <button class="viac-item" onclick="switchUser()">
+          <span class="viac-icon" style="background:#fcebeb;color:#FF3B30"><span class="material-symbols-outlined" style="font-size:24px">logout</span></span>
+          <span class="viac-lbl">Zmeniť používateľa</span>
+          <span class="viac-arrow">›</span>
+        </button>
+      </div>
+    </div>
+
     <!-- TRASA - PLÁNOVAČ DENNEJ TRASY -->
     <div class="status-bar" id="statusBar"></div>
     <div class="ver-info" id="verInfo"></div>
@@ -1140,9 +1324,13 @@ body.dark select option{background:#3a3a3c;color:#fff}
 
   <!-- BOTTOM TABS -->
   <nav class="bottom-tabs">
-    <button class="btab active" onclick="switchMainTab('dochadzka')" id="mtab-dochadzka">
+    <button class="btab active" onclick="switchMainTab('prehlad')" id="mtab-prehlad">
+      <span class="ms-icon material-symbols-outlined">dashboard</span>
+      <span>Prehľad</span>
+    </button>
+    <button class="btab" onclick="switchMainTab('dochadzka')" id="mtab-dochadzka">
       <span class="ms-icon material-symbols-outlined">calendar_today</span>
-      <span>Dochádz.</span>
+      <span>Kalendár</span>
     </button>
     <button class="btab" onclick="switchMainTab('stat')" id="mtab-stat">
       <span class="ms-icon material-symbols-outlined">leaderboard</span>
@@ -1152,17 +1340,9 @@ body.dark select option{background:#3a3a3c;color:#fff}
       <span class="ms-icon material-symbols-outlined">storefront</span>
       <span>Obchody</span>
     </button>
-    <button class="btab" onclick="switchMainTab('druhotky')" id="mtab-druhotky">
-      <span class="ms-icon material-symbols-outlined">sell</span>
-      <span>Druhotky</span>
-    </button>
-    <button class="btab" onclick="switchMainTab('akcie')" id="mtab-akcie">
-      <span class="ms-icon material-symbols-outlined">campaign</span>
-      <span>Akcie</span>
-    </button>
-    <button class="btab" onclick="switchMainTab('poznamky')" id="mtab-poznamky">
-      <span class="ms-icon material-symbols-outlined">description</span>
-      <span>Pozn.</span>
+    <button class="btab" onclick="switchMainTab('viac')" id="mtab-viac">
+      <span class="ms-icon material-symbols-outlined">more_horiz</span>
+      <span>Viac</span>
     </button>
   </nav>
 </div>
@@ -1175,7 +1355,7 @@ var OBCHODY={"Filip":[{"id":"SK002284","n":"POT J-LM 053 MIX","m":"PARTIZANSKA L
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'FKAPP-MARS-003';
+var APP_VERSION = 'FKAPP-MARS-007';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -1253,9 +1433,11 @@ var isOnline = navigator.onLine;
 
 function loadOfflineQueue() {
   try { offlineQueue = JSON.parse(localStorage.getItem('offlineQueue') || '[]'); } catch(e) { offlineQueue = []; }
+  if(typeof renderOfflineQueueBadge==='function') renderOfflineQueueBadge();
 }
 function saveOfflineQueue() {
   try { localStorage.setItem('offlineQueue', JSON.stringify(offlineQueue)); } catch(e) {}
+  if(typeof renderOfflineQueueBadge==='function') renderOfflineQueueBadge();
 }
 function flushOfflineQueue() {
   if (!navigator.onLine || offlineQueue.length === 0) return;
@@ -1265,7 +1447,7 @@ function flushOfflineQueue() {
   var done = 0;
   q.forEach(function(item) {
     fetch(API_URL + '?key=' + encodeURIComponent(item.k) + '&value=' + encodeURIComponent(item.v))
-      .then(function() { done++; if (done === q.length) setStatus('✅ Synchronizované!'); })
+      .then(function() { done++; if (done === q.length) { setStatus('✅ Synchronizované!'); if(typeof renderOfflineQueueBadge==='function') renderOfflineQueueBadge(); } })
       .catch(function() { offlineQueue.push(item); saveOfflineQueue(); });
   });
 }
@@ -1276,10 +1458,12 @@ window.addEventListener('online', function() {
   sb.classList.add('show');
   setTimeout(function() { sb.classList.remove('show'); }, 3000);
   flushOfflineQueue();
+  if(typeof renderOfflineQueueBadge==='function') renderOfflineQueueBadge();
 });
 window.addEventListener('offline', function() {
   isOnline = false;
   document.getElementById('offlineBanner').classList.add('show');
+  if(typeof renderOfflineQueueBadge==='function') renderOfflineQueueBadge();
 });
 if (!navigator.onLine) document.getElementById('offlineBanner').classList.add('show');
 loadOfflineQueue();
@@ -1402,6 +1586,7 @@ function toggleDark(){
   darkMode=!darkMode; document.body.classList.toggle('dark',darkMode);
   ['darkBtn','darkBtn2','darkBtn3','darkBtn4'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=darkMode?'☀️':'🌙'; });
   apiSet('settings_dark',darkMode?'1':'0');
+  if(typeof updateViacDarkState==='function') updateViacDarkState();
 }
 function allDots(name){ ['userDot','userDot2','userDot3','userDot4','userDot5','userDot6'].forEach(function(id){ var el=document.getElementById(id); if(el){el.textContent=name[0];el.className='user-dot dot-'+name.toLowerCase();} }); }
 function allNames(name){ ['headerName','headerName2','headerName3','headerName4','headerName5','headerName6'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=name; }); }
@@ -1521,22 +1706,25 @@ function completeLogin(name){
 
 // ── USER ─────────────────────────────────────────────────────────
 function updateHeaderAvatarInHeader(user) {
-  var initials = document.getElementById('headerAvatarInitials');
-  var img = document.getElementById('headerAvatarImg');
-  var wrap = document.getElementById('headerAvatarWrap');
-  if (!wrap) return;
   var colors = {Filip:'#007AFF',Mirka:'#FF2D55',Lubo:'#FF9500',Monika:'#AF52DE',Ivana:'#5AC8FA'};
   var letters = {Filip:'F',Mirka:'M',Lubo:'L',Monika:'M',Ivana:'I'};
-  wrap.style.background = colors[user] || '#717786';
-  if (initials) { initials.textContent = letters[user] || user.charAt(0); }
   var saved = localStorage.getItem('avatar_' + user);
-  if (saved && img) {
-    img.src = saved; img.style.display = 'block';
-    if (initials) initials.style.display = 'none';
-  } else if (img) {
-    img.style.display = 'none';
-    if (initials) initials.style.display = 'flex';
-  }
+  // Update vo všetkých headeroch (Dochádzka + Prehľad)
+  ['','P'].forEach(function(suffix){
+    var initials = document.getElementById('headerAvatarInitials'+suffix);
+    var img = document.getElementById('headerAvatarImg'+suffix);
+    var wrap = document.getElementById('headerAvatarWrap'+suffix);
+    if (!wrap) return;
+    wrap.style.background = colors[user] || '#717786';
+    if (initials) { initials.textContent = letters[user] || user.charAt(0); }
+    if (saved && img) {
+      img.src = saved; img.style.display = 'block';
+      if (initials) initials.style.display = 'none';
+    } else if (img) {
+      img.style.display = 'none';
+      if (initials) initials.style.display = 'flex';
+    }
+  });
 }
 
 function setUser(name){
@@ -1562,7 +1750,7 @@ function switchUser(){
   document.getElementById('pinScreen').style.display='none';
   document.getElementById('userScreen').style.display='block';
   document.getElementById('dayDetail').innerHTML='';
-  switchMainTab('dochadzka');
+  switchMainTab('prehlad');
   // Zatvor admin LIVE dashboard ak je otvorený
   if(typeof adminCloseLive === 'function') adminCloseLive();
   var adminBtn = document.getElementById('adminLiveBtnDoch');
@@ -1655,6 +1843,8 @@ function loadData(){
     }
     try { localStorage.setItem('cache_'+currentUser,JSON.stringify({data:data,zasoby:zasoby,historia:historia})); } catch(e){}
     setStatus(''); renderCalendar(); skRenderAll();
+    // Default tab po prihlásení = Prehľad
+    switchMainTab('prehlad');
   });
 }
 function loadFromCache(){
@@ -1778,7 +1968,9 @@ function renderCalendar(){
     if(isWE) cls+=' weekend'; if(isToday) cls+=' today';
     if(dtype) cls+=' '+dtype; else if(hasData&&!incomplete) cls+=' has-data'; else if(incomplete) cls+=' incomplete';
     var sub=dtype?(DTYPES[dtype]||''):(hasData?s.vc+'n/'+Math.round(s.vm)+'m':'');
-    html+='<div class="'+cls+'" onclick="selectDay('+d+')"><div class="day-num">'+d+'</div><div class="day-sub">'+sub+'</div></div>';
+    // ✓ badge keď deň spĺňa cieľ (#6)
+    var badge = isDayCompleted(dd) ? '<div class="cal-day-badge">✓</div>' : '';
+    html+='<div class="'+cls+'" onclick="selectDay('+d+')">'+badge+'<div class="day-num">'+d+'</div><div class="day-sub">'+sub+'</div></div>';
   }
   document.getElementById('calendar').innerHTML=html; renderSummary();
 }
@@ -4488,32 +4680,667 @@ function kadDeleteMemo(){
 }
 
 
+// ── PREHĽAD (úvodná obrazovka s prepínačom Týždeň/Mesiac/Štatistika) ─
+var prehSeg = 'tyzden';  // tyzden | mesiac | stat
+
+function prehSwitchSeg(s){
+  prehSeg = s;
+  ['tyzden','mesiac','stat'].forEach(function(k){
+    var el = document.getElementById('prehSeg'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(el) el.className = 'preh-seg-btn'+(k===s?' active':'');
+  });
+  renderPrehlad();
+}
+
+// Pomôcka — vráti pondelok aktuálneho týždňa
+function getMonday(d){
+  var dd = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  var dow = dd.getDay(); // 0=Ne,1=Po..6=So
+  var diff = (dow===0?-6:1-dow);
+  dd.setDate(dd.getDate()+diff);
+  return dd;
+}
+
+// Vráti štatistiky za rozsah dátumov (inclusive)
+function getRangeStats(from, to){
+  var prefix = currentUser+'_d_';
+  var EXCL=['dovol','pn'],SKIP=['cd','meeting'];
+  var wDays=0,timeDays=0,workTimeDays=0,totalW=0,totalC=0,totalVM=0;
+  Object.keys(data).forEach(function(k){
+    if(!k.startsWith(prefix)) return;
+    var rest = k.slice(prefix.length);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(rest)) return;
+    var p = rest.split('-').map(Number);
+    var dt = new Date(p[0], p[1]-1, p[2]);
+    if(dt < from || dt > to) return;
+    var d = data[k]; if(!d) return;
+    var s = getDayStats(d), t = d.type||'';
+    if(!s.saved) return;
+    if(EXCL.indexOf(t)>=0) return;
+    wDays++;
+    if(SKIP.indexOf(t)>=0) return;
+    timeDays++; totalC+=s.vc; totalVM+=s.vm;
+    if(d.start && d.end){ workTimeDays++; totalW+=s.tw; }
+  });
+  return {wDays:wDays,timeDays:timeDays,workTimeDays:workTimeDays,totalW:totalW,totalC:totalC,totalVM:totalVM};
+}
+
+// Zisti či deň "spĺňa cieľ" (✓ badge na karte dňa)
+function isDayCompleted(d){
+  if(!d) return false;
+  var s = getDayStats(d), t = d.type||'';
+  if(t==='dovol'||t==='pn') return false;
+  // Pre Filipa: musí mať aj prac. čas aj návštevy
+  // Pre Mirku a ostatných (bez start/end): stačí splnenie cieľa návštev a času u zákazníka
+  if(currentUser==='Filip'){
+    return s.tw>=CIEL_P && s.vc>=CIEL_N;
+  }
+  return s.vc>=CIEL_N && s.vm>=CIEL_V;
+}
+
+function renderPrehlad(){
+  // Header — pozdrav podľa času dňa
+  var now = new Date();
+  var hr = now.getHours();
+  var greet = hr<10?'Dobré ráno':(hr<18?'Dobrý deň':'Dobrý večer');
+  var grEl = document.getElementById('prehGreeting');
+  if(grEl) grEl.textContent = greet + ', ' + currentUser;
+  var subEl = document.getElementById('prehSubtitle');
+  var dows = ['Nedeľa','Pondelok','Utorok','Streda','Štvrtok','Piatok','Sobota'];
+  var mns = ['januára','februára','marca','apríla','mája','júna','júla','augusta','septembra','októbra','novembra','decembra'];
+  if(subEl) subEl.textContent = dows[now.getDay()]+', '+now.getDate()+'. '+mns[now.getMonth()];
+  // Admin LIVE button
+  var adminBtnP = document.getElementById('adminLiveBtnPreh');
+  if(adminBtnP) adminBtnP.style.display = (currentUser==='Filip') ? 'flex' : 'none';
+  // Update avatar v prehlad headeri (mirror z hlavného avatara)
+  var srcImg = document.getElementById('headerAvatarImg');
+  var dstImg = document.getElementById('headerAvatarImgP');
+  var srcIni = document.getElementById('headerAvatarInitials');
+  var dstIni = document.getElementById('headerAvatarInitialsP');
+  if(srcImg && dstImg){
+    if(srcImg.src && srcImg.style.display !== 'none'){
+      dstImg.src = srcImg.src; dstImg.style.display = 'block';
+      if(dstIni) dstIni.style.display = 'none';
+    } else {
+      dstImg.style.display = 'none';
+      if(dstIni && srcIni){
+        dstIni.style.display = 'flex';
+        dstIni.textContent = srcIni.textContent;
+        dstIni.style.background = srcIni.style.background;
+      }
+    }
+  }
+
+  if(prehSeg === 'tyzden') renderPrehladTyzden();
+  else if(prehSeg === 'mesiac') renderPrehladMesiac();
+  else renderPrehladStat();
+}
+
+function renderPrehladTyzden(){
+  var now = new Date(); now.setHours(0,0,0,0);
+  var monday = getMonday(now);
+  var color = (userColors && userColors[currentUser]) || '#007AFF';
+  // 7 dní týždňa
+  var daysHTML = '';
+  var sums = {visits:0,vmins:0,workMins:0,workDays:0};
+  for(var i=0;i<7;i++){
+    var d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate()+i);
+    var dk = currentUser+'_d_'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    var dayObj = data[dk];
+    var s = dayObj ? getDayStats(dayObj) : null;
+    var isToday = d.getTime() === now.getTime();
+    var isPast = d < now;
+    var isWE = d.getDay()===0 || d.getDay()===6;
+    var dowLbl = ['Po','Ut','St','Št','Pi','So','Ne'][i];
+    var completed = isDayCompleted(dayObj);
+    if(s && s.saved && dayObj && dayObj.type !== 'dovol' && dayObj.type !== 'pn'){
+      sums.visits += s.vc;
+      sums.vmins += s.vm;
+      if(dayObj.start && dayObj.end){
+        sums.workMins += s.tw;
+        sums.workDays++;
+      }
+    }
+    var todayCls = isToday ? ' today' : '';
+    var fadedCls = (!isToday && (!isPast || isWE) && (!s||!s.saved)) ? ' faded' : '';
+    var bgStyle = isToday ? 'background:'+color+';' : '';
+    // Intenzita pásika podľa splnenia
+    var pct = 0;
+    if(s && s.saved && dayObj){
+      var g = userGoals[currentUser] || {pocet:11, navstevy:5};
+      var cielN = g.pocet||11;
+      pct = Math.min(100, Math.round(s.vc / cielN * 100));
+    }
+    var barOp = pct >= 90 ? '1' : (pct >= 60 ? '0.7' : (pct >= 30 ? '0.5' : '0.25'));
+    var barHTML = '';
+    if(s && s.saved && !isToday) barHTML = '<div class="preh-day-bar" style="background:'+color+';opacity:'+barOp+'"></div>';
+    var badge = (completed && !isToday) ? '<div class="preh-day-badge">✓</div>' : '';
+    var subHTML = isToday ? '<div class="preh-day-sub">dnes</div>' : (s && s.saved && s.vc>0 ? '<div class="preh-day-sub">'+s.vc+'n</div>' : '<div class="preh-day-sub"></div>');
+    daysHTML += '<div class="preh-day'+todayCls+fadedCls+'" style="'+bgStyle+'" onclick="prehGoToDay('+d.getFullYear()+','+d.getMonth()+','+d.getDate()+')">'
+      + '<div class="preh-day-dow">'+dowLbl+'</div>'
+      + '<div class="preh-day-num">'+d.getDate()+'</div>'
+      + barHTML
+      + subHTML
+      + badge
+      + '</div>';
+  }
+  // Týždeň zatiaľ — karty
+  var g = userGoals[currentUser] || {pocet:11, navstevy:5, pracovna:8.5};
+  var weekVisitGoal = g.pocet * 5;  // 5 pracovných dní
+  var wDiff = sums.visits - weekVisitGoal;
+  var visitDiffStr = wDiff>=0 ? '+'+wDiff+' nad cieľom' : (wDiff)+' do cieľa';
+  var visitDiffCol = wDiff>=0 ? '#34C759' : '#FF3B30';
+  var avgVMH = sums.timeDays>0 ? '' : '';
+  var visitedDays = 0;
+  for(var ii=0;ii<7;ii++){
+    var dd = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate()+ii);
+    var dkk = currentUser+'_d_'+dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0');
+    var ddd = data[dkk];
+    if(ddd){
+      var ss = getDayStats(ddd);
+      if(ss.saved && ddd.type !== 'dovol' && ddd.type !== 'pn' && ddd.type !== 'cd' && ddd.type !== 'meeting') visitedDays++;
+    }
+  }
+  var avgVisitMin = visitedDays>0 ? Math.round(sums.vmins/visitedDays) : 0;
+  var avgVisitH = visitedDays>0 ? (avgVisitMin/60).toFixed(1).replace('.',',')+' h/deň' : '—';
+  // Dnes karta
+  var todayObj = data[currentUser+'_d_'+now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')];
+  var todayCardHTML = renderTodayCard(todayObj, now);
+
+  // Predikcia týždňa (tip)
+  var dayOfWeek = (now.getDay()===0 ? 7 : now.getDay()); // Po=1..Ne=7
+  var workdaysPast = Math.min(dayOfWeek, 5);
+  var tipHTML = '';
+  if(visitedDays>0 && workdaysPast>0 && workdaysPast<5){
+    var projected = Math.round(sums.visits / workdaysPast * 5);
+    var remaining = 5 - workdaysPast;
+    var perDay = Math.max(0, Math.ceil((weekVisitGoal - sums.visits) / Math.max(1,remaining)));
+    if(projected < weekVisitGoal){
+      tipHTML = '<div class="preh-tip"><span class="material-symbols-outlined" style="font-size:18px;flex-shrink:0">lightbulb</span><div>Pri tempe skončíš týždeň na <b>'+projected+'</b> z cieľa <b>'+weekVisitGoal+'</b>. Chýba ~<b>'+perDay+'/deň</b> ('+remaining+' dni).</div></div>';
+    } else {
+      tipHTML = '<div class="preh-tip"><span class="material-symbols-outlined" style="font-size:18px;flex-shrink:0">lightbulb</span><div>Pri tempe skončíš týždeň na <b>'+projected+'</b>, cieľ <b>'+weekVisitGoal+'</b> — si na dobrej ceste.</div></div>';
+    }
+  }
+
+  // Vystavenie do DOM
+  var html = ''
+    + '<div class="preh-week">'+daysHTML+'</div>'
+    + '<div class="preh-section-lbl">Dnes</div>'
+    + todayCardHTML
+    + '<div class="preh-section-lbl">Týždeň zatiaľ</div>'
+    + '<div class="preh-cards">'
+      + '<div class="preh-card"><div class="preh-card-lbl">Návštevy</div><div class="preh-card-val" style="color:'+color+'">'+sums.visits+'</div><div class="preh-card-sub" style="color:'+visitDiffCol+'">'+visitDiffStr+'</div></div>'
+      + '<div class="preh-card"><div class="preh-card-lbl">Čas u zákazníka</div><div class="preh-card-val">'+fmtMins(sums.vmins)+'</div><div class="preh-card-sub" style="color:#8e8e93">priemer '+avgVisitH+'</div></div>'
+    + '</div>'
+    + tipHTML
+    + '<div class="preh-detail-link" onclick="switchMainTab(\'dochadzka\')"><span class="material-symbols-outlined" style="font-size:18px">calendar_today</span>Otvor celý mesiac v kalendári</div>';
+  document.getElementById('prehContent').innerHTML = html;
+}
+
+function fmtMins(m){
+  if(!m) return '0h';
+  var h = Math.floor(m/60), mn = m%60;
+  return h+'h'+(mn>0?' '+mn+'m':'');
+}
+
+function renderTodayCard(todayObj, now){
+  var color = (userColors && userColors[currentUser]) || '#007AFF';
+  var s = todayObj ? getDayStats(todayObj) : null;
+  var hasStart = todayObj && todayObj.start;
+  var hasEnd = todayObj && todayObj.end;
+  var visits = (todayObj && Array.isArray(todayObj.visits)) ? todayObj.visits : [];
+  var dtype = todayObj && todayObj.type ? todayObj.type : '';
+
+  // Špeciálne typy dňa (dovolenka, PN, meeting, CD)
+  if(dtype){
+    var dtypeLbl = DTYPES[dtype] || dtype;
+    var dtypeColors = {dovol:'#FF9500',pn:'#FF3B30',meeting:'#5AC8FA',cd:'#AF52DE'};
+    var dtypeIcons = {dovol:'beach_access',pn:'sick',meeting:'groups',cd:'menu_book'};
+    var c = dtypeColors[dtype] || color;
+    var ic = dtypeIcons[dtype] || 'event';
+    return '<div class="preh-today-card">'
+      + '<div class="preh-today-icon" style="background:'+c+'15;color:'+c+'"><span class="material-symbols-outlined" style="font-size:32px">'+ic+'</span></div>'
+      + '<div class="preh-today-empty-title">'+dtypeLbl+'</div>'
+      + '<div class="preh-today-empty-sub">Dnes je v kalendári označené ako '+dtypeLbl.toLowerCase()+'</div>'
+      + '<div class="preh-cta-row" style="margin-top:6px"><button class="preh-cta preh-cta-secondary" onclick="prehGoToToday()">Upraviť</button></div>'
+    + '</div>';
+  }
+
+  // 1) PRÁZDNY STAV — deň ešte nezačal
+  if(!hasStart && visits.length === 0){
+    return '<div class="preh-today-card">'
+      + '<div class="preh-today-icon" style="background:'+color+'15;color:'+color+'"><span class="material-symbols-outlined" style="font-size:32px">wb_sunny</span></div>'
+      + '<div class="preh-today-empty-title">Pripravený začať deň?</div>'
+      + '<div class="preh-today-empty-sub">Klepni START alebo rovno pridaj prvú návštevu</div>'
+      + '<div class="preh-cta-row">'
+        + '<button class="preh-cta preh-cta-primary" style="background:'+color+'" onclick="prehClockIn()"><span class="material-symbols-outlined" style="font-size:18px">play_arrow</span> START</button>'
+        + '<button class="preh-cta preh-cta-secondary" onclick="prehShowAddVisit()"><span class="material-symbols-outlined" style="font-size:18px">add</span> Návšteva</button>'
+      + '</div>'
+    + '</div>';
+  }
+
+  // 3) DEŇ UKONČENÝ — clock-out je
+  if(hasStart && hasEnd){
+    return '<div class="preh-today-card">'
+      + '<div class="preh-today-icon" style="background:#34C75920;color:#34C759"><span class="material-symbols-outlined" style="font-size:32px">check_circle</span></div>'
+      + '<div class="preh-today-empty-title">Deň ukončený</div>'
+      + '<div class="preh-today-empty-sub">'+s.vc+' návštev · '+fmtMins(s.vm)+' u zákazníka · '+todayObj.start+'–'+todayObj.end+'</div>'
+      + '<div class="preh-cta-row">'
+        + '<button class="preh-cta preh-cta-secondary" onclick="prehShowAddVisit()"><span class="material-symbols-outlined" style="font-size:18px">add</span> Pridať návštevu</button>'
+        + '<button class="preh-cta preh-cta-secondary" onclick="prehGoToToday()"><span class="material-symbols-outlined" style="font-size:18px">edit</span> Upraviť</button>'
+      + '</div>'
+    + '</div>';
+  }
+
+  // 2) DEŇ PREBIEHA — má start ale nie end (alebo má len návštevy bez start, Mirkin prípad)
+  var startInfo = hasStart ? ('Začiatok '+todayObj.start) : 'Bez začiatku shiftu';
+  var pulseDot = hasStart && !hasEnd ? '<span class="preh-live-dot"></span>' : '';
+  return '<div class="preh-today-card" style="text-align:left">'
+    + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'
+      + '<div class="preh-today-active-icon" style="background:'+color+'15;color:'+color+'"><span class="material-symbols-outlined">store</span></div>'
+      + '<div style="flex:1">'
+        + '<div class="preh-today-active-main">'+pulseDot+s.vc+' návštev · '+fmtMins(s.vm)+'</div>'
+        + '<div class="preh-today-active-sub">'+startInfo+'</div>'
+      + '</div>'
+      + '<button onclick="prehGoToToday()" style="background:transparent;border:none;cursor:pointer;color:#8e8e93;padding:4px"><span class="material-symbols-outlined" style="font-size:22px">chevron_right</span></button>'
+    + '</div>'
+    + '<div class="preh-quick-chips">'
+      + '<button class="preh-chip" onclick="prehQuickAdd(15)">+15m</button>'
+      + '<button class="preh-chip" onclick="prehQuickAdd(20)">+20m</button>'
+      + '<button class="preh-chip" onclick="prehQuickAdd(30)">+30m</button>'
+      + '<button class="preh-chip" onclick="prehQuickAdd(45)">+45m</button>'
+      + '<button class="preh-chip" onclick="prehQuickAdd(60)">+60m</button>'
+    + '</div>'
+    + '<div class="preh-cta-row" style="margin-top:10px">'
+      + '<button class="preh-cta preh-cta-primary" style="background:'+color+'" onclick="prehShowAddVisit()"><span class="material-symbols-outlined" style="font-size:18px">add</span> Vlastná návšteva</button>'
+      + (hasStart && !hasEnd ? '<button class="preh-cta preh-cta-secondary" onclick="prehClockOut()"><span class="material-symbols-outlined" style="font-size:18px">stop</span> KONIEC</button>' : '')
+    + '</div>'
+  + '</div>';
+}
+
+// Akcie z úvodnej obrazovky (pracujú s dnešným dátumom)
+function prehClockIn(){
+  var n=new Date();
+  var t=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+  var dk=dKey(n.getFullYear(),n.getMonth(),n.getDate()),k=key(n.getFullYear(),n.getMonth(),n.getDate());
+  if(!data[dk]) data[dk]={start:'',end:'',visits:[],note:'',type:''};
+  if(!Array.isArray(data[dk].visits)) data[dk].visits=[];
+  data[dk].start=t; apiSet(k,JSON.stringify(data[dk])); setStatus('▶️ START: '+t);
+  renderPrehlad(); renderCalendar();
+}
+function prehClockOut(){
+  var n=new Date();
+  var t=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+  var dk=dKey(n.getFullYear(),n.getMonth(),n.getDate()),k=key(n.getFullYear(),n.getMonth(),n.getDate());
+  if(!data[dk]) data[dk]={start:'',end:'',visits:[],note:'',type:''};
+  if(!Array.isArray(data[dk].visits)) data[dk].visits=[];
+  data[dk].end=t; apiSet(k,JSON.stringify(data[dk])); setStatus('⏹️ KONIEC: '+t);
+  renderPrehlad(); renderCalendar();
+}
+function prehQuickAdd(mins){
+  var n=new Date();
+  var dk=dKey(n.getFullYear(),n.getMonth(),n.getDate()),k=key(n.getFullYear(),n.getMonth(),n.getDate());
+  if(!data[dk]) data[dk]={start:'',end:'',visits:[],note:'',type:''};
+  if(!Array.isArray(data[dk].visits)) data[dk].visits=[];
+  data[dk].visits.push({mins:mins});
+  apiSet(k,JSON.stringify(data[dk])); setStatus('✓ Návšteva +'+mins+'m');
+  renderPrehlad(); renderCalendar();
+}
+function prehShowAddVisit(){
+  // Otvorí vlastný modal (prompt() nefunguje spoľahlivo v iOS PWA fullscreen)
+  var existing = document.getElementById('prehAddVisitModal');
+  if(existing) existing.remove();
+  var color = (userColors && userColors[currentUser]) || '#007AFF';
+  var hasShops = currentUser === 'Filip' && OBCHODY && OBCHODY['Filip'] && OBCHODY['Filip'].length > 0;
+  var shopBtnHTML = hasShops
+    ? '<button id="prehAvShopBtn" class="preh-cta preh-cta-secondary" style="width:100%;margin-top:8px" onclick="prehAvOpenShop()"><span class="material-symbols-outlined" style="font-size:18px">storefront</span> <span id="prehAvShopLbl">Priradiť obchod (voliteľné)</span></button>'
+    : '';
+  var html = '<div class="preh-av-overlay" id="prehAddVisitModal" onclick="if(event.target===this)prehAvClose()">'
+    + '<div class="preh-av-modal">'
+      + '<div class="preh-av-head">'
+        + '<div class="preh-av-title">Pridať návštevu</div>'
+        + '<button class="preh-av-close" onclick="prehAvClose()">✕</button>'
+      + '</div>'
+      + '<div class="preh-av-body">'
+        + '<div class="preh-av-label">Trvanie (minúty)</div>'
+        + '<div class="preh-av-chips" id="prehAvChips">'
+          + '<button class="preh-av-chip" data-m="15" onclick="prehAvSetM(15)">15</button>'
+          + '<button class="preh-av-chip" data-m="20" onclick="prehAvSetM(20)">20</button>'
+          + '<button class="preh-av-chip active" data-m="30" onclick="prehAvSetM(30)">30</button>'
+          + '<button class="preh-av-chip" data-m="45" onclick="prehAvSetM(45)">45</button>'
+          + '<button class="preh-av-chip" data-m="60" onclick="prehAvSetM(60)">60</button>'
+          + '<button class="preh-av-chip" data-m="90" onclick="prehAvSetM(90)">90</button>'
+        + '</div>'
+        + '<div style="display:flex;align-items:center;gap:8px;margin-top:10px">'
+          + '<span style="font-size:12px;color:#8e8e93;flex-shrink:0">alebo:</span>'
+          + '<input type="number" inputmode="numeric" class="preh-av-input" id="prehAvCustomMin" placeholder="vlastné min." min="1" max="600">'
+        + '</div>'
+        + shopBtnHTML
+      + '</div>'
+      + '<div class="preh-av-actions">'
+        + '<button class="preh-cta preh-cta-secondary" onclick="prehAvClose()">Zrušiť</button>'
+        + '<button class="preh-cta preh-cta-primary" style="background:'+color+'" onclick="prehAvConfirm()">Pridať</button>'
+      + '</div>'
+    + '</div>'
+  + '</div>';
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+var _prehAvSelMins = 30;
+var _prehAvSelShopId = null;
+function prehAvSetM(m){
+  _prehAvSelMins = m;
+  document.querySelectorAll('#prehAvChips .preh-av-chip').forEach(function(b){
+    b.classList.toggle('active', parseInt(b.getAttribute('data-m')) === m);
+  });
+  var ci = document.getElementById('prehAvCustomMin'); if(ci) ci.value = '';
+}
+function prehAvOpenShop(){
+  // Reusuje existujúci shop picker, ale pre dočasný kontext (nie zatiaľ uložená návšteva)
+  // Hack: vytvoríme dočasnú návštevu, otvoríme picker, po výbere ju zmažeme a uložíme len ID
+  var n = new Date();
+  var dk = dKey(n.getFullYear(), n.getMonth(), n.getDate());
+  if(!data[dk]) data[dk] = {start:'',end:'',visits:[],note:'',type:''};
+  if(!Array.isArray(data[dk].visits)) data[dk].visits = [];
+  // Vlož placeholder visit a zapamätaj index
+  data[dk].visits.push({_temp:true,mins:0});
+  var idx = data[dk].visits.length - 1;
+  _prehAvTempVisitIdx = idx;
+  _prehAvTempDk = dk;
+  openShopPicker(idx);
+  // Monitor: po zatvorení pickera preberáme obchodId
+  var poll = setInterval(function(){
+    if(!document.getElementById('shopPickerModal')){
+      clearInterval(poll);
+      var v = data[_prehAvTempDk].visits[_prehAvTempVisitIdx];
+      if(v && v.obchodId){
+        _prehAvSelShopId = v.obchodId;
+        var shop = findShop(v.obchodId);
+        var lbl = document.getElementById('prehAvShopLbl');
+        if(lbl && shop) lbl.textContent = '🏪 '+shop.n+(shop.m?' · '+shop.m:'');
+      }
+      // Odstráň placeholder visit (pridáme ju riadne v confirm)
+      data[_prehAvTempDk].visits.splice(_prehAvTempVisitIdx, 1);
+      _prehAvTempVisitIdx = -1;
+      // NEukladaj — zmena bola len lokálne pre picker
+    }
+  }, 200);
+}
+var _prehAvTempVisitIdx = -1;
+var _prehAvTempDk = '';
+function prehAvConfirm(){
+  var customEl = document.getElementById('prehAvCustomMin');
+  var mins = _prehAvSelMins;
+  if(customEl && customEl.value){
+    var cv = parseInt(customEl.value);
+    if(!isNaN(cv) && cv > 0) mins = cv;
+  }
+  if(!mins || mins <= 0){ setStatus('⚠️ Zadaj platné minúty'); return; }
+  var n = new Date();
+  var dk = dKey(n.getFullYear(), n.getMonth(), n.getDate());
+  var k = key(n.getFullYear(), n.getMonth(), n.getDate());
+  if(!data[dk]) data[dk] = {start:'',end:'',visits:[],note:'',type:''};
+  if(!Array.isArray(data[dk].visits)) data[dk].visits = [];
+  var visit = {mins: mins};
+  if(_prehAvSelShopId) visit.obchodId = _prehAvSelShopId;
+  data[dk].visits.push(visit);
+  apiSet(k, JSON.stringify(data[dk]));
+  setStatus('✓ Návšteva +'+mins+'m'+(_prehAvSelShopId?' priradená':''));
+  prehAvClose();
+  renderPrehlad(); renderCalendar();
+}
+function prehAvClose(){
+  var el = document.getElementById('prehAddVisitModal');
+  if(el) el.remove();
+  _prehAvSelMins = 30;
+  _prehAvSelShopId = null;
+}
+
+function prehGoToToday(){
+  var now = new Date();
+  prehGoToDay(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function prehGoToDay(y,m,d){
+  // Skoč do kalendára na daný deň
+  currentYear = y; currentMonth = m;
+  switchMainTab('dochadzka');
+  document.getElementById('monthTitle').textContent = MONTHS[currentMonth]+' '+currentYear;
+  renderCalendar();
+  selectedDay = d;
+  renderDetail();
+  setTimeout(function(){
+    var det = document.getElementById('dayDetail');
+    if(det) det.scrollIntoView({behavior:'smooth',block:'start'});
+  }, 100);
+}
+
+function renderPrehladMesiac(){
+  var color = (userColors && userColors[currentUser]) || '#007AFF';
+  var now = new Date();
+  var y = now.getFullYear(), m = now.getMonth();
+  var firstDay = new Date(y, m, 1);
+  var lastDay = new Date(y, m+1, 0);
+  firstDay.setHours(0,0,0,0); lastDay.setHours(23,59,59,999);
+  var sums = getRangeStats(firstDay, lastDay);
+  // Cieľ pre celý mesiac
+  var g = userGoals[currentUser] || {pocet:11, navstevy:5, pracovna:8.5};
+  var workdaysInMonth = 0;
+  for(var d=1;d<=lastDay.getDate();d++){
+    var dt = new Date(y,m,d);
+    if(dt.getDay()!==0 && dt.getDay()!==6) workdaysInMonth++;
+  }
+  var monthVisitGoal = g.pocet * workdaysInMonth;
+  var visitDiff = sums.totalC - monthVisitGoal;
+  var avgPerDay = sums.timeDays>0 ? (sums.totalC/sums.timeDays).toFixed(1).replace('.',',') : '—';
+  var avgVMH = sums.timeDays>0 ? (sums.totalVM/sums.timeDays/60).toFixed(1).replace('.',',')+' h/deň' : '—';
+  // Mini-kalendár
+  var fd = firstDay.getDay(); var off = (fd+6)%7;
+  var miniHTML = '<div class="preh-mini-dh">Po</div><div class="preh-mini-dh">Ut</div><div class="preh-mini-dh">St</div><div class="preh-mini-dh">Št</div><div class="preh-mini-dh">Pi</div><div class="preh-mini-dh">So</div><div class="preh-mini-dh">Ne</div>';
+  miniHTML = '<div class="preh-mini-cal">'+miniHTML;
+  for(var i=0;i<off;i++) miniHTML += '<div class="preh-mini-day empty"></div>';
+  var today = new Date(); today.setHours(0,0,0,0);
+  for(var dd2=1;dd2<=lastDay.getDate();dd2++){
+    var ddt = new Date(y,m,dd2);
+    var dk = currentUser+'_d_'+y+'-'+String(m+1).padStart(2,'0')+'-'+String(dd2).padStart(2,'0');
+    var dobj = data[dk];
+    var ss = dobj ? getDayStats(dobj) : null;
+    var isWE = ddt.getDay()===0 || ddt.getDay()===6;
+    var isToday = ddt.getTime() === today.getTime();
+    var cls = 'preh-mini-day'+(isWE?' weekend':'')+(isToday?' today':'');
+    var bg = '';
+    if(ss && ss.saved && dobj.type !== 'dovol' && dobj.type !== 'pn'){
+      var pct = Math.min(100, Math.round(ss.vc / (g.pocet||11) * 100));
+      var op = pct>=90?'0.95':(pct>=60?'0.7':(pct>=30?'0.5':'0.25'));
+      bg = 'background:'+color+';color:#fff;opacity:'+op;
+    } else if(dobj && dobj.type === 'dovol'){
+      bg = 'background:#fff4e0;color:#FF9500';
+    } else if(dobj && dobj.type === 'pn'){
+      bg = 'background:#fcebeb;color:#FF3B30';
+    }
+    miniHTML += '<div class="'+cls+'" style="'+bg+'" onclick="prehGoToDay('+y+','+m+','+dd2+')">'+dd2+'</div>';
+  }
+  miniHTML += '</div>';
+  var visitDiffStr = visitDiff>=0 ? '+'+visitDiff+' nad cieľom' : visitDiff+' do cieľa';
+  var visitDiffCol = visitDiff>=0 ? '#34C759' : '#FF3B30';
+  var html = ''
+    + '<div class="preh-section-lbl">Mesiac '+MONTHS[m]+'</div>'
+    + '<div class="preh-cards">'
+      + '<div class="preh-card"><div class="preh-card-lbl">Návštevy</div><div class="preh-card-val" style="color:'+color+'">'+sums.totalC+'</div><div class="preh-card-sub" style="color:'+visitDiffCol+'">'+visitDiffStr+'</div></div>'
+      + '<div class="preh-card"><div class="preh-card-lbl">Čas u zákazníka</div><div class="preh-card-val">'+fmtMins(sums.totalVM)+'</div><div class="preh-card-sub" style="color:#8e8e93">priemer '+avgVMH+'</div></div>'
+      + '<div class="preh-card"><div class="preh-card-lbl">Priemer/deň</div><div class="preh-card-val">'+avgPerDay+'</div><div class="preh-card-sub" style="color:#8e8e93">návštev</div></div>'
+      + '<div class="preh-card"><div class="preh-card-lbl">Odpracované</div><div class="preh-card-val">'+sums.wDays+'</div><div class="preh-card-sub" style="color:#8e8e93">z '+workdaysInMonth+' pracovných dní</div></div>'
+    + '</div>'
+    + '<div class="preh-section-lbl">Kalendár '+MONTHS[m]+'</div>'
+    + miniHTML
+    + '<div class="preh-detail-link" onclick="switchMainTab(\'dochadzka\')"><span class="material-symbols-outlined" style="font-size:18px">calendar_today</span>Otvor celý kalendár</div>';
+  document.getElementById('prehContent').innerHTML = html;
+}
+
+function renderPrehladStat(){
+  // Renderne tie pôvodné kruhy + karty (presunuté zo summary). Použijem rovnaké výpočty ako renderSummary.
+  var prefix = currentUser+'_d_';
+  var days=Object.keys(data).filter(function(k){
+    if(!k.startsWith(prefix)) return false;
+    var rest = k.slice(prefix.length);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(rest)) return false;
+    var p = rest.split('-').map(Number);
+    return p[0]===currentYear && p[1]===currentMonth+1;
+  });
+  var EXCL=['dovol','pn'],SKIP=['cd','meeting'];
+  var wDays=0,timeDays=0,workTimeDays=0,totalW=0,totalC=0,totalVM=0;
+  days.forEach(function(k){
+    var d=data[k]; if(!d) return;
+    var s=getDayStats(d),t=d.type||'';
+    if(!s.saved) return;
+    if(EXCL.indexOf(t)>=0) return;
+    wDays++;
+    if(SKIP.indexOf(t)>=0) return;
+    timeDays++; totalC+=s.vc; totalVM+=s.vm;
+    if(d.start && d.end){ workTimeDays++; totalW+=s.tw; }
+  });
+  var avgV = timeDays?(totalC/timeDays).toFixed(1):'—';
+  var avgVMH = timeDays?(totalVM/timeDays/60).toFixed(1).replace('.',','):'—';
+  var avgWHDec = workTimeDays?(totalW/workTimeDays/60).toFixed(1).replace('.',','):'—';
+  var avgW = workTimeDays?Math.round(totalW/workTimeDays):0;
+  var avgWH = workTimeDays?Math.floor(avgW/60)+'h'+(avgW%60>0?' '+avgW%60+'m':''):'—';
+  var wG=workTimeDays*CIEL_P||1,vG=timeDays*CIEL_V||1,cG=timeDays*CIEL_N||1;
+  var wPct = workTimeDays?Math.round(totalW/wG*100):0;
+  var vPct = timeDays?Math.round(totalVM/vG*100):0;
+  var cPct = timeDays?Math.round(totalC/cG*100):0;
+  function ring(pct,col,bg){
+    var r=30,ci=2*Math.PI*r,off=ci*(1-pct/100);
+    return '<svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+bg+'" stroke-width="6"/><circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+ci.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg>';
+  }
+  function rc(ri,pct,lbl,val,sub,sc,circleLabel){
+    var cl=circleLabel!==undefined?circleLabel:pct+'%';
+    var fs=circleLabel!==undefined?'11px':'12px';
+    return '<div class="ring-card-i"><div style="position:relative;width:72px;height:72px">'
+      +'<div style="position:absolute;inset:0;transform:rotate(-90deg)">'+ri+'</div>'
+      +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:'+fs+';font-weight:700;color:#1c1c1e">'+cl+'</div>'
+      +'</div><div class="ring-lbl-i">'+lbl+'</div><div class="ring-val-i">'+val+'</div>'
+      +'<div style="font-size:11px;font-weight:600;color:'+sc+'">'+sub+'</div></div>';
+  }
+  var wH2=totalW?Math.floor(totalW/60)+'h'+(totalW%60?' '+(totalW%60)+'m':''):'—';
+  var vH2=totalVM?Math.floor(totalVM/60)+'h'+(totalVM%60?' '+(totalVM%60)+'m':''):'—';
+  function fd(m){var a=Math.abs(m),h=Math.floor(a/60),mn=Math.round(a%60);return (m>=0?'+':'-')+(h?h+'h ':' ')+(mn?mn+'m':'0m');}
+  var wSub=timeDays?fd(totalW-wG):'—', vSub=timeDays?fd(totalVM-vG):'—';
+  var cSub=timeDays?((totalC-cG>=0?'+':'')+Math.round(totalC-cG)):'—';
+  var wSC=(totalW-wG)>=0?'#34C759':'#FF3B30';
+  var vSC=(totalVM-vG)>=0?'#34C759':'#FF3B30';
+  var cSC=(totalC-cG)>=0?'#34C759':'#FF3B30';
+  // Predikcia pre celý mesiac (#24)
+  var now = new Date();
+  var lastDayMonth = new Date(currentYear, currentMonth+1, 0).getDate();
+  var workdaysInMonth = 0, workdaysPast = 0;
+  for(var dd3=1;dd3<=lastDayMonth;dd3++){
+    var dt2 = new Date(currentYear,currentMonth,dd3);
+    if(dt2.getDay()!==0 && dt2.getDay()!==6){
+      workdaysInMonth++;
+      if(now.getFullYear()>currentYear || (now.getFullYear()===currentYear && now.getMonth()>currentMonth) ||
+         (now.getFullYear()===currentYear && now.getMonth()===currentMonth && dd3<=now.getDate())) workdaysPast++;
+    }
+  }
+  var g = userGoals[currentUser] || {pocet:11};
+  var monthGoal = g.pocet * workdaysInMonth;
+  var tipHTML = '';
+  if(timeDays>0 && workdaysPast>0 && workdaysPast<workdaysInMonth){
+    var proj = Math.round(totalC / timeDays * workdaysInMonth);
+    var remDays = workdaysInMonth - workdaysPast;
+    var diff = monthGoal - totalC;
+    var perDayNeed = remDays>0 ? Math.ceil(diff/remDays) : 0;
+    if(proj < monthGoal){
+      tipHTML = '<div class="preh-tip"><span class="material-symbols-outlined" style="font-size:18px;flex-shrink:0">lightbulb</span><div>Pri tempe mesiaca skončíš na <b>'+proj+'</b> z cieľa <b>'+monthGoal+'</b>. Chýba ~<b>'+perDayNeed+' návštev/deň</b>.</div></div>';
+    } else {
+      tipHTML = '<div class="preh-tip"><span class="material-symbols-outlined" style="font-size:18px;flex-shrink:0">lightbulb</span><div>Pri tempe mesiaca skončíš na <b>'+proj+'</b>, cieľ <b>'+monthGoal+'</b> — výborné tempo.</div></div>';
+    }
+  }
+  // Admin debug (iba Filip)
+  var debugHTML = '';
+  if(currentUser === 'Filip'){
+    var debugInfo = 'Dni: '+timeDays+' | Práca: '+Math.floor(totalW/60)+'h'+(totalW%60)+'m'
+      +' | Cieľ/deň: '+Math.floor(CIEL_P/60)+'h'+(CIEL_P%60)+'m'
+      +' | Celk. cieľ: '+Math.floor(wG/60)+'h'+(wG%60)+'m';
+    debugHTML = '<div style="font-size:11px;color:#8e8e93;padding:8px 16px 0;text-align:center">'+debugInfo+'</div>';
+  }
+  var html = debugHTML
+    + '<div class="preh-section-lbl">'+MONTHS[currentMonth]+' '+currentYear+'</div>'
+    + '<div class="ring-grid-wrap" style="padding:0 16px">'
+      +rc(ring(wPct,'#007AFF','#e8f0fd'),wPct,'Pracovný čas',wH2,wSub,wSC,avgWHDec)
+      +rc(ring(vPct,'#34C759','#e2f7ee'),vPct,'Čas u zákazníka',vH2,vSub,vSC,avgVMH)
+      +rc(ring(cPct,'#AF52DE','#f0ecfc'),cPct,'Návštevy',totalC,cSub,cSC)
+      +'<div class="ring-card-i"><div style="width:44px;height:44px;border-radius:12px;background:#e8f0fd;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><circle cx="15" cy="7" r="2.5" stroke="#007AFF" stroke-width="1.8"/><path d="M3 17c0-3 2.7-5 6-5h6c3.3 0 6 2 6 5" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="ring-lbl-i">Priemer/deň</div><div class="ring-val-i">'+avgV+'</div><div style="font-size:11px;color:#8e8e93">&nbsp;</div></div>'
+    + '</div>'
+    + '<div class="ring-grid-wrap" style="padding:8px 16px 0">'
+      + '<div class="ring-card-i"><div style="width:38px;height:38px;border-radius:10px;background:#e8f0fd;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#007AFF" stroke-width="1.8"/><path d="M12 7v5l3 3" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="ring-lbl-i">Priemer prac.</div><div class="ring-val-i">'+avgWH+'</div></div>'
+      + '<div class="ring-card-i"><div style="width:38px;height:38px;border-radius:10px;background:#f0ecfc;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="17" rx="2.5" stroke="#AF52DE" stroke-width="1.8"/><path d="M8 2v3M16 2v3M3 9h18" stroke="#AF52DE" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="ring-lbl-i">Odpracované</div><div class="ring-val-i">'+wDays+' dní</div></div>'
+    + '</div>'
+    + tipHTML
+    + '<div class="preh-detail-link" onclick="switchMainTab(\'stat\')"><span class="material-symbols-outlined" style="font-size:18px">bar_chart</span>Detailná štatistika (Q1–Q4, grafy)</div>';
+  document.getElementById('prehContent').innerHTML = html;
+}
+
+// ── OFFLINE QUEUE INDICATOR (#25) ─────────────────────────────────
+function renderOfflineQueueBadge(){
+  // Pridá malú bublinu vedľa "Prehľad" tabu ak je offline queue
+  var n = 0;
+  try { n = (offlineQueue||[]).length; } catch(e){}
+  var tabEl = document.getElementById('mtab-prehlad');
+  if(!tabEl) return;
+  var existing = tabEl.querySelector('.preh-queue-badge');
+  if(n > 0){
+    if(!existing){
+      var b = document.createElement('span');
+      b.className = 'preh-queue-badge';
+      b.style.cssText = 'position:absolute;top:2px;right:14%;min-width:16px;height:16px;background:#FF9500;color:#fff;border-radius:8px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1';
+      tabEl.style.position = 'relative';
+      tabEl.appendChild(b);
+      existing = b;
+    }
+    existing.textContent = n;
+  } else if(existing){
+    existing.remove();
+  }
+}
+
 // ── NAVIGÁCIA ────────────────────────────────────────────────────
 function switchMainTab(tab){
   var TABS={
+    prehlad:  {view:'viewPrehlad',  header:'headerPrehlad'},
     dochadzka:{view:'viewDochadzka',header:'headerDochadzka'},
     sklad:    {view:'viewSklad',    header:'headerSklad'},
     stat:     {view:'viewStat',     header:'headerStat'},
     obchody:  {view:'viewObchody',  header:'headerObchody'},
     druhotky: {view:'viewDruhotky', header:'headerDruhotky'},
     poznamky: {view:'viewPoznamky', header:'headerPoznamky'},
-    akcie:    {view:'viewAkcie',    header:null}
+    akcie:    {view:'viewAkcie',    header:null},
+    viac:     {view:'viewViac',     header:null}
   };
+  // Tabs zvýraznené v bottom bar — sub-views ako Druhotky, Akcie, Poznámky highlightuju "Viac"
+  var BOTTOM_BAR_MAP = {prehlad:'prehlad', dochadzka:'dochadzka', stat:'stat', obchody:'obchody', viac:'viac', druhotky:'viac', poznamky:'viac', akcie:'viac', sklad:null};
   Object.keys(TABS).forEach(function(v){
     var active=(v===tab);
     var vEl=document.getElementById(TABS[v].view);
     var hEl=TABS[v].header?document.getElementById(TABS[v].header):null;
-    var tEl=document.getElementById('mtab-'+v);
     if(vEl) vEl.style.display=active?'block':'none';
     if(hEl) hEl.style.display=active?'block':'none';
-    if(tEl) tEl.className='btab'+(active?' active':'');
   });
+  // Bottom bar zvýraznenie
+  ['prehlad','dochadzka','stat','obchody','viac'].forEach(function(b){
+    var tEl=document.getElementById('mtab-'+b);
+    if(tEl) tEl.className='btab'+(BOTTOM_BAR_MAP[tab]===b?' active':'');
+  });
+  if(tab==='prehlad') renderPrehlad();
   if(tab==='sklad') switchSkTab(currentSkTab);
   if(tab==='stat')  renderStat();
   if(tab==='obchody') renderObchody();
   if(tab==='druhotky') renderDruhotky();
   if(tab==='poznamky') renderPoznamky();
   if(tab==='akcie') kadRender();
+  if(tab==='viac') updateViacDarkState();
+}
+function updateViacDarkState(){
+  var el = document.getElementById('viacDarkState');
+  if(el) el.textContent = darkMode ? 'Zapnutá' : 'Vypnutá';
 }
 function switchSkTab(tab){ currentSkTab=tab; ['sklad','prijem','vydaj','historia','produkty'].forEach(function(t){ document.getElementById('skView-'+t).style.display=t===tab?'block':'none'; document.getElementById('stab-'+t).className='sk-stab'+(t===tab?' active':''); }); }
 

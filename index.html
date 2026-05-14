@@ -1356,7 +1356,7 @@ var OBCHODY={"Filip":[{"id":"SK002284","n":"POT J-LM 053 MIX","m":"PARTIZANSKA L
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'FKAPP-MARS-012';
+var APP_VERSION = 'FKAPP-MARS-013';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -2346,9 +2346,11 @@ function selectShop(id){
   // Zachovaj scroll pozíciu pred re-renderom
   var sy = window.scrollY || window.pageYOffset || 0;
   closeShopPicker();
-  renderDetail();
-  // Obnov scroll po DOM update
-  window.scrollTo({top: sy, behavior: 'instant'});
+  // Re-render len ak je viditeľný detail dňa (sme v Kalendári a vybraný deň)
+  if(selectedDay && document.getElementById('viewDochadzka') && document.getElementById('viewDochadzka').style.display !== 'none'){
+    renderDetail();
+    window.scrollTo({top: sy, behavior: 'instant'});
+  }
   autoSave();
 }
 function clearShop(){
@@ -2358,8 +2360,10 @@ function clearShop(){
   delete dd.visits[_shopPickerVisitIdx].obchodId;
   var sy = window.scrollY || window.pageYOffset || 0;
   closeShopPicker();
-  renderDetail();
-  window.scrollTo({top: sy, behavior: 'instant'});
+  if(selectedDay && document.getElementById('viewDochadzka') && document.getElementById('viewDochadzka').style.display !== 'none'){
+    renderDetail();
+    window.scrollTo({top: sy, behavior: 'instant'});
+  }
   autoSave();
 }
 
@@ -5083,12 +5087,21 @@ function prehAvSetM(m){
   });
   var ci = document.getElementById('prehAvCustomMin'); if(ci) ci.value = '';
 }
+var _prehAvSavedSelectedDay = null;
+var _prehAvSavedYear = null;
+var _prehAvSavedMonth = null;
 function prehAvOpenShop(){
   // Skry AV modal počas picker (inak by bol picker pod blurom)
   var avModal = document.getElementById('prehAddVisitModal');
   if(avModal) avModal.style.display = 'none';
-  // Vlož dočasnú placeholder návštevu (picker pracuje s indexom)
+  // Nastavíme kontext na dnešok, aby selectShop / clearShop pracovali správne
+  _prehAvSavedSelectedDay = selectedDay;
+  _prehAvSavedYear = currentYear;
+  _prehAvSavedMonth = currentMonth;
   var n = new Date();
+  currentYear = n.getFullYear();
+  currentMonth = n.getMonth();
+  selectedDay = n.getDate();
   var dk = dKey(n.getFullYear(), n.getMonth(), n.getDate());
   if(!data[dk]) data[dk] = {start:'',end:'',visits:[],note:'',type:''};
   if(!Array.isArray(data[dk].visits)) data[dk].visits = [];
@@ -5111,6 +5124,13 @@ function prehAvOpenShop(){
       // Odstráň placeholder
       data[_prehAvTempDk].visits.splice(_prehAvTempVisitIdx, 1);
       _prehAvTempVisitIdx = -1;
+      // Obnov pôvodný kontext (selectedDay, currentYear, currentMonth)
+      selectedDay = _prehAvSavedSelectedDay;
+      currentYear = _prehAvSavedYear;
+      currentMonth = _prehAvSavedMonth;
+      _prehAvSavedSelectedDay = null;
+      _prehAvSavedYear = null;
+      _prehAvSavedMonth = null;
       // Vráť AV modal späť
       var av = document.getElementById('prehAddVisitModal');
       if(av) av.style.display = 'flex';

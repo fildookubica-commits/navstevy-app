@@ -391,6 +391,42 @@ body.dark .freq-overdue-title{color:#ff8a85}
 body.dark .freq-overdue-item{color:#fff}
 .freq-overdue-days{font-weight:700;color:#c0392b;flex-shrink:0}
 body.dark .freq-overdue-days{color:#ff8a85}
+
+/* Rozbaľovacia sekcia "Nenavštívené" */
+.freq-collapse{background:#fff;border-radius:14px;margin-top:8px;overflow:hidden}
+body.dark .freq-collapse{background:#2c2c2e}
+.freq-collapse-head{padding:12px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;user-select:none;-webkit-tap-highlight-color:transparent}
+.freq-collapse-head:active{background:#f2f2f7}
+body.dark .freq-collapse-head:active{background:#3a3a3c}
+.freq-collapse-title{font-size:13px;font-weight:700;color:#1c1c1e;display:flex;align-items:center;gap:8px}
+body.dark .freq-collapse-title{color:#fff}
+.freq-collapse-title-wrap{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.freq-collapse-sub{font-size:10px;color:#8e8e93;font-weight:500}
+.freq-info-period{background:#f0f7ff;color:#0058bc;border-radius:8px;padding:8px 10px;font-size:11px;margin:6px 0 10px;line-height:1.45}
+body.dark .freq-info-period{background:#0c2a4a;color:#7fb8ff}
+.freq-collapse-badge{display:inline-block;padding:2px 8px;border-radius:10px;background:#FF9500;color:#fff;font-size:11px;font-weight:700}
+.freq-collapse-arrow{font-size:14px;color:#8e8e93;transition:transform 0.2s}
+.freq-collapse.open .freq-collapse-arrow{transform:rotate(180deg)}
+.freq-collapse-body{display:none;padding:0 16px 12px;border-top:1px solid #f2f2f7}
+body.dark .freq-collapse-body{border-top-color:#3a3a3c}
+.freq-collapse.open .freq-collapse-body{display:block}
+.freq-search{width:100%;padding:8px 12px;margin:10px 0 8px;border:1px solid #e5e5ea;border-radius:8px;font-size:13px;background:#f9f9fb;color:#1c1c1e;box-sizing:border-box}
+body.dark .freq-search{background:#3a3a3c;border-color:#48484a;color:#fff}
+.freq-cat-tabs{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap}
+.freq-cat-tab{padding:4px 10px;border-radius:8px;background:#f2f2f7;color:#1c1c1e;font-size:11px;font-weight:700;cursor:pointer;border:1px solid transparent}
+.freq-cat-tab.active{background:#0058bc;color:#fff;border-color:#0058bc}
+body.dark .freq-cat-tab{background:#3a3a3c;color:#fff}
+body.dark .freq-cat-tab.active{background:#0a84ff;border-color:#0a84ff}
+.freq-shop-list{max-height:300px;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:0 -4px}
+.freq-shop-item{padding:8px 10px;border-bottom:1px solid #f2f2f7;display:flex;gap:8px;align-items:flex-start}
+body.dark .freq-shop-item{border-bottom-color:#3a3a3c}
+.freq-shop-item:last-child{border-bottom:none}
+.freq-shop-cat{flex-shrink:0;width:20px;height:20px;border-radius:50%;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.freq-shop-body{flex:1;min-width:0}
+.freq-shop-name{font-size:12px;font-weight:600;color:#1c1c1e;line-height:1.3}
+body.dark .freq-shop-name{color:#fff}
+.freq-shop-meta{font-size:10px;color:#8e8e93;margin-top:2px}
+.freq-empty{text-align:center;padding:20px;color:#8e8e93;font-size:12px}
 /* POZNÁMKY */
 .pozn-wrap{padding:14px 20px 0}
 .pozn-add-card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px}
@@ -2911,6 +2947,212 @@ function renderFrequencyStats(){
   return html;
 }
 
+// Stav pre rozbaľovaciu sekciu nenavštívených
+var FREQ_COLLAPSE_OPEN = false;
+var FREQ_NV_CAT_FILTER = 'all';
+var FREQ_NV_SEARCH = '';
+
+// Vráti začiatok obdobia (Date) pre danú kategóriu pri dnešnom dátume
+// B/C → 1. dňa aktuálneho mesiaca
+// D   → 1. dňa aktuálneho kvartálu (Jan/Apr/Júl/Okt)
+// A/E/Y → fallback na 1. dňa mesiaca (A by mal byť týždeň ale to si nepoužívaš)
+function getCategoryPeriodStart(cat, today){
+  if(!today) today = new Date();
+  var y = today.getFullYear();
+  var m = today.getMonth();
+  if(cat === 'D'){
+    var q = Math.floor(m / 3);  // 0,1,2,3
+    return new Date(y, q*3, 1);
+  }
+  // B, C, default → mesiac
+  return new Date(y, m, 1);
+}
+// Pekné meno aktuálneho obdobia pre label
+function getCategoryPeriodLabel(cat, today){
+  if(!today) today = new Date();
+  var MONTHS_S = ['Jan','Feb','Mar','Apr','Máj','Jún','Júl','Aug','Sep','Okt','Nov','Dec'];
+  var y = today.getFullYear();
+  var m = today.getMonth();
+  if(cat === 'D'){
+    var q = Math.floor(m / 3) + 1;
+    return 'Q'+q+' '+y;
+  }
+  return MONTHS_S[m]+' '+y;
+}
+
+function renderNeverVisited(){
+  if(currentUser !== 'Filip') return '';
+  var shops = (OBCHODY && OBCHODY[currentUser]) ? OBCHODY[currentUser] : [];
+  if(!shops.length) return '';
+  var lvMap = buildLastVisitMap();
+  var today = new Date(); today.setHours(0,0,0,0);
+  // Obchody, ktoré majú kategóriu a v aktuálnom období svojej kategórie ešte neboli navštívené
+  var neverShops = [];
+  shops.forEach(function(s){
+    var c = s.c;
+    if(!c || !FREQ_TABLE[c]) return;
+    var periodStart = getCategoryPeriodStart(c, today);
+    var lv = lvMap[s.id];
+    if(lv && lv >= periodStart){
+      return;  // už navštívený v aktuálnom období
+    }
+    neverShops.push(s);
+  });
+  if(neverShops.length === 0){
+    return '<div class="freq-collapse"><div class="freq-collapse-head"><div class="freq-collapse-title">🎉 Všetky obchody navštívené v tomto období</div></div></div>';
+  }
+  // Skupiny podľa kategórie pre tabs
+  var catCounts = {};
+  neverShops.forEach(function(s){ catCounts[s.c] = (catCounts[s.c]||0) + 1; });
+  var catTabs = '<button class="freq-cat-tab '+(FREQ_NV_CAT_FILTER==='all'?'active':'')+'" data-cat="all">Všetky ('+neverShops.length+')</button>';
+  ['A','B','C','D','E','Y'].forEach(function(c){
+    if(catCounts[c]){
+      var lbl = getCategoryPeriodLabel(c, today);
+      catTabs += '<button class="freq-cat-tab '+(FREQ_NV_CAT_FILTER===c?'active':'')+'" data-cat="'+c+'" title="Obdobie: '+lbl+'">'+c+' ('+catCounts[c]+')</button>';
+    }
+  });
+  // Filtruj podľa kategórie + search
+  var q = (FREQ_NV_SEARCH||'').toLowerCase().trim();
+  var filtered = neverShops.filter(function(s){
+    if(FREQ_NV_CAT_FILTER !== 'all' && s.c !== FREQ_NV_CAT_FILTER) return false;
+    if(q){
+      var hay = ((s.n||'')+' '+(s.m||'')+' '+(s.a||'')+' '+(s.r||'')).toLowerCase();
+      if(hay.indexOf(q) < 0) return false;
+    }
+    return true;
+  });
+  // Zoradiť podľa kategórie + mesto
+  var catOrder = {'A':1,'B':2,'C':3,'D':4,'E':5,'Y':6};
+  filtered.sort(function(a,b){
+    var ca = catOrder[a.c]||9, cb = catOrder[b.c]||9;
+    if(ca !== cb) return ca - cb;
+    return (a.m||'').localeCompare(b.m||'');
+  });
+  // Sub-text v hlavičke: zobraz aktuálne obdobie podľa filtra
+  var subText = '';
+  if(FREQ_NV_CAT_FILTER === 'all'){
+    subText = 'Mesiac '+getCategoryPeriodLabel('C', today)+' • Kvartál '+getCategoryPeriodLabel('D', today);
+  } else {
+    subText = 'Obdobie: '+getCategoryPeriodLabel(FREQ_NV_CAT_FILTER, today);
+  }
+  var itemsHtml = '';
+  if(filtered.length === 0){
+    itemsHtml = '<div class="freq-empty">Žiadne obchody nezodpovedajú filtru</div>';
+  } else {
+    filtered.slice(0, 300).forEach(function(s){
+      itemsHtml += '<div class="freq-shop-item">'
+        + '<div class="freq-shop-cat freq-cat-'+s.c+'">'+s.c+'</div>'
+        + '<div class="freq-shop-body">'
+          + '<div class="freq-shop-name">'+escapeHtmlSimple(s.n||'(bez názvu)')+'</div>'
+          + '<div class="freq-shop-meta">'+escapeHtmlSimple(s.r||'')+' • '+escapeHtmlSimple(s.m||'?')+(s.a?' • '+escapeHtmlSimple(s.a):'')+'</div>'
+        + '</div>'
+      + '</div>';
+    });
+    if(filtered.length > 300){
+      itemsHtml += '<div class="freq-empty">… a ďalších '+(filtered.length-300)+' obchodov, spresni vyhľadávanie</div>';
+    }
+  }
+  var openCls = FREQ_COLLAPSE_OPEN ? ' open' : '';
+  return '<div class="freq-collapse'+openCls+'" id="freqCollapse">'
+    + '<div class="freq-collapse-head" onclick="toggleFreqCollapse()">'
+      + '<div class="freq-collapse-title-wrap">'
+        + '<div class="freq-collapse-title">📋 Nenavštívené v období <span class="freq-collapse-badge">'+neverShops.length+'</span></div>'
+        + '<div class="freq-collapse-sub">'+subText+'</div>'
+      + '</div>'
+      + '<div class="freq-collapse-arrow">▼</div>'
+    + '</div>'
+    + '<div class="freq-collapse-body">'
+      + '<input type="text" class="freq-search" id="freqNvSearch" placeholder="🔍 Hľadať podľa názvu, mesta…" value="'+escapeHtmlSimple(FREQ_NV_SEARCH)+'" oninput="onFreqNvSearchInput(this.value)">'
+      + '<div class="freq-cat-tabs" id="freqNvCatTabs">'+catTabs+'</div>'
+      + '<div class="freq-info-period">Po skončení tohto obdobia (resp. ' + (FREQ_NV_CAT_FILTER==='D' ? 'kvartála' : 'mesiaca') + ') sa zoznam automaticky obnoví — obchody sa znova zobrazia ak ich v novom období nenavštíviš.</div>'
+      + '<div class="freq-shop-list">'+itemsHtml+'</div>'
+    + '</div>'
+  + '</div>';
+}
+
+function toggleFreqCollapse(){
+  FREQ_COLLAPSE_OPEN = !FREQ_COLLAPSE_OPEN;
+  var el = document.getElementById('freqCollapse');
+  if(el){
+    if(FREQ_COLLAPSE_OPEN) el.classList.add('open');
+    else el.classList.remove('open');
+    // Pri prvom otvorení napoj listenery na taby
+    if(FREQ_COLLAPSE_OPEN) attachFreqNvHandlers();
+  }
+}
+
+function attachFreqNvHandlers(){
+  document.querySelectorAll('#freqNvCatTabs .freq-cat-tab').forEach(function(el){
+    el.onclick = function(){
+      FREQ_NV_CAT_FILTER = el.getAttribute('data-cat');
+      // Re-render iba telo collapsu (zachová open stav)
+      var el2 = document.getElementById('freqCollapse');
+      if(el2){
+        var parent = el2.parentNode;
+        el2.outerHTML = renderNeverVisited();
+        // Po re-renderi zachovaj open stav a re-attach
+        var newEl = document.getElementById('freqCollapse');
+        if(newEl && FREQ_COLLAPSE_OPEN) newEl.classList.add('open');
+        attachFreqNvHandlers();
+      }
+    };
+  });
+}
+
+var _freqNvSearchTimer = null;
+function onFreqNvSearchInput(v){
+  FREQ_NV_SEARCH = v;
+  if(_freqNvSearchTimer) clearTimeout(_freqNvSearchTimer);
+  _freqNvSearchTimer = setTimeout(function(){
+    var list = document.querySelector('#freqCollapse .freq-shop-list');
+    var tabs = document.getElementById('freqNvCatTabs');
+    if(!list || !tabs) return;
+    var shops = (OBCHODY && OBCHODY[currentUser]) ? OBCHODY[currentUser] : [];
+    var lvMap = buildLastVisitMap();
+    var today = new Date(); today.setHours(0,0,0,0);
+    var neverShops = shops.filter(function(s){
+      if(!s.c || !FREQ_TABLE[s.c]) return false;
+      var periodStart = getCategoryPeriodStart(s.c, today);
+      var lv = lvMap[s.id];
+      if(lv && lv >= periodStart) return false;
+      return true;
+    });
+    var q = (FREQ_NV_SEARCH||'').toLowerCase().trim();
+    var filtered = neverShops.filter(function(s){
+      if(FREQ_NV_CAT_FILTER !== 'all' && s.c !== FREQ_NV_CAT_FILTER) return false;
+      if(q){
+        var hay = ((s.n||'')+' '+(s.m||'')+' '+(s.a||'')+' '+(s.r||'')).toLowerCase();
+        if(hay.indexOf(q) < 0) return false;
+      }
+      return true;
+    });
+    var catOrder = {'A':1,'B':2,'C':3,'D':4,'E':5,'Y':6};
+    filtered.sort(function(a,b){
+      var ca = catOrder[a.c]||9, cb = catOrder[b.c]||9;
+      if(ca !== cb) return ca - cb;
+      return (a.m||'').localeCompare(b.m||'');
+    });
+    var itemsHtml = '';
+    if(filtered.length === 0){
+      itemsHtml = '<div class="freq-empty">Žiadne obchody nezodpovedajú filtru</div>';
+    } else {
+      filtered.slice(0, 300).forEach(function(s){
+        itemsHtml += '<div class="freq-shop-item">'
+          + '<div class="freq-shop-cat freq-cat-'+s.c+'">'+s.c+'</div>'
+          + '<div class="freq-shop-body">'
+            + '<div class="freq-shop-name">'+escapeHtmlSimple(s.n||'(bez názvu)')+'</div>'
+            + '<div class="freq-shop-meta">'+escapeHtmlSimple(s.r||'')+' • '+escapeHtmlSimple(s.m||'?')+(s.a?' • '+escapeHtmlSimple(s.a):'')+'</div>'
+          + '</div>'
+        + '</div>';
+      });
+      if(filtered.length > 300){
+        itemsHtml += '<div class="freq-empty">… a ďalších '+(filtered.length-300)+' obchodov, spresni vyhľadávanie</div>';
+      }
+    }
+    list.innerHTML = itemsHtml;
+  }, 120);
+}
+
 function renderStat(){
   var months=QUARTERS[statPeriod]||QUARTERS['Q1'];
   var totalDays=0,totalTimeDays=0,totalWDiff=0,totalVDiff=0,totalCDiff=0,totalW=0,totalC=0,totalVM=0;
@@ -2964,7 +3206,11 @@ function renderStat(){
   var bars=months.map(function(m){ var s=getMonthStats(statYear,m),pct=maxC>0?Math.round(s.totalC/maxC*100):0,col=s.wDays>0?'#007AFF':'#e5e5ea'; return '<div class="bar-col"><div style="flex:1;display:flex;align-items:flex-end;width:100%"><div class="bar-col-inner" style="height:'+pct+'%;background:'+col+'"></div></div><div class="bar-label">'+MONTHS[m].slice(0,3)+'</div><div class="bar-val">'+(s.totalC||'')+'</div></div>'; }).join('');
   var barsW=months.map(function(m){ var s=getMonthStats(statYear,m),h=s.totalW/60,pct=maxW2>0?Math.round(h/maxW2*100):0,col=s.wDays>0?'#34C759':'#e5e5ea'; return '<div class="bar-col"><div style="flex:1;display:flex;align-items:flex-end;width:100%"><div class="bar-col-inner" style="height:'+pct+'%;background:'+col+'"></div></div><div class="bar-label">'+MONTHS[m].slice(0,3)+'</div><div class="bar-val">'+(s.totalW?Math.round(s.totalW/60)+'h':'')+'</div></div>'; }).join('');
   var monthRows=months.map(function(m){ var s=getMonthStats(statYear,m); if(!s.wDays) return '<div class="stat-month-row"><div class="stat-month-name">'+MONTHS[m]+'</div><div class="stat-month-chips"><span class="stat-chip chip-gray">Žiadne dáta</span></div></div>'; return '<div class="stat-month-row"><div class="stat-month-name">'+MONTHS[m]+'</div><div class="stat-month-chips"><span class="stat-chip '+(s.wDiff>=0?'chip-green':'chip-red')+'">Práca: '+mToH(s.wDiff)+'</span><span class="stat-chip '+(s.vDiff>=0?'chip-green':'chip-red')+'">Návštevy: '+mToH(s.vDiff)+'</span><span class="stat-chip chip-blue">Dni: '+s.wDays+'</span></div></div>'; }).join('');
-  document.getElementById('statContent').innerHTML=periodBtns+yearRow+'<div class="stat-cards">'+summaryCards+'</div><div class="stat-bar-wrap"><div class="stat-bar-title">Počet návštev</div><div class="bar-chart">'+bars+'</div></div><div class="stat-bar-wrap"><div class="stat-bar-title">Odpracované hodiny</div><div class="bar-chart">'+barsW+'</div></div><div class="stat-section-title">Prehľad mesiacov — '+statPeriod+' '+statYear+'</div><div class="stat-month-list">'+monthRows+'</div>' + renderFrequencyStats();
+  document.getElementById('statContent').innerHTML=periodBtns+yearRow+'<div class="stat-cards">'+summaryCards+'</div><div class="stat-bar-wrap"><div class="stat-bar-title">Počet návštev</div><div class="bar-chart">'+bars+'</div></div><div class="stat-bar-wrap"><div class="stat-bar-title">Odpracované hodiny</div><div class="bar-chart">'+barsW+'</div></div><div class="stat-section-title">Prehľad mesiacov — '+statPeriod+' '+statYear+'</div><div class="stat-month-list">'+monthRows+'</div>' + renderFrequencyStats() + renderNeverVisited();
+  // Po re-renderi attachni listenery na taby ak je collapse otvorený
+  if(FREQ_COLLAPSE_OPEN){
+    attachFreqNvHandlers();
+  }
 }
 function statSetPeriod(p){ statPeriod=p; renderStat(); }
 function statChangeYear(d){ statYear+=d; renderStat(); }

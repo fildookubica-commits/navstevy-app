@@ -1284,6 +1284,11 @@ body.dark select option{background:#3a3a3c;color:#fff}
     <div id="viewViac" style="display:none;">
       <div style="padding:18px 20px 8px;font-size:22px;font-weight:700;color:#1a1b1f;font-family:'Inter',sans-serif;letter-spacing:-0.3px">Viac</div>
       <div style="padding:8px 16px 16px;display:flex;flex-direction:column;gap:8px">
+        <button class="viac-item" onclick="switchMainTab('obchody')">
+          <span class="viac-icon" style="background:#e2f7ee;color:#34C759"><span class="material-symbols-outlined" style="font-size:24px">storefront</span></span>
+          <span class="viac-lbl">Obchody</span>
+          <span class="viac-arrow">›</span>
+        </button>
         <button class="viac-item" onclick="switchMainTab('druhotky')">
           <span class="viac-icon" style="background:#fff4e0;color:#FF9500"><span class="material-symbols-outlined" style="font-size:24px">sell</span></span>
           <span class="viac-lbl">Druhotky</span>
@@ -1336,10 +1341,6 @@ body.dark select option{background:#3a3a3c;color:#fff}
       <span class="ms-icon material-symbols-outlined">leaderboard</span>
       <span>Štat.</span>
     </button>
-    <button class="btab" onclick="switchMainTab('obchody')" id="mtab-obchody">
-      <span class="ms-icon material-symbols-outlined">storefront</span>
-      <span>Obchody</span>
-    </button>
     <button class="btab" onclick="switchMainTab('viac')" id="mtab-viac">
       <span class="ms-icon material-symbols-outlined">more_horiz</span>
       <span>Viac</span>
@@ -1355,7 +1356,7 @@ var OBCHODY={"Filip":[{"id":"SK002284","n":"POT J-LM 053 MIX","m":"PARTIZANSKA L
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'FKAPP-MARS-011';
+var APP_VERSION = 'FKAPP-MARS-012';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -5083,19 +5084,20 @@ function prehAvSetM(m){
   var ci = document.getElementById('prehAvCustomMin'); if(ci) ci.value = '';
 }
 function prehAvOpenShop(){
-  // Reusuje existujúci shop picker, ale pre dočasný kontext (nie zatiaľ uložená návšteva)
-  // Hack: vytvoríme dočasnú návštevu, otvoríme picker, po výbere ju zmažeme a uložíme len ID
+  // Skry AV modal počas picker (inak by bol picker pod blurom)
+  var avModal = document.getElementById('prehAddVisitModal');
+  if(avModal) avModal.style.display = 'none';
+  // Vlož dočasnú placeholder návštevu (picker pracuje s indexom)
   var n = new Date();
   var dk = dKey(n.getFullYear(), n.getMonth(), n.getDate());
   if(!data[dk]) data[dk] = {start:'',end:'',visits:[],note:'',type:''};
   if(!Array.isArray(data[dk].visits)) data[dk].visits = [];
-  // Vlož placeholder visit a zapamätaj index
   data[dk].visits.push({_temp:true,mins:0});
   var idx = data[dk].visits.length - 1;
   _prehAvTempVisitIdx = idx;
   _prehAvTempDk = dk;
   openShopPicker(idx);
-  // Monitor: po zatvorení pickera preberáme obchodId
+  // Monitor: po zatvorení pickera preberáme obchodId a obnoviť AV modal
   var poll = setInterval(function(){
     if(!document.getElementById('shopPickerModal')){
       clearInterval(poll);
@@ -5106,10 +5108,12 @@ function prehAvOpenShop(){
         var lbl = document.getElementById('prehAvShopLbl');
         if(lbl && shop) lbl.textContent = '🏪 '+shop.n+(shop.m?' · '+shop.m:'');
       }
-      // Odstráň placeholder visit (pridáme ju riadne v confirm)
+      // Odstráň placeholder
       data[_prehAvTempDk].visits.splice(_prehAvTempVisitIdx, 1);
       _prehAvTempVisitIdx = -1;
-      // NEukladaj — zmena bola len lokálne pre picker
+      // Vráť AV modal späť
+      var av = document.getElementById('prehAddVisitModal');
+      if(av) av.style.display = 'flex';
     }
   }, 200);
 }
@@ -5388,7 +5392,7 @@ function switchMainTab(tab){
     viac:     {view:'viewViac',     header:null}
   };
   // Tabs zvýraznené v bottom bar — sub-views ako Druhotky, Akcie, Poznámky highlightuju "Viac"
-  var BOTTOM_BAR_MAP = {prehlad:'prehlad', dochadzka:'dochadzka', stat:'stat', obchody:'obchody', viac:'viac', druhotky:'viac', poznamky:'viac', akcie:'viac', sklad:null};
+  var BOTTOM_BAR_MAP = {prehlad:'prehlad', dochadzka:'dochadzka', stat:'stat', obchody:'viac', viac:'viac', druhotky:'viac', poznamky:'viac', akcie:'viac', sklad:null};
   Object.keys(TABS).forEach(function(v){
     var active=(v===tab);
     var vEl=document.getElementById(TABS[v].view);
@@ -5397,7 +5401,7 @@ function switchMainTab(tab){
     if(hEl) hEl.style.display=active?'block':'none';
   });
   // Bottom bar zvýraznenie
-  ['prehlad','dochadzka','stat','obchody','viac'].forEach(function(b){
+  ['prehlad','dochadzka','stat','viac'].forEach(function(b){
     var tEl=document.getElementById('mtab-'+b);
     if(tEl) tEl.className='btab'+(BOTTOM_BAR_MAP[tab]===b?' active':'');
   });

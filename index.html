@@ -1179,7 +1179,7 @@ var OBCHODY={"Filip":[{"id":"SK002284","n":"POT J-LM 053 MIX","m":"PARTIZANSKA L
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'dochadzka-mars-v40-cf';
+var APP_VERSION = 'dochadzka-mars-v41-cf';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -1783,34 +1783,41 @@ function renderCalendar(){
 }
 function renderSummary(){
   var today=new Date();
+  var prefix = currentUser+'_d_';
   var days=Object.keys(data).filter(function(k){
-    if(!k.startsWith(currentUser+'_d_')) return false;
-    var p=k.replace(currentUser+'_d_','').split('-').map(Number);
+    if(!k.startsWith(prefix)) return false;
+    var rest = k.slice(prefix.length);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(rest)) return false;
+    var p = rest.split('-').map(Number);
     return p[0]===currentYear&&p[1]===currentMonth+1;
   });
   var EXCL=['dovol','pn'],SKIP=['cd','meeting'];
-  var wDays=0,timeDays=0,totalW=0,totalC=0,totalVM=0;
+  var wDays=0,timeDays=0,workTimeDays=0,totalW=0,totalC=0,totalVM=0;
   days.forEach(function(k){
-    var d=data[k],s=getDayStats(d),t=d.type||'';
+    var d=data[k]; if(!d) return;
+    var s=getDayStats(d),t=d.type||'';
     if(!s.saved) return;
     if(EXCL.indexOf(t)>=0) return;
     wDays++;
-    if(SKIP.indexOf(t)>=0||!d.start) return;
-    timeDays++; totalW+=s.tw; totalC+=s.vc; totalVM+=s.vm;
+    if(SKIP.indexOf(t)>=0) return;
+    // počítame návštevy aj keď deň nemá start/end (napr. iba zadané návštevy)
+    timeDays++; totalC+=s.vc; totalVM+=s.vm;
+    // pracovný čas len pre dni s vyplneným začiatkom aj koncom
+    if(d.start && d.end){ workTimeDays++; totalW+=s.tw; }
   });
   var avgV=timeDays?(totalC/timeDays).toFixed(1):'—';
-  var avgW=timeDays?Math.round(totalW/timeDays):0;
-  var avgWH=timeDays?Math.floor(avgW/60)+'h'+(avgW%60>0?' '+avgW%60+'m':''):'—';
+  var avgW=workTimeDays?Math.round(totalW/workTimeDays):0;
+  var avgWH=workTimeDays?Math.floor(avgW/60)+'h'+(avgW%60>0?' '+avgW%60+'m':''):'—';
   var avgVMH=timeDays?(totalVM/timeDays/60).toFixed(1).replace('.',','):'—';
-  var avgWHDec=timeDays?(totalW/timeDays/60).toFixed(1).replace('.',','):'—';
+  var avgWHDec=workTimeDays?(totalW/workTimeDays/60).toFixed(1).replace('.',','):'—';
   // Debug: zobraz čo sa počíta
-  var wG=timeDays*CIEL_P||1,vG=timeDays*CIEL_V||1,cG=timeDays*CIEL_N||1;
+  var wG=workTimeDays*CIEL_P||1,vG=timeDays*CIEL_V||1,cG=timeDays*CIEL_N||1;
   var debugInfo='Dni: '+timeDays+' | Práca: '+Math.floor(totalW/60)+'h'+(totalW%60)+'m'
     +' | Cieľ/deň: '+Math.floor(CIEL_P/60)+'h'+(CIEL_P%60)+'m'
     +' | Celk. cieľ: '+Math.floor(wG/60)+'h'+(wG%60)+'m';
-  var wPct=Math.round(totalW/wG*100);
-  var vPct=Math.round(totalVM/vG*100);
-  var cPct=Math.round(totalC/cG*100);
+  var wPct=workTimeDays?Math.round(totalW/wG*100):0;
+  var vPct=timeDays?Math.round(totalVM/vG*100):0;
+  var cPct=timeDays?Math.round(totalC/cG*100):0;
   function ring(pct,col,bg){
     var r=30,ci=2*Math.PI*r,off=ci*(1-pct/100);
     return '<svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+bg+'" stroke-width="6"/><circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+ci.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg>';

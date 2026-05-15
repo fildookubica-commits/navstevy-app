@@ -1356,7 +1356,7 @@ var OBCHODY={"Filip":[{"id":"SK002284","n":"POT J-LM 053 MIX","m":"PARTIZANSKA L
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'FKAPP-MARS-013';
+var APP_VERSION = 'FKAPP-MARS-015';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -4987,6 +4987,18 @@ function renderTodayCard(todayObj, now){
 
   // 2) DEŇ PREBIEHA — má start ale nie end (alebo má len návštevy bez start, Mirkin prípad)
   var startInfo = hasStart ? ('Začiatok '+todayObj.start) : 'Bez začiatku shiftu';
+  // Predikcia konca pracovnej doby na základe CIEL_P (default 8.5h)
+  var endHintHTML = '';
+  if(hasStart && !hasEnd){
+    var endMin = tMin(todayObj.start) + CIEL_P;
+    if(endMin < 1440){
+      var endStr = mToT(endMin);
+      var ph = Math.floor(CIEL_P/60);
+      var pm = CIEL_P%60;
+      var goalStr = ph+'h'+(pm>0?' '+pm+'m':'');
+      endHintHTML = '<div style="margin-top:12px;padding:10px 12px;background:#fff;border-radius:10px;border:1px solid #d6d4dd;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:#1c1c1e"><span class="material-symbols-outlined" style="font-size:18px;color:#FF9500">schedule</span><span>Koniec o <b style="color:#1c1c1e">'+endStr+'</b> <span style="color:#8e8e93">('+goalStr+')</span></span></div>';
+    }
+  }
   var pulseDot = hasStart && !hasEnd ? '<span class="preh-live-dot"></span>' : '';
   return '<div class="preh-today-card" style="text-align:left">'
     + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'
@@ -5008,6 +5020,7 @@ function renderTodayCard(todayObj, now){
       + '<button class="preh-cta preh-cta-primary" style="background:'+color+'" onclick="prehShowAddVisit()"><span class="material-symbols-outlined" style="font-size:18px">add</span> Vlastná návšteva</button>'
       + (hasStart && !hasEnd ? '<button class="preh-cta preh-cta-secondary" onclick="prehClockOut()"><span class="material-symbols-outlined" style="font-size:18px">stop</span> KONIEC</button>' : '')
     + '</div>'
+    + endHintHTML
   + '</div>';
 }
 

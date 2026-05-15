@@ -1445,7 +1445,7 @@ var OBCHODY={"Filip":[{"id":"SK002284","n":"POT J-LM 053 MIX","m":"PARTIZANSKA L
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'FKAPP-MARS-021';
+var APP_VERSION = 'FKAPP-MARS-022';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -2164,7 +2164,7 @@ function renderCalendar(){
   for(var d=1;d<=dim;d++){
     var dd=data[dKey(currentYear,currentMonth,d)],dow=new Date(currentYear,currentMonth,d).getDay(),isWE=dow===0||dow===6;
     var isToday=today.getDate()===d&&today.getMonth()===currentMonth&&today.getFullYear()===currentYear;
-    var s=dd?getDayStats(dd):null,hasData=s&&s.saved,dtype=dd&&dd.type?dd.type:'';
+    var s=dd?getDayStats(dd, isToday):null,hasData=s&&s.saved,dtype=dd&&dd.type?dd.type:'';
     var cls='cal-day';
     if(isWE) cls+=' weekend';
     if(isToday) cls+=' today';
@@ -5289,8 +5289,8 @@ function renderPrehladTyzden(){
     var d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate()+i);
     var dk = currentUser+'_d_'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     var dayObj = data[dk];
-    var s = dayObj ? getDayStats(dayObj) : null;
     var isToday = d.getTime() === now.getTime();
+    var s = dayObj ? getDayStats(dayObj, isToday) : null;
     var isPast = d < now;
     var isWE = d.getDay()===0 || d.getDay()===6;
     var dowLbl = ['Po','Ut','St','Št','Pi','So','Ne'][i];
@@ -5298,7 +5298,7 @@ function renderPrehladTyzden(){
     if(s && s.saved && dayObj && dayObj.type !== 'dovol' && dayObj.type !== 'pn'){
       sums.visits += s.vc;
       sums.vmins += s.vm;
-      if(dayObj.start && dayObj.end){
+      if(dayObj.start && (dayObj.end || isToday)){
         sums.workMins += s.tw;
         sums.workDays++;
       }
@@ -5459,7 +5459,7 @@ function manualSync(){
 
 function renderTodayCard(todayObj, now){
   var color = (userColors && userColors[currentUser]) || '#007AFF';
-  var s = todayObj ? getDayStats(todayObj) : null;
+  var s = todayObj ? getDayStats(todayObj, true) : null;
   var hasStart = todayObj && todayObj.start;
   var hasEnd = todayObj && todayObj.end;
   var visits = (todayObj && Array.isArray(todayObj.visits)) ? todayObj.visits : [];
@@ -5827,9 +5827,9 @@ function renderPrehladMesiac(){
     var ddt = new Date(y,m,dd2);
     var dk = currentUser+'_d_'+y+'-'+String(m+1).padStart(2,'0')+'-'+String(dd2).padStart(2,'0');
     var dobj = data[dk];
-    var ss = dobj ? getDayStats(dobj) : null;
-    var isWE = ddt.getDay()===0 || ddt.getDay()===6;
     var isToday = ddt.getTime() === today.getTime();
+    var ss = dobj ? getDayStats(dobj, isToday) : null;
+    var isWE = ddt.getDay()===0 || ddt.getDay()===6;
     var cls = 'preh-mini-day'+(isWE?' weekend':'')+(isToday?' today':'');
     var bg = '';
     var subHTML = '';

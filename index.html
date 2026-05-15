@@ -196,6 +196,17 @@ body.dark .preh-chip{background:#3a3a3c;color:#fff;border-color:#48484a}
 body.dark .preh-chip:active{background:#48484a}
 .preh-live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#34C759;margin-right:6px;animation:prehPulse 1.6s ease-in-out infinite;vertical-align:middle}
 @keyframes prehPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(0.85)}}
+/* Live timer */
+.preh-live-timer{background:#fff;border:1px solid #e5e5ea;border-radius:12px;padding:10px 14px;margin-bottom:0}
+body.dark .preh-live-timer{background:#1c1c1e;border-color:#3a3a3c}
+.preh-live-timer-row{display:flex;align-items:baseline;gap:6px;margin-bottom:6px}
+.preh-live-timer-lbl{font-size:11px;color:#8e8e93;text-transform:uppercase;letter-spacing:0.04em;font-weight:600;flex-shrink:0}
+.preh-live-timer-val{font-size:18px;font-weight:700;color:#1c1c1e;flex:1}
+body.dark .preh-live-timer-val{color:#fff}
+.preh-live-timer-goal{font-size:12px;color:#8e8e93;font-weight:500}
+.preh-live-timer-bar{height:6px;background:#f2f2f7;border-radius:3px;overflow:hidden}
+body.dark .preh-live-timer-bar{background:#3a3a3c}
+.preh-live-timer-bar-fill{height:100%;border-radius:3px;transition:width 0.4s ease,background 0.3s ease}
 /* Add Visit modal */
 .preh-av-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:2000;display:flex;align-items:flex-end;justify-content:center;padding:0;animation:prehAvFadeIn 0.2s ease}
 @media(min-width:520px){.preh-av-overlay{align-items:center;padding:20px}}
@@ -854,6 +865,20 @@ body.dark select option{background:#3a3a3c;color:#fff}
 </head>
 <body>
 
+<!-- APP SPLASH (personalizovaný úvod s avatarom) -->
+<div id="appSplash" style="display:none;position:fixed;inset:0;z-index:10000;background:#fafafe;align-items:center;justify-content:center;flex-direction:column;gap:18px;animation:splashFade 0.3s ease">
+  <div id="appSplashAvatar" style="width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;font-family:'Inter',sans-serif;animation:splashPop 0.5s cubic-bezier(0.34,1.56,0.64,1)"></div>
+  <div id="appSplashGreet" style="font-size:18px;font-weight:700;color:#1c1c1e;font-family:'Inter',sans-serif;animation:splashFadeUp 0.5s 0.15s ease backwards"></div>
+</div>
+<style>
+@keyframes splashFade{from{opacity:0}to{opacity:1}}
+@keyframes splashFadeOut{from{opacity:1}to{opacity:0}}
+@keyframes splashPop{0%{transform:scale(0.6);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes splashFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+body.dark #appSplash{background:#1a1b1f}
+body.dark #appSplashGreet{color:#fff}
+</style>
+
 <!-- UPDATE BANNER -->
 <div class="update-banner" id="updateBanner">
   <div class="update-banner-text">🆕 Dostupná aktualizácia!</div>
@@ -1356,7 +1381,7 @@ var OBCHODY={"Filip":[{"id":"SK002284","n":"POT J-LM 053 MIX","m":"PARTIZANSKA L
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'FKAPP-MARS-016';
+var APP_VERSION = 'FKAPP-MARS-017';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -1545,10 +1570,11 @@ var statYear=new Date().getFullYear(), statPeriod='Q1';
 var poznFilter='all', poznImportant=false;
 
 // ── API ──────────────────────────────────────────────────────────
+var lastSyncAt = null;
 function apiGet(cb){
   fetch(API_URL)
     .then(function(r){ return r.json(); })
-    .then(function(d){ cb(d); })
+    .then(function(d){ lastSyncAt = Date.now(); cb(d); })
     .catch(function(){ cb({}); if(loadFromCache()){ renderCalendar(); skRenderAll(); setStatus('⚠️ Offline — zobrazujem cache'); } });
 }
 function apiSet(k,v){
@@ -1557,6 +1583,7 @@ function apiSet(k,v){
     return r.json();
   }).then(function(d){
     if(!d.ok) { offlineQueue.push({k:k,v:v}); saveOfflineQueue(); }
+    else { lastSyncAt = Date.now(); }
   }).catch(function(){ offlineQueue.push({k:k,v:v}); saveOfflineQueue(); });
 }
 // POST verzia pre veľké payload (KAD memo, atď.) - obíde URL limit (~16 KB)
@@ -1728,11 +1755,44 @@ function updateHeaderAvatarInHeader(user) {
   });
 }
 
+function showAppSplash(name){
+  var colors = {Filip:'#007AFF',Mirka:'#FF2D55',Lubo:'#FF9500',Monika:'#AF52DE',Ivana:'#5AC8FA'};
+  var letters = {Filip:'F',Mirka:'M',Lubo:'L',Monika:'M',Ivana:'I'};
+  var splash = document.getElementById('appSplash');
+  var av = document.getElementById('appSplashAvatar');
+  var gr = document.getElementById('appSplashGreet');
+  if(!splash || !av || !gr) return;
+  // Pozdrav podľa času
+  var hr = new Date().getHours();
+  var greet = hr<10?'Dobré ráno':(hr<18?'Dobrý deň':'Dobrý večer');
+  // Skontroluj custom avatar
+  var saved = localStorage.getItem('avatar_'+name);
+  if(saved){
+    av.style.background = '#fff';
+    av.innerHTML = '<img src="'+saved+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+  } else {
+    av.style.background = colors[name] || '#717786';
+    av.innerHTML = letters[name] || name.charAt(0);
+  }
+  gr.textContent = greet+', '+name;
+  splash.style.display = 'flex';
+  // Po 900ms začne fadeout
+  setTimeout(function(){
+    splash.style.animation = 'splashFadeOut 0.35s ease forwards';
+    setTimeout(function(){ splash.style.display = 'none'; splash.style.animation = ''; }, 350);
+  }, 900);
+}
+
 function setUser(name){
   currentUser=name; applyGoals();
   // Reset prehlad navigácie na aktuálny mesiac
   var nowD = new Date();
   prehMonth = nowD.getMonth(); prehYear = nowD.getFullYear();
+  // App splash s avatarom (#16) — len pri prvom prihlásení v session
+  if(!window._splashShown){
+    window._splashShown = true;
+    showAppSplash(name);
+  }
   document.getElementById('mainApp').style.display='block';
   applyAppTitle();
   allDots(name); allNames(name); allDarkBtns();
@@ -4926,7 +4986,8 @@ function renderPrehladTyzden(){
       + '<div class="preh-card"><div class="preh-card-lbl">Čas u zákazníka</div><div class="preh-card-val">'+fmtMins(sums.vmins)+'</div><div class="preh-card-sub" style="color:#8e8e93">priemer '+avgVisitH+'</div></div>'
     + '</div>'
     + tipHTML
-    + '<div class="preh-detail-link" onclick="switchMainTab(\'dochadzka\')"><span class="material-symbols-outlined" style="font-size:18px">calendar_today</span>Otvor celý mesiac v kalendári</div>';
+    + '<div class="preh-detail-link" onclick="switchMainTab(\'dochadzka\')"><span class="material-symbols-outlined" style="font-size:18px">calendar_today</span>Otvor celý mesiac v kalendári</div>'
+    + renderSyncInfo();
   document.getElementById('prehContent').innerHTML = html;
 }
 
@@ -4934,6 +4995,22 @@ function fmtMins(m){
   if(!m) return '0h';
   var h = Math.floor(m/60), mn = m%60;
   return h+'h'+(mn>0?' '+mn+'m':'');
+}
+
+// "Posledná synchronizácia pred X" (#23)
+function renderSyncInfo(){
+  if(!lastSyncAt) return '';
+  var diffSec = Math.floor((Date.now() - lastSyncAt) / 1000);
+  var label;
+  if(diffSec < 10) label = 'práve teraz';
+  else if(diffSec < 60) label = 'pred '+diffSec+' s';
+  else if(diffSec < 3600) label = 'pred '+Math.floor(diffSec/60)+' min';
+  else if(diffSec < 86400) label = 'pred '+Math.floor(diffSec/3600)+' h';
+  else label = 'pred '+Math.floor(diffSec/86400)+' dňami';
+  var queueN = (offlineQueue && offlineQueue.length) || 0;
+  var queueHTML = queueN > 0 ? ' · <span style="color:#FF9500">'+queueN+' čaká</span>' : '';
+  var dotCol = (navigator.onLine && queueN===0) ? '#34C759' : (navigator.onLine ? '#FF9500' : '#FF3B30');
+  return '<div style="text-align:center;padding:8px 16px 4px;font-size:11px;color:#8e8e93;display:flex;align-items:center;justify-content:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:'+dotCol+';display:inline-block"></span>Synchronizované '+label+queueHTML+'</div>';
 }
 
 function renderTodayCard(todayObj, now){
@@ -4987,6 +5064,23 @@ function renderTodayCard(todayObj, now){
 
   // 2) DEŇ PREBIEHA — má start ale nie end (alebo má len návštevy bez start, Mirkin prípad)
   var startInfo = hasStart ? ('Začiatok '+todayObj.start) : 'Bez začiatku shiftu';
+  // Live timer (#1) - pracuje X h Y m
+  var liveTimerHTML = '';
+  if(hasStart && !hasEnd){
+    var nowMin = now.getHours()*60 + now.getMinutes();
+    var elapsedMin = nowMin - tMin(todayObj.start);
+    if(elapsedMin < 0) elapsedMin = 0;
+    var pct = Math.min(100, Math.round(elapsedMin / CIEL_P * 100));
+    var pctCol = pct >= 100 ? '#34C759' : color;
+    liveTimerHTML = '<div class="preh-live-timer" id="prehLiveTimer" data-start="'+todayObj.start+'" data-goal="'+CIEL_P+'" data-color="'+color+'">'
+      + '<div class="preh-live-timer-row">'
+        + '<span class="preh-live-timer-lbl">Pracuješ</span>'
+        + '<span class="preh-live-timer-val" id="prehLiveTimerVal">'+fmtMins(elapsedMin)+'</span>'
+        + '<span class="preh-live-timer-goal" id="prehLiveTimerGoal">/ '+fmtMins(CIEL_P)+'</span>'
+      + '</div>'
+      + '<div class="preh-live-timer-bar"><div class="preh-live-timer-bar-fill" id="prehLiveTimerFill" style="width:'+pct+'%;background:'+pctCol+'"></div></div>'
+    + '</div>';
+  }
   // Predikcia konca pracovnej doby na základe CIEL_P (default 8.5h)
   var endHintHTML = '';
   if(hasStart && !hasEnd){
@@ -5001,15 +5095,16 @@ function renderTodayCard(todayObj, now){
   }
   var pulseDot = hasStart && !hasEnd ? '<span class="preh-live-dot"></span>' : '';
   return '<div class="preh-today-card" style="text-align:left">'
-    + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'
+    + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;cursor:pointer" onclick="prehGoToToday()">'
       + '<div class="preh-today-active-icon" style="background:'+color+'15;color:'+color+'"><span class="material-symbols-outlined">store</span></div>'
       + '<div style="flex:1">'
         + '<div class="preh-today-active-main">'+pulseDot+s.vc+' návštev · '+fmtMins(s.vm)+'</div>'
         + '<div class="preh-today-active-sub">'+startInfo+'</div>'
       + '</div>'
-      + '<button onclick="prehGoToToday()" style="background:transparent;border:none;cursor:pointer;color:#8e8e93;padding:4px"><span class="material-symbols-outlined" style="font-size:22px">chevron_right</span></button>'
+      + '<span class="material-symbols-outlined" style="font-size:22px;color:#c1c6d7">chevron_right</span>'
     + '</div>'
-    + '<div class="preh-quick-chips">'
+    + liveTimerHTML
+    + '<div class="preh-quick-chips" style="margin-top:'+(liveTimerHTML?'12px':'0')+'">'
       + '<button class="preh-chip" onclick="prehQuickAdd(15)">+15m</button>'
       + '<button class="preh-chip" onclick="prehQuickAdd(20)">+20m</button>'
       + '<button class="preh-chip" onclick="prehQuickAdd(30)">+30m</button>'
@@ -5024,8 +5119,43 @@ function renderTodayCard(todayObj, now){
   + '</div>';
 }
 
+// Live timer tick — aktualizuje len timer hodnotu a bar, neperruší DOM zvyšok
+function tickLiveTimer(){
+  var el = document.getElementById('prehLiveTimer');
+  if(!el) return;
+  var startStr = el.getAttribute('data-start');
+  var goal = parseInt(el.getAttribute('data-goal'));
+  var color = el.getAttribute('data-color');
+  var n = new Date();
+  var nowMin = n.getHours()*60 + n.getMinutes();
+  var startMin = tMin(startStr);
+  var elapsed = nowMin - startMin;
+  if(elapsed < 0) elapsed = 0;
+  var pct = Math.min(100, Math.round(elapsed / goal * 100));
+  var valEl = document.getElementById('prehLiveTimerVal');
+  var fillEl = document.getElementById('prehLiveTimerFill');
+  if(valEl) valEl.textContent = fmtMins(elapsed);
+  if(fillEl){
+    fillEl.style.width = pct+'%';
+    fillEl.style.background = pct >= 100 ? '#34C759' : color;
+  }
+}
+// Spusti tick každú minútu (sync na minútovú hranicu)
+if(typeof window.prehTimerInterval === 'undefined' || !window.prehTimerInterval){
+  window.prehTimerInterval = setInterval(tickLiveTimer, 30000); // každých 30s
+}
+
+// Haptic feedback (#17) - jemná vibrácia pre akcie. Funguje na Androide priamo,
+// na iOS PWA cez navigator.vibrate (limitovaná podpora, ale nezhodí ak chýba)
+function haptic(pattern){
+  try {
+    if(navigator.vibrate) navigator.vibrate(pattern || 12);
+  } catch(e){}
+}
+
 // Akcie z úvodnej obrazovky (pracujú s dnešným dátumom)
 function prehClockIn(){
+  haptic([15, 30, 15]);  // double-tap pre START — výraznejšie
   var n=new Date();
   var t=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
   var dk=dKey(n.getFullYear(),n.getMonth(),n.getDate()),k=key(n.getFullYear(),n.getMonth(),n.getDate());
@@ -5035,15 +5165,30 @@ function prehClockIn(){
   renderPrehlad(); renderCalendar();
 }
 function prehClockOut(){
+  haptic([15, 30, 15]);  // double-tap pre KONIEC
   var n=new Date();
   var t=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
-  var dk=dKey(n.getFullYear(),n.getMonth(),n.getDate()),k=key(n.getFullYear(),n.getMonth(),n.getDate());
-  if(!data[dk]) data[dk]={start:'',end:'',visits:[],note:'',type:''};
-  if(!Array.isArray(data[dk].visits)) data[dk].visits=[];
-  data[dk].end=t; apiSet(k,JSON.stringify(data[dk])); setStatus('⏹️ KONIEC: '+t);
+  // Predikovaný koniec (start + cieľ pracovnej doby)
+  var dk0=dKey(n.getFullYear(),n.getMonth(),n.getDate());
+  var startStr = (data[dk0] && data[dk0].start) ? data[dk0].start : '';
+  var expectedEnd = '';
+  if(startStr){
+    var em = tMin(startStr) + CIEL_P;
+    if(em < 1440) expectedEnd = mToT(em);
+  }
+  var msg = 'Ukončiť pracovný deň?\n\n'
+    + 'Aktuálny čas: '+t
+    + (expectedEnd ? '\nPlánovaný koniec: '+expectedEnd : '')
+    + (startStr ? '\nZačiatok: '+startStr : '');
+  if(!confirm(msg)) return;
+  var k=key(n.getFullYear(),n.getMonth(),n.getDate());
+  if(!data[dk0]) data[dk0]={start:'',end:'',visits:[],note:'',type:''};
+  if(!Array.isArray(data[dk0].visits)) data[dk0].visits=[];
+  data[dk0].end=t; apiSet(k,JSON.stringify(data[dk0])); setStatus('⏹️ KONIEC: '+t);
   renderPrehlad(); renderCalendar();
 }
 function prehQuickAdd(mins){
+  haptic(10);  // krátka vibrácia
   var n=new Date();
   var dk=dKey(n.getFullYear(),n.getMonth(),n.getDate()),k=key(n.getFullYear(),n.getMonth(),n.getDate());
   if(!data[dk]) data[dk]={start:'',end:'',visits:[],note:'',type:''};
@@ -5160,6 +5305,7 @@ function prehAvConfirm(){
     if(!isNaN(cv) && cv > 0) mins = cv;
   }
   if(!mins || mins <= 0){ setStatus('⚠️ Zadaj platné minúty'); return; }
+  haptic(10);
   var n = new Date();
   var dk = dKey(n.getFullYear(), n.getMonth(), n.getDate());
   var k = key(n.getFullYear(), n.getMonth(), n.getDate());
@@ -5272,7 +5418,8 @@ function renderPrehladMesiac(){
     + '</div>'
     + '<div class="preh-section-lbl">Kalendár</div>'
     + miniHTML
-    + '<div class="preh-detail-link" onclick="prehOpenMonthInCalendar('+y+','+m+')"><span class="material-symbols-outlined" style="font-size:18px">calendar_today</span>Otvor v Kalendári</div>';
+    + '<div class="preh-detail-link" onclick="prehOpenMonthInCalendar('+y+','+m+')"><span class="material-symbols-outlined" style="font-size:18px">calendar_today</span>Otvor v Kalendári</div>'
+    + renderSyncInfo();
   document.getElementById('prehContent').innerHTML = html;
 }
 
@@ -5384,7 +5531,8 @@ function renderPrehladStat(){
       + '<div class="ring-card-i"><div style="width:38px;height:38px;border-radius:10px;background:#f0ecfc;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="17" rx="2.5" stroke="#AF52DE" stroke-width="1.8"/><path d="M8 2v3M16 2v3M3 9h18" stroke="#AF52DE" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="ring-lbl-i">Odpracované</div><div class="ring-val-i">'+wDays+' dní</div></div>'
     + '</div>'
     + tipHTML
-    + '<div class="preh-detail-link" onclick="switchMainTab(\'stat\')"><span class="material-symbols-outlined" style="font-size:18px">bar_chart</span>Detailná štatistika (Q1–Q4, grafy)</div>';
+    + '<div class="preh-detail-link" onclick="switchMainTab(\'stat\')"><span class="material-symbols-outlined" style="font-size:18px">bar_chart</span>Detailná štatistika (Q1–Q4, grafy)</div>'
+    + renderSyncInfo();
   document.getElementById('prehContent').innerHTML = html;
 }
 

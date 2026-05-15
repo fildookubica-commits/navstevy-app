@@ -1445,7 +1445,7 @@ var OBCHODY={"Filip":[{"id":"SK002284","n":"POT J-LM 053 MIX","m":"PARTIZANSKA L
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'FKAPP-MARS-020';
+var APP_VERSION = 'FKAPP-MARS-021';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -1930,12 +1930,10 @@ function loadData(){
   setStatus('Načítavam...');
   PRODUKTY=JSON.parse(JSON.stringify(DEFAULT_PRODUKTY));
   // Najprv naplň z cache, aby sa UI hneď zobrazilo so správnymi dátami
-  if(loadFromCache()){
-    renderCalendar();
-    if(typeof skRenderAll === 'function') skRenderAll();
-    if(typeof renderPrehlad === 'function' && document.getElementById('viewPrehlad') && document.getElementById('viewPrehlad').style.display !== 'none'){
-      renderPrehlad();
-    }
+  var cacheLoaded = loadFromCache();
+  if(cacheLoaded){
+    // Hneď prepni na Prehľad a vyrenderuj s cache dátami
+    switchMainTab('prehlad');
   }
   apiGet(function(result){
     // Server odpovedal — zlúčime, NEPREPÍŠEME slepo všetko
@@ -2038,8 +2036,15 @@ function loadData(){
     }
     try { localStorage.setItem('cache_'+currentUser,JSON.stringify({data:data,zasoby:zasoby,historia:historia})); } catch(e){}
     setStatus(''); renderCalendar(); skRenderAll();
-    // Default tab po prihlásení = Prehľad
-    switchMainTab('prehlad');
+    // Ak ešte nebol switchnutý tab (cache nebola dostupná), default je Prehľad
+    if(!cacheLoaded){
+      switchMainTab('prehlad');
+    } else {
+      // Cache už zobrazila, len obnov Prehľad ak je viditeľný
+      if(document.getElementById('viewPrehlad') && document.getElementById('viewPrehlad').style.display !== 'none'){
+        renderPrehlad();
+      }
+    }
   });
 }
 function loadFromCache(){

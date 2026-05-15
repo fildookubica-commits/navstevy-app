@@ -1445,7 +1445,7 @@ var OBCHODY={"Filip":[{"id":"SK002284","n":"POT J-LM 053 MIX","m":"PARTIZANSKA L
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'FKAPP-MARS-019';
+var APP_VERSION = 'FKAPP-MARS-020';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -1531,16 +1531,54 @@ function saveOfflineQueue() {
 }
 function flushOfflineQueue() {
   if (!navigator.onLine || offlineQueue.length === 0) return;
+  // Deduplikuj queue podľa kľúča — zachovaj len posledný zápis pre daný kľúč
+  var seen = {};
+  for(var i = offlineQueue.length - 1; i >= 0; i--){
+    var item = offlineQueue[i];
+    if(seen[item.k]){ offlineQueue.splice(i, 1); } else { seen[item.k] = true; }
+  }
+  saveOfflineQueue();
+  if(offlineQueue.length === 0) return;
   setStatus('🔄 Synchronizujem ' + offlineQueue.length + ' zmien...');
   var q = offlineQueue.slice();
   offlineQueue = []; saveOfflineQueue();
-  var done = 0;
+  var done = 0, failed = 0;
+  function checkComplete(){
+    if(done + failed === q.length){
+      if(failed === 0){
+        setStatus('✅ Synchronizované!');
+        lastSyncAt = Date.now();
+      } else {
+        setStatus('⚠️ '+failed+' položiek zlyhalo');
+      }
+      if(typeof renderOfflineQueueBadge==='function') renderOfflineQueueBadge();
+      if(typeof renderPrehlad==='function' && document.getElementById('viewPrehlad') && document.getElementById('viewPrehlad').style.display !== 'none'){
+        renderPrehlad();
+      }
+    }
+  }
   q.forEach(function(item) {
     fetch(API_URL + '?key=' + encodeURIComponent(item.k) + '&value=' + encodeURIComponent(item.v))
-      .then(function() { done++; if (done === q.length) { setStatus('✅ Synchronizované!'); if(typeof renderOfflineQueueBadge==='function') renderOfflineQueueBadge(); } })
-      .catch(function() { offlineQueue.push(item); saveOfflineQueue(); });
+      .then(function(r){ return r.json().catch(function(){ return {ok:false}; }); })
+      .then(function(d){
+        if(d && d.ok){ done++; }
+        else { failed++; offlineQueue.push(item); saveOfflineQueue(); }
+        checkComplete();
+      })
+      .catch(function() {
+        failed++;
+        offlineQueue.push(item); saveOfflineQueue();
+        checkComplete();
+      });
   });
 }
+
+// Periodický auto-flush — keď zlyhalo zapísanie online, skús neskôr
+setInterval(function(){
+  if(navigator.onLine && offlineQueue.length > 0){
+    flushOfflineQueue();
+  }
+}, 30000);  // každých 30 sekúnd
 window.addEventListener('online', function() {
   isOnline = true;
   document.getElementById('offlineBanner').classList.remove('show');
@@ -2526,7 +2564,7 @@ function updateNote(v){ getDay(currentYear,currentMonth,selectedDay).note=v; aut
 function setType(t){ var dd=getDay(currentYear,currentMonth,selectedDay); dd.type=dd.type===t?'':t; autoSave(); renderDetail(); renderCalendar(); }
 function autoSave(){ var k=key(currentYear,currentMonth,selectedDay),dk=dKey(currentYear,currentMonth,selectedDay); updateLocalCache(); apiSet(k,JSON.stringify(data[dk]||{})); setStatus('Uložené'); }
 function saveDay(){ autoSave(); }
-function deleteDay(){ if(!confirm('Vymazať celý deň '+selectedDay+'. '+MONTHS[currentMonth]+' '+currentYear+'?\n\nVymažú sa všetky návštevy a časy.')) return; var k=key(currentYear,currentMonth,selectedDay),dk=dKey(currentYear,currentMonth,selectedDay); delete data[dk]; apiSet(k,''); closeDetail(); renderCalendar(); setStatus('🗑️ Deň vymazaný'); }
+function deleteDay(){ if(!confirm('Vymazať celý deň '+selectedDay+'. '+MONTHS[currentMonth]+' '+currentYear+'?\n\nVymažú sa všetky návštevy a časy.')) return; var k=key(currentYear,currentMonth,selectedDay),dk=dKey(currentYear,currentMonth,selectedDay); delete data[dk]; updateLocalCache(); apiSet(k,''); closeDetail(); renderCalendar(); setStatus('🗑️ Deň vymazaný'); }
 function closeDetail(){ document.getElementById('dayDetail').innerHTML=''; selectedDay=null; }
 function changeMonth(dir){ currentMonth+=dir; if(currentMonth>11){currentMonth=0;currentYear++;} if(currentMonth<0){currentMonth=11;currentYear--;} closeDetail(); renderCalendar(); document.getElementById('monthTitle').textContent=MONTHS[currentMonth]+' '+currentYear; }
 function showSettings(){
@@ -5345,7 +5383,7 @@ function fmtMins(m){
 
 // "Posledná synchronizácia pred X" (#23)
 function renderSyncInfo(){
-  if(!lastSyncAt) return '';
+  if(!lastSyncAt) return '<div style="text-align:center;padding:8px 16px 4px;font-size:11px;color:#8e8e93"><button onclick="manualSync()" style="background:transparent;border:none;color:#007AFF;font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit">🔄 Synchronizovať</button></div>';
   var diffSec = Math.floor((Date.now() - lastSyncAt) / 1000);
   var label;
   if(diffSec < 10) label = 'práve teraz';
@@ -5356,7 +5394,62 @@ function renderSyncInfo(){
   var queueN = (offlineQueue && offlineQueue.length) || 0;
   var queueHTML = queueN > 0 ? ' · <span style="color:#FF9500">'+queueN+' čaká</span>' : '';
   var dotCol = (navigator.onLine && queueN===0) ? '#34C759' : (navigator.onLine ? '#FF9500' : '#FF3B30');
-  return '<div style="text-align:center;padding:8px 16px 4px;font-size:11px;color:#8e8e93;display:flex;align-items:center;justify-content:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:'+dotCol+';display:inline-block"></span>Synchronizované '+label+queueHTML+'</div>';
+  return '<div style="text-align:center;padding:8px 16px 4px;font-size:11px;color:#8e8e93;display:flex;align-items:center;justify-content:center;gap:6px">'
+    + '<span style="width:6px;height:6px;border-radius:50%;background:'+dotCol+';display:inline-block"></span>'
+    + 'Synchronizované '+label+queueHTML
+    + ' · <button onclick="manualSync()" style="background:transparent;border:none;color:#007AFF;font-size:11px;cursor:pointer;font-family:inherit;padding:0">🔄 Synchronizovať</button>'
+  + '</div>';
+}
+
+function manualSync(){
+  haptic(10);
+  if(!navigator.onLine){ setStatus('📵 Si offline'); return; }
+  setStatus('🔄 Synchronizujem...');
+  // Najprv vyflushni queue
+  if((offlineQueue||[]).length > 0){
+    flushOfflineQueue();
+  }
+  // Potom stiahni najnovšie dáta zo servera
+  setTimeout(function(){
+    apiGet(function(result){
+      var localData = JSON.parse(JSON.stringify(data || {}));
+      var localZasoby = JSON.parse(JSON.stringify(zasoby || {}));
+      data={}; zasoby={}; historia=[];
+      for(var k in result){
+        try{
+          if(!result[k]) continue;
+          var val=result[k];
+          if(k.startsWith(currentUser+'_')&&!k.startsWith(currentUser+'_d_')&&/\d{4}-\d{2}-\d{2}$/.test(k)){ data[currentUser+'_d_'+k.slice(currentUser.length+1)]=JSON.parse(val); }
+          else if(k.startsWith(currentUser+'_d_')){ data[k]=JSON.parse(val); }
+          else if(k.startsWith(currentUser+'_zasoba_')){ zasoby[k.replace(currentUser+'_zasoba_','')]=JSON.parse(val); }
+          else if(k.startsWith('zasoba_')){ var ean=k.replace('zasoba_',''); if(zasoby[ean]===undefined) zasoby[ean]=JSON.parse(val); }
+          else if(k.startsWith(currentUser+'_historia_')){ var h=JSON.parse(val); h._key=k; historia.push(h); }
+          else if(k.startsWith('historia_')){ var h=JSON.parse(val); h._key=k; historia.push(h); }
+          else if(k==='goals_'+currentUser){ userGoals[currentUser]=JSON.parse(val); applyGoals(); }
+          else if(k==='obchody_overrides_'+currentUser){ try { applyShopOverrides(JSON.parse(val)); } catch(e){} }
+        }catch(e){}
+      }
+      // Merge — zachovaj lokálne dni ktoré ešte neboli zasynchronizované
+      Object.keys(localData || {}).forEach(function(lk){
+        if(!data[lk] && lk.startsWith(currentUser+'_d_')){
+          var rest = lk.replace(currentUser+'_d_','');
+          var serverKey = currentUser+'_'+rest;
+          var inQueue = (offlineQueue||[]).some(function(q){ return q.k === serverKey; });
+          if(inQueue || !result.hasOwnProperty(serverKey)){
+            data[lk] = localData[lk];
+          }
+        }
+      });
+      historia.sort(function(a,b){return new Date(b.datum)-new Date(a.datum);});
+      updateLocalCache();
+      lastSyncAt = Date.now();
+      if((offlineQueue||[]).length === 0){
+        setStatus('✅ Synchronizované');
+      }
+      renderPrehlad();
+      renderCalendar();
+    });
+  }, 800);  // dáme queue čas dokončiť flush
 }
 
 function renderTodayCard(todayObj, now){

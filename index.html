@@ -1266,7 +1266,10 @@ body.dark #appSplashGreet{color:#fff}
     <!-- OBCHODY VIEW -->
     <div id="viewObchody" style="display:none;">
       <div class="obch-wrap">
-        <input type="text" class="obch-search" id="obchSearch" placeholder="🔍 Hľadaj obchod alebo mesto..." oninput="obchRender()">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" class="obch-search" id="obchSearch" placeholder="🔍 Hľadaj obchod alebo mesto..." oninput="obchRender()" style="flex:1">
+          <button id="obchAddBtn" onclick="obchOpenEditor()" style="display:none;width:40px;height:40px;border-radius:50%;border:none;background:#007AFF;color:#fff;font-size:22px;font-weight:600;cursor:pointer;flex-shrink:0" title="Pridať obchod">+</button>
+        </div>
         <div class="obch-filter-row" id="obchFilters"></div>
         <div class="obch-count" id="obchCount"></div>
         <div id="obchList"></div>
@@ -1442,7 +1445,7 @@ var OBCHODY={"Filip":[{"id":"SK002284","n":"POT J-LM 053 MIX","m":"PARTIZANSKA L
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'FKAPP-MARS-018';
+var APP_VERSION = 'FKAPP-MARS-019';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -1888,7 +1891,19 @@ function switchUser(){
 function loadData(){
   setStatus('Načítavam...');
   PRODUKTY=JSON.parse(JSON.stringify(DEFAULT_PRODUKTY));
+  // Najprv naplň z cache, aby sa UI hneď zobrazilo so správnymi dátami
+  if(loadFromCache()){
+    renderCalendar();
+    if(typeof skRenderAll === 'function') skRenderAll();
+    if(typeof renderPrehlad === 'function' && document.getElementById('viewPrehlad') && document.getElementById('viewPrehlad').style.display !== 'none'){
+      renderPrehlad();
+    }
+  }
   apiGet(function(result){
+    // Server odpovedal — zlúčime, NEPREPÍŠEME slepo všetko
+    // Najprv si zapamätáme čo bolo lokálne (mohli sme medzitým niečo pridať)
+    var localData = JSON.parse(JSON.stringify(data || {}));
+    var localZasoby = JSON.parse(JSON.stringify(zasoby || {}));
     data={}; zasoby={}; historia=[];
     for(var k in result){
       try{
@@ -1902,10 +1917,27 @@ function loadData(){
         else if(k.startsWith('historia_')){ var h=JSON.parse(val); h._key=k; historia.push(h); }
         else if(k==='settings_dark'){ darkMode=result[k]==='1'; document.body.classList.toggle('dark',darkMode); allDarkBtns(); }
         else if(k==='goals_'+currentUser){ userGoals[currentUser]=JSON.parse(val); applyGoals(); }
+        else if(k==='obchody_overrides_'+currentUser){
+          try { applyShopOverrides(JSON.parse(val)); } catch(e){}
+        }
         else if(k===currentUser+'_produkty'){ JSON.parse(val).forEach(function(p){ if(!PRODUKTY.find(function(x){return x.ean===p.ean;})) PRODUKTY.push(p); }); }
         else if(k==='settings_produkty'){ JSON.parse(val).forEach(function(p){ if(!PRODUKTY.find(function(x){return x.ean===p.ean;})) PRODUKTY.push(p); }); }
       }catch(e){}
     }
+    // MERGE: zachovaj lokálne dni ktoré ešte neboli zasynchronizované na server
+    // (napr. niečo pridané tesne predtým ako loadData znovu zavolal apiGet)
+    Object.keys(localData || {}).forEach(function(lk){
+      if(!data[lk] && lk.startsWith(currentUser+'_d_')){
+        // Skontroluj či to nie je v offline queue (=ešte sa to neuploadlo)
+        var rest = lk.replace(currentUser+'_d_','');
+        var serverKey = currentUser+'_'+rest;
+        var inQueue = (offlineQueue||[]).some(function(q){ return q.k === serverKey; });
+        if(inQueue || !result.hasOwnProperty(serverKey)){
+          // Lokálny záznam ktorý ešte nedostal na server — zachovaj
+          data[lk] = localData[lk];
+        }
+      }
+    });
     historia.sort(function(a,b){return new Date(b.datum)-new Date(a.datum);});
     // Sync druhotky zo Sheets do localStorage pri prihlásení
     if(result[druhKey()]){
@@ -2492,7 +2524,7 @@ function addVisit(){ getDay(currentYear,currentMonth,selectedDay).visits.push({m
 function removeVisit(i){ var dd=getDay(currentYear,currentMonth,selectedDay); var v=dd.visits[i]||{}; var info=v.mins?(v.mins+' min'):'túto návštevu'; if(!confirm('Vymazať návštevu č. '+(i+1)+' ('+info+')?')) return; dd.visits.splice(i,1); renderDetail(); renderCalendar(); autoSave(); }
 function updateNote(v){ getDay(currentYear,currentMonth,selectedDay).note=v; autoSave(); }
 function setType(t){ var dd=getDay(currentYear,currentMonth,selectedDay); dd.type=dd.type===t?'':t; autoSave(); renderDetail(); renderCalendar(); }
-function autoSave(){ var k=key(currentYear,currentMonth,selectedDay),dk=dKey(currentYear,currentMonth,selectedDay); apiSet(k,JSON.stringify(data[dk]||{})); setStatus('Uložené'); }
+function autoSave(){ var k=key(currentYear,currentMonth,selectedDay),dk=dKey(currentYear,currentMonth,selectedDay); updateLocalCache(); apiSet(k,JSON.stringify(data[dk]||{})); setStatus('Uložené'); }
 function saveDay(){ autoSave(); }
 function deleteDay(){ if(!confirm('Vymazať celý deň '+selectedDay+'. '+MONTHS[currentMonth]+' '+currentYear+'?\n\nVymažú sa všetky návštevy a časy.')) return; var k=key(currentYear,currentMonth,selectedDay),dk=dKey(currentYear,currentMonth,selectedDay); delete data[dk]; apiSet(k,''); closeDetail(); renderCalendar(); setStatus('🗑️ Deň vymazaný'); }
 function closeDetail(){ document.getElementById('dayDetail').innerHTML=''; selectedDay=null; }
@@ -4068,6 +4100,147 @@ function obchGetShops(){
     return true;
   }).sort(function(a,b){ return a.n.localeCompare(b.n,'sk'); });
 }
+// ── OBCHODY: PRIDAŤ / EDITOVAŤ / VYMAZAŤ (perzistuje v CF KV) ────
+// Schéma override v KV: {added:[shop,...], modified:{id:shop,...}, deleted:[id,...]}
+var shopOverrides = {added:[], modified:{}, deleted:[]};
+
+function applyShopOverrides(ov){
+  if(!ov) return;
+  shopOverrides = {added:ov.added||[], modified:ov.modified||{}, deleted:ov.deleted||[]};
+  rebuildObchodyForUser();
+}
+
+function rebuildObchodyForUser(){
+  // Re-vybuduj OBCHODY[currentUser] zo základu + overrides
+  if(!OBCHODY_BASE) OBCHODY_BASE = JSON.parse(JSON.stringify(OBCHODY));  // kópia originálneho zoznamu
+  var base = (OBCHODY_BASE[currentUser] || []).slice();
+  // Apply deleted
+  base = base.filter(function(s){ return shopOverrides.deleted.indexOf(s.id) < 0; });
+  // Apply modified
+  base = base.map(function(s){ return shopOverrides.modified[s.id] ? shopOverrides.modified[s.id] : s; });
+  // Apply added
+  base = base.concat(shopOverrides.added || []);
+  OBCHODY[currentUser] = base;
+}
+
+var OBCHODY_BASE = null;
+
+function saveShopOverrides(){
+  apiSet('obchody_overrides_'+currentUser, JSON.stringify(shopOverrides));
+}
+
+function obchDelete(shopId){
+  if(currentUser !== 'Filip'){ setStatus('⚠️ Iba Filip môže upravovať obchody'); return; }
+  var shop = findShop(shopId);
+  if(!shop) return;
+  if(!confirm('Naozaj vymazať obchod "'+shop.n+'"?\n\nObchod sa odstráni zo zoznamu.')) return;
+  // Ak ide o pôvodný obchod (base), pridáme ho do deleted; ak ide o pridaný, odstránime z added
+  var isAdded = shopOverrides.added.some(function(s){ return s.id === shopId; });
+  if(isAdded){
+    shopOverrides.added = shopOverrides.added.filter(function(s){ return s.id !== shopId; });
+  } else {
+    if(shopOverrides.deleted.indexOf(shopId) < 0) shopOverrides.deleted.push(shopId);
+    // Vyčisti aj modified ak bol predtým upravený
+    delete shopOverrides.modified[shopId];
+  }
+  rebuildObchodyForUser();
+  saveShopOverrides();
+  obchCloseDetail();
+  obchRender();
+  setStatus('🗑️ Obchod vymazaný');
+}
+
+function obchOpenEditor(shopId){
+  if(currentUser !== 'Filip'){ setStatus('⚠️ Iba Filip môže upravovať obchody'); return; }
+  var shop = shopId ? findShop(shopId) : null;
+  var isNew = !shop;
+  var existing = document.getElementById('obchEditModal');
+  if(existing) existing.remove();
+  var html = '<div class="preh-av-overlay" id="obchEditModal" onclick="if(event.target===this)obchCloseEditor()">'
+    + '<div class="preh-av-modal" style="max-height:90vh;overflow-y:auto">'
+      + '<div class="preh-av-head">'
+        + '<div class="preh-av-title">'+(isNew?'Pridať obchod':'Upraviť obchod')+'</div>'
+        + '<button class="preh-av-close" onclick="obchCloseEditor()">✕</button>'
+      + '</div>'
+      + '<div class="preh-av-body" style="display:flex;flex-direction:column;gap:10px">'
+        + '<div><label class="obch-ed-lbl">Názov *</label><input type="text" id="obchEdN" class="preh-av-input" value="'+(shop?escapeHTML(shop.n):'')+'" placeholder="napr. KAUFLAND"></div>'
+        + '<div><label class="obch-ed-lbl">Mesto</label><input type="text" id="obchEdM" class="preh-av-input" value="'+(shop?escapeHTML(shop.m||''):'')+'" placeholder="napr. RUŽOMBEROK"></div>'
+        + '<div><label class="obch-ed-lbl">Adresa</label><input type="text" id="obchEdA" class="preh-av-input" value="'+(shop?escapeHTML(shop.a||''):'')+'" placeholder="napr. BYSTRICKA CESTA"></div>'
+        + '<div><label class="obch-ed-lbl">Reťazec</label>'
+          + '<select id="obchEdR" class="preh-av-input">'
+            + ['COOP SK','CBA SK','Billa','Kaufland','Tesco','LIBEX','TERNO','Metro','Iný'].map(function(r){
+              return '<option value="'+r+'"'+(shop&&shop.r===r?' selected':'')+'>'+r+'</option>';
+            }).join('')
+          + '</select>'
+        + '</div>'
+        + '<div>'
+          + '<label class="obch-ed-lbl">Kategória (frekvencia)</label>'
+          + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px">'
+            + [['A','Týždeň'],['B','2× mesiac'],['C','Mesiac'],['D','2× rok']].map(function(o){
+              var sel = shop && shop.c === o[0];
+              return '<button type="button" class="obch-ed-kat'+(sel?' active':'')+'" onclick="obchEdSetKat(\''+o[0]+'\')" data-kat="'+o[0]+'">'+o[0]+' · '+o[1]+'</button>';
+            }).join('')
+          + '</div>'
+        + '</div>'
+        + '<div><label class="obch-ed-lbl">Default minúty návštevy</label>'
+          + '<input type="number" id="obchEdD" class="preh-av-input" inputmode="numeric" min="5" max="180" value="'+(shop&&shop.d?shop.d:20)+'" placeholder="napr. 20">'
+        + '</div>'
+        + (isNew ? '' : '<button type="button" class="obch-ed-del-btn" onclick="obchDelete(\''+shopId+'\')"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">delete</span> Vymazať obchod</button>')
+      + '</div>'
+      + '<div class="preh-av-actions">'
+        + '<button class="preh-cta preh-cta-secondary" onclick="obchCloseEditor()">Zrušiť</button>'
+        + '<button class="preh-cta preh-cta-primary" onclick="obchSaveEditor(\''+(shopId||'')+'\')">Uložiť</button>'
+      + '</div>'
+    + '</div>'
+  + '</div>';
+  document.body.insertAdjacentHTML('beforeend', html);
+  _obchEdKat = shop && shop.c ? shop.c : 'C';
+}
+var _obchEdKat = 'C';
+function obchEdSetKat(k){
+  _obchEdKat = k;
+  document.querySelectorAll('#obchEditModal .obch-ed-kat').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-kat') === k);
+  });
+}
+function obchCloseEditor(){
+  var el = document.getElementById('obchEditModal');
+  if(el) el.remove();
+}
+function obchSaveEditor(shopId){
+  var n = (document.getElementById('obchEdN').value || '').trim();
+  if(!n){ setStatus('⚠️ Zadaj názov obchodu'); return; }
+  var m = (document.getElementById('obchEdM').value || '').trim();
+  var a = (document.getElementById('obchEdA').value || '').trim();
+  var r = document.getElementById('obchEdR').value;
+  var d = parseInt(document.getElementById('obchEdD').value) || 20;
+  var c = _obchEdKat || 'C';
+  var isNew = !shopId;
+  var newShop;
+  if(isNew){
+    // Generuj nové ID: USER + timestamp
+    var newId = 'CUSTOM_' + Date.now();
+    newShop = {id:newId, n:n, m:m, a:a, r:r, c:c, d:d};
+    shopOverrides.added.push(newShop);
+  } else {
+    // Editujeme existujúci. Zisti či to je base alebo added.
+    newShop = {id:shopId, n:n, m:m, a:a, r:r, c:c, d:d};
+    var idxAdded = shopOverrides.added.findIndex(function(s){ return s.id === shopId; });
+    if(idxAdded >= 0){
+      shopOverrides.added[idxAdded] = newShop;
+    } else {
+      shopOverrides.modified[shopId] = newShop;
+    }
+  }
+  rebuildObchodyForUser();
+  saveShopOverrides();
+  obchCloseEditor();
+  obchCloseDetail();
+  obchRender();
+  setStatus(isNew ? '✓ Obchod pridaný' : '✓ Obchod upravený');
+}
+function escapeHTML(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
 function obchRender(){
   var all=(OBCHODY&&OBCHODY[currentUser])?OBCHODY[currentUser]:[];
   var shops=obchGetShops();
@@ -4123,10 +4296,19 @@ function obchRenderDetail(shop){
   var body=document.getElementById('obchDetailBody');
   if(!body) return;
   body.innerHTML='';
+  // Edit tlačidlo (iba Filip)
+  if(currentUser === 'Filip'){
+    var editBtn = document.createElement('button');
+    editBtn.style.cssText = 'width:100%;padding:10px;border-radius:10px;border:1px solid #d6d4dd;background:#f2f2f7;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px';
+    editBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px">edit</span> Upraviť obchod';
+    editBtn.onclick = function(){ obchOpenEditor(shopId); };
+    body.appendChild(editBtn);
+  }
   // Info karta
   var infoCard=document.createElement('div');
   infoCard.className='obch-info-card';
-  [['Reťazec',shop.r],['Mesto',shop.m],shop.a?['Adresa',shop.a]:null].forEach(function(r){
+  var kategoriaMap = {A:'A · Týždeň',B:'B · 2× mesiac',C:'C · Mesiac',D:'D · 2× rok'};
+  [['Reťazec',shop.r],['Mesto',shop.m],shop.a?['Adresa',shop.a]:null,shop.c?['Kategória',kategoriaMap[shop.c]||shop.c]:null,shop.d?['Default minúty',shop.d+' min']:null].forEach(function(r){
     if(!r) return;
     var row=document.createElement('div');
     row.className='obch-info-row';
@@ -4273,7 +4455,12 @@ function obchDeleteNote(shopId,idx){
   setStatus('🗑️ Vymazané');
   obchRenderDetail(obchCurrentShop);
 }
-function renderObchody(){ obchRender(); }
+function renderObchody(){
+  // Show add button only for Filip
+  var addBtn = document.getElementById('obchAddBtn');
+  if(addBtn) addBtn.style.display = (currentUser==='Filip') ? 'block' : 'none';
+  obchRender();
+}
 
 
 // ── AVATARY ──────────────────────────────────────────────────────
@@ -5313,6 +5500,10 @@ function haptic(pattern){
 }
 
 // Akcie z úvodnej obrazovky (pracujú s dnešným dátumom)
+function updateLocalCache(){
+  try { localStorage.setItem('cache_'+currentUser, JSON.stringify({data:data,zasoby:zasoby,historia:historia})); } catch(e){}
+}
+
 function prehClockIn(){
   haptic([15, 30, 15]);  // double-tap pre START — výraznejšie
   var n=new Date();
@@ -5320,7 +5511,9 @@ function prehClockIn(){
   var dk=dKey(n.getFullYear(),n.getMonth(),n.getDate()),k=key(n.getFullYear(),n.getMonth(),n.getDate());
   if(!data[dk]) data[dk]={start:'',end:'',visits:[],note:'',type:''};
   if(!Array.isArray(data[dk].visits)) data[dk].visits=[];
-  data[dk].start=t; apiSet(k,JSON.stringify(data[dk])); setStatus('▶️ START: '+t);
+  data[dk].start=t;
+  updateLocalCache();
+  apiSet(k,JSON.stringify(data[dk])); setStatus('▶️ START: '+t);
   renderPrehlad(); renderCalendar();
 }
 function prehClockOut(){
@@ -5343,7 +5536,9 @@ function prehClockOut(){
   var k=key(n.getFullYear(),n.getMonth(),n.getDate());
   if(!data[dk0]) data[dk0]={start:'',end:'',visits:[],note:'',type:''};
   if(!Array.isArray(data[dk0].visits)) data[dk0].visits=[];
-  data[dk0].end=t; apiSet(k,JSON.stringify(data[dk0])); setStatus('⏹️ KONIEC: '+t);
+  data[dk0].end=t;
+  updateLocalCache();
+  apiSet(k,JSON.stringify(data[dk0])); setStatus('⏹️ KONIEC: '+t);
   renderPrehlad(); renderCalendar();
 }
 function prehQuickAdd(mins){
@@ -5353,6 +5548,7 @@ function prehQuickAdd(mins){
   if(!data[dk]) data[dk]={start:'',end:'',visits:[],note:'',type:''};
   if(!Array.isArray(data[dk].visits)) data[dk].visits=[];
   data[dk].visits.push({mins:mins});
+  updateLocalCache();
   apiSet(k,JSON.stringify(data[dk])); setStatus('✓ Návšteva +'+mins+'m');
   renderPrehlad(); renderCalendar();
 }
@@ -5473,6 +5669,7 @@ function prehAvConfirm(){
   var visit = {mins: mins};
   if(_prehAvSelShopId) visit.obchodId = _prehAvSelShopId;
   data[dk].visits.push(visit);
+  updateLocalCache();
   apiSet(k, JSON.stringify(data[dk]));
   setStatus('✓ Návšteva +'+mins+'m'+(_prehAvSelShopId?' priradená':''));
   prehAvClose();

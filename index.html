@@ -437,6 +437,63 @@ body.dark .spbtn{background:#2c2c2e;border-color:#38383a;color:#8e8e93}
 body.dark .stat-year-val{color:#fff}
 .stat-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
 .stat-card{background:#fff;border-radius:14px;padding:14px 16px}
+/* ── ŠTATISTIKA - NOVÝ DIZAJN ─────────────────────────────────── */
+.stat-seg-row{display:flex;gap:6px;padding:12px 16px 8px}
+.stat-seg-btn{flex:1;padding:7px 6px;border-radius:18px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:transform 0.1s}
+.stat-seg-btn:active{transform:scale(0.95)}
+.stat-year-nav{display:flex;align-items:center;justify-content:center;padding:4px 16px 12px;gap:14px}
+.stat-year-nav .stat-year-btn{width:30px;height:30px;border-radius:50%;border:none;background:#f2f2f7;color:#1c1c1e;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif}
+body.dark .stat-year-nav .stat-year-btn{background:#2c2c2e;color:#fff}
+.stat-year-val{font-size:14px;font-weight:600;color:#1c1c1e}
+body.dark .stat-year-val{color:#fff}
+/* Hero karta s donutom */
+.stat-hero{margin:0 16px 12px;background:#f2f2f7;border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px}
+body.dark .stat-hero{background:#2c2c2e}
+.stat-hero-ring{position:relative;width:88px;height:88px;flex-shrink:0}
+.stat-hero-ring svg{width:88px;height:88px}
+.stat-hero-ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.stat-hero-pct{font-size:22px;font-weight:700;line-height:1}
+.stat-hero-pct-lbl{font-size:9px;color:#8e8e93;margin-top:2px}
+.stat-hero-info{flex:1;min-width:0}
+.stat-hero-period{font-size:11px;color:#8e8e93;text-transform:uppercase;letter-spacing:0.04em;font-weight:600;margin-bottom:4px}
+.stat-hero-main{font-size:26px;font-weight:700;line-height:1;color:#1c1c1e}
+body.dark .stat-hero-main{color:#fff}
+.stat-hero-sub{font-size:11px;color:#8e8e93;margin:4px 0 6px}
+.stat-hero-diff{font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px}
+/* Mini karty */
+.stat-mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 12px}
+.stat-mini-card{background:#f2f2f7;border-radius:12px;padding:12px}
+body.dark .stat-mini-card{background:#2c2c2e}
+.stat-mini-head{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.stat-mini-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.stat-mini-lbl{font-size:11px;color:#8e8e93;font-weight:600}
+.stat-mini-val{font-size:18px;font-weight:700;color:#1c1c1e;line-height:1.1}
+body.dark .stat-mini-val{color:#fff}
+.stat-mini-sub{font-size:11px;color:#8e8e93;margin-top:2px}
+.stat-mini-diff{font-size:10px;font-weight:600;margin-top:4px}
+/* Section nadpisy */
+.stat-section{padding:4px 16px 4px}
+.stat-section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.stat-section-lbl{font-size:12px;color:#8e8e93;text-transform:uppercase;letter-spacing:0.04em;font-weight:600}
+.stat-section-sub{font-size:11px;color:#8e8e93}
+/* Bars */
+.stat-bars{display:flex;align-items:flex-end;gap:8px;height:110px;padding:0 4px;margin-bottom:8px}
+.stat-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%}
+.stat-bar-val{font-size:11px;font-weight:600;color:#1c1c1e;height:14px}
+body.dark .stat-bar-val{color:#fff}
+.stat-bar-track{width:100%;flex:1;display:flex;align-items:flex-end}
+.stat-bar-fill{width:100%;border-radius:6px 6px 0 0;transition:height 0.4s ease}
+.stat-bar-lbl{font-size:11px;color:#8e8e93;font-weight:600}
+/* Mesačné karty */
+.stat-month-card{background:#f2f2f7;border-radius:12px;padding:12px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+body.dark .stat-month-card{background:#2c2c2e}
+.stat-month-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-month-body{flex:1;min-width:0}
+.stat-month-name{font-size:14px;font-weight:600;color:#1c1c1e}
+body.dark .stat-month-name{color:#fff}
+.stat-month-tag{font-size:10px;color:#8e8e93;margin-left:4px;font-weight:500}
+.stat-month-sub{font-size:11px;color:#8e8e93;margin-top:2px}
+.stat-month-delta{font-size:11px;font-weight:600;text-align:right}
 body.dark .stat-card{background:#2c2c2e}
 .stat-card-label{font-size:12px;color:#8e8e93;margin-bottom:4px;font-weight:500}
 .stat-card-val{font-size:22px;font-weight:700}
@@ -1100,17 +1157,21 @@ body.dark #appSplashGreet{color:#fff}
 
     <!-- HEADER ŠTATISTIKY -->
     <div class="app-header" id="headerStat" style="display:none;">
-      <div class="header-top" style="margin-bottom:14px;">
-        <div class="app-title-wrap" style="padding-bottom:0;">
-          <div class="stat-header-title">Štatistiky <span>📊</span></div>
-          <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
-            <div class="user-dot" id="userDot4" style="width:20px;height:20px;font-size:10px;"></div>
-            <div class="header-name" id="headerName4" style="font-size:13px;"></div>
+      <div class="header-top">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="position:relative;width:40px;height:40px;border-radius:50%;overflow:hidden;border:1.5px solid rgba(193,198,215,0.4);flex-shrink:0;background:#eeedf3;cursor:pointer;" onclick="switchUser()" id="headerAvatarWrapS">
+            <img id="headerAvatarImgS" src="" style="width:100%;height:100%;object-fit:cover;display:none;" alt="">
+            <div id="headerAvatarInitialsS" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;font-family:'Inter',sans-serif;"></div>
+          </div>
+          <div>
+            <div style="font-size:18px;font-weight:700;color:#1a1b1f;letter-spacing:-0.3px;font-family:'Inter',sans-serif;">Štatistika</div>
+            <div style="font-size:12px;color:#717786;font-weight:500;margin-top:1px;" id="statHeaderSub"></div>
           </div>
         </div>
-        <div class="header-btns">
-          <button class="hbtn" onclick="switchUser()">Zmeniť</button>
-          <button class="hbtn" id="darkBtn4" onclick="toggleDark()">🌙</button>
+        <div style="display:flex;align-items:center;gap:2px;">
+          <button onclick="showSettings()" style="width:36px;height:36px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Nastavenia">
+            <span class="material-symbols-outlined" style="font-size:22px;color:#717786;">settings</span>
+          </button>
         </div>
       </div>
     </div>
@@ -1381,7 +1442,7 @@ var OBCHODY={"Filip":[{"id":"SK002284","n":"POT J-LM 053 MIX","m":"PARTIZANSKA L
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'FKAPP-MARS-017';
+var APP_VERSION = 'FKAPP-MARS-018';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -1738,7 +1799,7 @@ function updateHeaderAvatarInHeader(user) {
   var letters = {Filip:'F',Mirka:'M',Lubo:'L',Monika:'M',Ivana:'I'};
   var saved = localStorage.getItem('avatar_' + user);
   // Update vo všetkých headeroch (Dochádzka + Prehľad)
-  ['','P'].forEach(function(suffix){
+  ['','P','S'].forEach(function(suffix){
     var initials = document.getElementById('headerAvatarInitials'+suffix);
     var img = document.getElementById('headerAvatarImg'+suffix);
     var wrap = document.getElementById('headerAvatarWrap'+suffix);
@@ -2019,7 +2080,7 @@ function fmtPeriodEnd(d){
   return d.getDate()+'.'+(d.getMonth()+1)+'.';
 }
 function mToH(m){ var a=Math.abs(m); var h=Math.floor(a/60); var min=a%60; return (m<0?'-':'+')+h+'h'+(min>0?min+'m':''); }
-function getDayStats(d){ if(!d) return {tw:0,vm:0,vc:0,saved:false}; var visits=Array.isArray(d.visits)?d.visits:[]; var tw=(d.start&&d.end)?tMin(d.end)-tMin(d.start):0; var vm=visits.reduce(function(s,v){return s+(parseInt(v&&v.mins)||0);},0); var saved=!!(d.start||d.end||visits.length||d.type); return {tw:tw,vm:vm,vc:visits.length,saved:saved}; }
+function getDayStats(d, live){ if(!d) return {tw:0,vm:0,vc:0,saved:false}; var visits=Array.isArray(d.visits)?d.visits:[]; var tw=0; if(d.start && d.end){ tw = tMin(d.end)-tMin(d.start); } else if(live && d.start && !d.end){ var n=new Date(); var nowMin=n.getHours()*60+n.getMinutes(); var tw0=nowMin-tMin(d.start); if(tw0>0) tw=tw0; } var vm=visits.reduce(function(s,v){return s+(parseInt(v&&v.mins)||0);},0); var saved=!!(d.start||d.end||visits.length||d.type); return {tw:tw,vm:vm,vc:visits.length,saved:saved}; }
 function renderCalendar(){
   var color = (userColors && userColors[currentUser]) || '#007AFF';
   var g = userGoals[currentUser] || {pocet:11};
@@ -3060,10 +3121,13 @@ function getMonthStats(year,month){
   });
   var EXCL_TYPES=['dovol','pn'];
   var SKIP_TIME_TYPES=['cd','meeting'];
+  var nowD = new Date();
+  var todayKey = currentUser+'_d_'+nowD.getFullYear()+'-'+String(nowD.getMonth()+1).padStart(2,'0')+'-'+String(nowD.getDate()).padStart(2,'0');
   var wDiff=0,vDiff=0,cDiff=0,wDays=0,timeDays=0,totalW=0,totalC=0,totalVM=0;
   days.forEach(function(k){
     var d=data[k]; if(!d) return;
-    var s=getDayStats(d),t=d.type||'';
+    var isToday = (k === todayKey);
+    var s=getDayStats(d, isToday),t=d.type||'';  // live=true pre dnešok
     if(!s.saved) return;
     if(EXCL_TYPES.indexOf(t)>=0) return;
     wDays++;
@@ -3413,59 +3477,151 @@ function onFreqNvSearchInput(v){
 }
 
 function renderStat(){
+  var color = (userColors && userColors[currentUser]) || '#007AFF';
+  var subEl = document.getElementById('statHeaderSub');
+  if(subEl) subEl.textContent = currentUser+' · prehľad výkonu';
   var months=QUARTERS[statPeriod]||QUARTERS['Q1'];
   var totalDays=0,totalTimeDays=0,totalWDiff=0,totalVDiff=0,totalCDiff=0,totalW=0,totalC=0,totalVM=0;
   months.forEach(function(m){ var s=getMonthStats(statYear,m); totalDays+=s.wDays;totalTimeDays+=(s.timeDays||0);totalWDiff+=s.wDiff;totalVDiff+=s.vDiff;totalCDiff+=s.cDiff;totalW+=s.totalW;totalC+=s.totalC;totalVM+=(s.totalVM||0); });
-  // Helpery na formátovanie
-  function fmtHM(min){ if(!min) return '—'; var h=Math.floor(min/60); var m=min%60; return h+'h'+(m>0?' '+m+'m':''); }
+  function fmtHM(min){ if(!min) return '—'; var h=Math.floor(min/60); var mm=min%60; return h+'h'+(mm>0?' '+mm+'m':''); }
   function fmtDec(min, days){ if(!days) return '—'; return (min/days/60).toFixed(1).replace('.',','); }
-  // Karty s časom: veľké realné + decimálny priemer + diff oproti cieľu
-  var workMain = totalTimeDays ? fmtHM(totalW) : '—';
-  var workAvg  = fmtDec(totalW, totalTimeDays);
-  var workDiff = totalTimeDays ? mToH(totalWDiff) : '';
-  var visitMain = totalTimeDays ? fmtHM(totalVM) : '—';
-  var visitAvg  = fmtDec(totalVM, totalTimeDays);
-  var visitDiff = totalTimeDays ? mToH(totalVDiff) : '';
-  var avgVDec = totalTimeDays ? (totalC/totalTimeDays).toFixed(1).replace('.',',') : '—';
-  var periodBtns=['Q1','Q2','Q3','Q4','Rok'].map(function(p){ return '<button class="spbtn'+(statPeriod===p?' active':'')+'" onclick="statSetPeriod(\''+p+'\')">'+p+'</button>'; }).join('');
-  var yearRow='<div class="stat-year-row"><button class="stat-year-btn" onclick="statChangeYear(-1)">‹</button><div class="stat-year-val">'+statYear+'</div><button class="stat-year-btn" onclick="statChangeYear(1)">›</button></div>';
-  // Postavím cards manuálne
-  var workDiffCls = totalWDiff>=0 ? 'green' : 'red';
-  var visitDiffCls = totalVDiff>=0 ? 'green' : 'red';
-  var cntDiffCls = totalCDiff>=0 ? 'green' : 'red';
-  var card1 = '<div class="stat-card">'
-    + '<div class="stat-card-label">Pracovná doba</div>'
-    + '<div class="stat-card-main blue">'+workMain+'</div>'
-    + '<div class="stat-card-sub">Priemer/deň: <b>'+workAvg+' h</b>'
-      + (workDiff?'<span class="stat-card-diff '+workDiffCls+'">'+workDiff+'</span>':'')
+
+  // Goal a percento splnenia hlavnej metriky (návštevy)
+  var g = userGoals[currentUser] || {pocet:11};
+  var monthGoal = 0;
+  months.forEach(function(m){
+    var lastDayMonth = new Date(statYear, m+1, 0).getDate();
+    for(var dd=1;dd<=lastDayMonth;dd++){
+      var dt = new Date(statYear,m,dd);
+      if(dt.getDay()!==0 && dt.getDay()!==6) monthGoal += g.pocet;
+    }
+  });
+  var visitsPct = monthGoal>0 ? Math.min(100, Math.round(totalC/monthGoal*100)) : 0;
+  var visitsDiff = totalC - monthGoal;
+
+  // Vrchný prepínač Q1-Q4-Rok (segmented)
+  var periodBtns=['Q1','Q2','Q3','Q4','Rok'].map(function(p){
+    var active = statPeriod===p;
+    var bg = active ? 'background:#1c1c1e;color:#fff;border-color:#1c1c1e' : 'background:transparent;color:#1c1c1e;border:0.5px solid #d6d4dd';
+    return '<button class="stat-seg-btn" style="'+bg+'" onclick="statSetPeriod(\''+p+'\')">'+p+'</button>';
+  }).join('');
+
+  // Year row
+  var yearRow = '<div class="stat-year-nav">'
+    + '<button class="stat-year-btn" onclick="statChangeYear(-1)">‹</button>'
+    + '<div class="stat-year-val">'+statYear+'</div>'
+    + '<button class="stat-year-btn" onclick="statChangeYear(1)">›</button>'
+  + '</div>';
+
+  // Hero karta — donut + hlavná metrika
+  var diffStr = visitsDiff>=0 ? '+'+visitsDiff+' nad cieľom' : Math.abs(visitsDiff)+' do cieľa';
+  var diffCol = visitsDiff>=0 ? '#34C759' : '#FF3B30';
+  var diffIcon = visitsDiff>=0 ? 'trending_up' : 'trending_down';
+  var r=38, ci=2*Math.PI*r, off=ci*(1-visitsPct/100);
+  var heroHTML = '<div class="stat-hero">'
+    + '<div class="stat-hero-ring">'
+      + '<svg viewBox="0 0 88 88" style="transform:rotate(-90deg)">'
+        + '<circle cx="44" cy="44" r="38" fill="none" stroke="'+color+'25" stroke-width="8"/>'
+        + '<circle cx="44" cy="44" r="38" fill="none" stroke="'+color+'" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+ci.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/>'
+      + '</svg>'
+      + '<div class="stat-hero-ring-inner">'
+        + '<div class="stat-hero-pct" style="color:'+color+'">'+visitsPct+'%</div>'
+        + '<div class="stat-hero-pct-lbl">cieľ</div>'
+      + '</div>'
     + '</div>'
-    +'</div>';
-  var card2 = '<div class="stat-card">'
-    + '<div class="stat-card-label">Čas návštev</div>'
-    + '<div class="stat-card-main green">'+visitMain+'</div>'
-    + '<div class="stat-card-sub">Priemer/deň: <b>'+visitAvg+' h</b>'
-      + (visitDiff?'<span class="stat-card-diff '+visitDiffCls+'">'+visitDiff+'</span>':'')
+    + '<div class="stat-hero-info">'
+      + '<div class="stat-hero-period">'+statPeriod+' výkon</div>'
+      + '<div class="stat-hero-main">'+totalC+'</div>'
+      + '<div class="stat-hero-sub">návštev / cieľ '+monthGoal+'</div>'
+      + (totalTimeDays?'<div class="stat-hero-diff" style="color:'+diffCol+'"><span class="material-symbols-outlined" style="font-size:14px">'+diffIcon+'</span> '+diffStr+'</div>':'')
     + '</div>'
-    +'</div>';
-  var card3 = '<div class="stat-card">'
-    + '<div class="stat-card-label">Počet návštev</div>'
-    + '<div class="stat-card-main">'+(totalTimeDays?totalC:'—')+'</div>'
-    + '<div class="stat-card-sub">Priemer/deň: <b>'+avgVDec+'</b>'
-      + (totalTimeDays?'<span class="stat-card-diff '+cntDiffCls+'">'+(totalCDiff>=0?'+':'')+totalCDiff+'</span>':'')
-    + '</div>'
-    +'</div>';
-  var card4 = '<div class="stat-card">'
-    + '<div class="stat-card-label">Pracovné dni</div>'
-    + '<div class="stat-card-main">'+totalDays+'</div>'
-    + '<div class="stat-card-sub">'+(totalTimeDays?totalTimeDays+' dní s časom':'—')+'</div>'
-    +'</div>';
-  var summaryCards = card1 + card2 + card3 + card4;
-  var maxC=1,maxW2=1;
-  months.forEach(function(m){ var s=getMonthStats(statYear,m); if(s.totalC>maxC) maxC=s.totalC; if(s.totalW/60>maxW2) maxW2=s.totalW/60; });
-  var bars=months.map(function(m){ var s=getMonthStats(statYear,m),pct=maxC>0?Math.round(s.totalC/maxC*100):0,col=s.wDays>0?'#007AFF':'#e5e5ea'; return '<div class="bar-col"><div style="flex:1;display:flex;align-items:flex-end;width:100%"><div class="bar-col-inner" style="height:'+pct+'%;background:'+col+'"></div></div><div class="bar-label">'+MONTHS[m].slice(0,3)+'</div><div class="bar-val">'+(s.totalC||'')+'</div></div>'; }).join('');
-  var barsW=months.map(function(m){ var s=getMonthStats(statYear,m),h=s.totalW/60,pct=maxW2>0?Math.round(h/maxW2*100):0,col=s.wDays>0?'#34C759':'#e5e5ea'; return '<div class="bar-col"><div style="flex:1;display:flex;align-items:flex-end;width:100%"><div class="bar-col-inner" style="height:'+pct+'%;background:'+col+'"></div></div><div class="bar-label">'+MONTHS[m].slice(0,3)+'</div><div class="bar-val">'+(s.totalW?Math.round(s.totalW/60)+'h':'')+'</div></div>'; }).join('');
-  var monthRows=months.map(function(m){ var s=getMonthStats(statYear,m); if(!s.wDays) return '<div class="stat-month-row"><div class="stat-month-name">'+MONTHS[m]+'</div><div class="stat-month-chips"><span class="stat-chip chip-gray">Žiadne dáta</span></div></div>'; return '<div class="stat-month-row"><div class="stat-month-name">'+MONTHS[m]+'</div><div class="stat-month-chips"><span class="stat-chip '+(s.wDiff>=0?'chip-green':'chip-red')+'">Práca: '+mToH(s.wDiff)+'</span><span class="stat-chip '+(s.vDiff>=0?'chip-green':'chip-red')+'">Návštevy: '+mToH(s.vDiff)+'</span><span class="stat-chip chip-blue">Dni: '+s.wDays+'</span></div></div>'; }).join('');
-  document.getElementById('statContent').innerHTML=periodBtns+yearRow+'<div class="stat-cards">'+summaryCards+'</div><div class="stat-bar-wrap"><div class="stat-bar-title">Počet návštev</div><div class="bar-chart">'+bars+'</div></div><div class="stat-bar-wrap"><div class="stat-bar-title">Odpracované hodiny</div><div class="bar-chart">'+barsW+'</div></div><div class="stat-section-title">Prehľad mesiacov — '+statPeriod+' '+statYear+'</div><div class="stat-month-list">'+monthRows+'</div>' + renderFrequencyStats() + renderNeverVisited();
+  + '</div>';
+
+  // 4 mini karty
+  var workDiffCol = totalWDiff>=0 ? '#34C759' : '#FF3B30';
+  var visitTDiffCol = totalVDiff>=0 ? '#34C759' : '#FF3B30';
+  var cntDiffCol = totalCDiff>=0 ? '#34C759' : '#FF3B30';
+  function miniCard(iconBg, iconCol, iconName, label, mainVal, subVal, diffVal, diffCol){
+    return '<div class="stat-mini-card">'
+      + '<div class="stat-mini-head">'
+        + '<div class="stat-mini-icon" style="background:'+iconBg+';color:'+iconCol+'"><span class="material-symbols-outlined" style="font-size:14px">'+iconName+'</span></div>'
+        + '<span class="stat-mini-lbl">'+label+'</span>'
+      + '</div>'
+      + '<div class="stat-mini-val">'+mainVal+'</div>'
+      + '<div class="stat-mini-sub">'+subVal+'</div>'
+      + (diffVal?'<div class="stat-mini-diff" style="color:'+diffCol+'">'+diffVal+'</div>':'')
+    + '</div>';
+  }
+  var minisHTML = '<div class="stat-mini-grid">'
+    + miniCard('rgba(0,122,255,0.15)', '#007AFF', 'schedule', 'Práca', totalTimeDays?fmtHM(totalW):'—', 'Ø '+fmtDec(totalW,totalTimeDays)+' h/deň', totalTimeDays?mToH(totalWDiff)+' vs cieľ':'', workDiffCol)
+    + miniCard('rgba(52,199,89,0.15)', '#34C759', 'store', 'U zákazníka', totalTimeDays?fmtHM(totalVM):'—', 'Ø '+fmtDec(totalVM,totalTimeDays)+' h/deň', totalTimeDays?mToH(totalVDiff)+' vs cieľ':'', visitTDiffCol)
+    + miniCard('rgba(175,82,222,0.15)', '#AF52DE', 'groups', 'Priemer/deň', totalTimeDays?(totalC/totalTimeDays).toFixed(1).replace('.',','):'—', 'návštev/deň', '', '')
+    + miniCard('rgba(255,149,0,0.15)', '#FF9500', 'calendar_today', 'Odpracované', totalDays+' dní', totalTimeDays?'z '+totalTimeDays+' dní s časom':'', '', '')
+  + '</div>';
+
+  // Bar chart — návštevy za mesiace
+  var maxC=1;
+  months.forEach(function(m){ var s=getMonthStats(statYear,m); if(s.totalC>maxC) maxC=s.totalC; });
+  var nowD = new Date();
+  var currentM = (nowD.getFullYear()===statYear) ? nowD.getMonth() : -1;
+  var barsHTML = '<div class="stat-bars">';
+  months.forEach(function(m){
+    var s = getMonthStats(statYear,m);
+    var pct = maxC>0 ? Math.round(s.totalC/maxC*100) : 0;
+    var isCurrent = (m === currentM);
+    var barBg = s.wDays > 0 ? (isCurrent ? color+'80' : color) : '#e5e5ea';
+    barsHTML += '<div class="stat-bar-col">'
+      + '<div class="stat-bar-val">'+(s.totalC||'')+'</div>'
+      + '<div class="stat-bar-track"><div class="stat-bar-fill" style="height:'+pct+'%;background:'+barBg+'"></div></div>'
+      + '<div class="stat-bar-lbl">'+MONTHS[m].slice(0,3)+'</div>'
+    + '</div>';
+  });
+  barsHTML += '</div>';
+  var barWrap = '<div class="stat-section">'
+    + '<div class="stat-section-head"><span class="stat-section-lbl">Návštevy mesačne</span><span class="stat-section-sub">'+MONTHS[months[0]].slice(0,3)+'–'+MONTHS[months[months.length-1]].slice(0,3)+'</span></div>'
+    + barsHTML
+  + '</div>';
+
+  // Mesiace ako karty
+  var monthsHTML = '<div class="stat-section"><div class="stat-section-head"><span class="stat-section-lbl">Mesiace</span></div>';
+  months.forEach(function(m){
+    var s = getMonthStats(statYear,m);
+    var isCurrent = (m === currentM);
+    var iconBg, iconCol, iconName, deltaCol = '#8e8e93', deltaStr = '';
+    if(!s.wDays){
+      iconBg = '#f2f2f7'; iconCol = '#8e8e93'; iconName = 'event_busy';
+    } else if(isCurrent){
+      iconBg = 'rgba(255,149,0,0.15)'; iconCol = '#FF9500'; iconName = 'schedule';
+      deltaCol = s.cDiff>=0 ? '#34C759' : '#FF3B30';
+      deltaStr = (s.cDiff>=0?'+':'')+s.cDiff;
+    } else {
+      iconBg = 'rgba(52,199,89,0.15)'; iconCol = '#34C759'; iconName = 'check';
+      deltaCol = s.cDiff>=0 ? '#34C759' : '#FF3B30';
+      deltaStr = (s.cDiff>=0?'+':'')+s.cDiff;
+    }
+    var subText = !s.wDays ? 'Žiadne dáta' : (s.totalC+' návštev · '+Math.round(s.totalW/60)+'h · '+s.wDays+' dní');
+    var outlineStyle = isCurrent ? 'outline:1.5px solid '+color+';' : '';
+    monthsHTML += '<div class="stat-month-card" style="'+outlineStyle+'">'
+      + '<div class="stat-month-icon" style="background:'+iconBg+';color:'+iconCol+'"><span class="material-symbols-outlined" style="font-size:16px">'+iconName+'</span></div>'
+      + '<div class="stat-month-body">'
+        + '<div class="stat-month-name">'+MONTHS[m]+(isCurrent?' <span class="stat-month-tag">(prebieha)</span>':'')+'</div>'
+        + '<div class="stat-month-sub">'+subText+'</div>'
+      + '</div>'
+      + (deltaStr?'<div class="stat-month-delta" style="color:'+deltaCol+'">'+deltaStr+'</div>':'')
+    + '</div>';
+  });
+  monthsHTML += '</div>';
+
+  var html = '<div class="stat-seg-row">'+periodBtns+'</div>'
+    + yearRow
+    + heroHTML
+    + minisHTML
+    + barWrap
+    + monthsHTML
+    + renderFrequencyStats()
+    + renderNeverVisited();
+
+  document.getElementById('statContent').innerHTML = html;
   // Po re-renderi attachni listenery na taby ak je collapse otvorený
   if(FREQ_COLLAPSE_OPEN){
     attachFreqNvHandlers();
@@ -4818,6 +4974,8 @@ function getMonday(d){
 function getRangeStats(from, to){
   var prefix = currentUser+'_d_';
   var EXCL=['dovol','pn'],SKIP=['cd','meeting'];
+  var nowR = new Date();
+  var todayKeyR = currentUser+'_d_'+nowR.getFullYear()+'-'+String(nowR.getMonth()+1).padStart(2,'0')+'-'+String(nowR.getDate()).padStart(2,'0');
   var wDays=0,timeDays=0,workTimeDays=0,totalW=0,totalC=0,totalVM=0;
   Object.keys(data).forEach(function(k){
     if(!k.startsWith(prefix)) return;
@@ -4827,13 +4985,14 @@ function getRangeStats(from, to){
     var dt = new Date(p[0], p[1]-1, p[2]);
     if(dt < from || dt > to) return;
     var d = data[k]; if(!d) return;
-    var s = getDayStats(d), t = d.type||'';
+    var isToday = (k === todayKeyR);
+    var s = getDayStats(d, isToday), t = d.type||'';
     if(!s.saved) return;
     if(EXCL.indexOf(t)>=0) return;
     wDays++;
     if(SKIP.indexOf(t)>=0) return;
     timeDays++; totalC+=s.vc; totalVM+=s.vm;
-    if(d.start && d.end){ workTimeDays++; totalW+=s.tw; }
+    if(d.start && (d.end || isToday)){ workTimeDays++; totalW+=s.tw; }
   });
   return {wDays:wDays,timeDays:timeDays,workTimeDays:workTimeDays,totalW:totalW,totalC:totalC,totalVM:totalVM};
 }
@@ -5435,16 +5594,20 @@ function renderPrehladStat(){
     return p[0]===y && p[1]===m+1;
   });
   var EXCL=['dovol','pn'],SKIP=['cd','meeting'];
+  var nowDD = new Date();
+  var todayKeyS = currentUser+'_d_'+nowDD.getFullYear()+'-'+String(nowDD.getMonth()+1).padStart(2,'0')+'-'+String(nowDD.getDate()).padStart(2,'0');
   var wDays=0,timeDays=0,workTimeDays=0,totalW=0,totalC=0,totalVM=0;
   days.forEach(function(k){
     var d=data[k]; if(!d) return;
-    var s=getDayStats(d),t=d.type||'';
+    var isToday = (k === todayKeyS);
+    var s=getDayStats(d, isToday),t=d.type||'';
     if(!s.saved) return;
     if(EXCL.indexOf(t)>=0) return;
     wDays++;
     if(SKIP.indexOf(t)>=0) return;
     timeDays++; totalC+=s.vc; totalVM+=s.vm;
-    if(d.start && d.end){ workTimeDays++; totalW+=s.tw; }
+    // Pre dnešok: ak má start ale nie end, počítame jeho aktuálny live čas
+    if(d.start && (d.end || isToday)){ workTimeDays++; totalW+=s.tw; }
   });
   var avgV = timeDays?(totalC/timeDays).toFixed(1):'—';
   var avgVMH = timeDays?(totalVM/timeDays/60).toFixed(1).replace('.',','):'—';

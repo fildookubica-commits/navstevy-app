@@ -1,5 +1,5 @@
 // ⚠️ VERZIA — zmeň toto číslo pri každom nasadení novej verzie
-const CACHE_NAME = 'FKAPP-MARS-015';
+const CACHE_NAME = 'FKAPP-MARS-016';
 
 const urlsToCache = [
   '/navstevy-app/',

@@ -1356,7 +1356,7 @@ var OBCHODY={"Filip":[{"id":"SK002284","n":"POT J-LM 053 MIX","m":"PARTIZANSKA L
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'FKAPP-MARS-015';
+var APP_VERSION = 'FKAPP-MARS-016';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -5438,7 +5438,19 @@ function switchMainTab(tab){
     var tEl=document.getElementById('mtab-'+b);
     if(tEl) tEl.className='btab'+(BOTTOM_BAR_MAP[tab]===b?' active':'');
   });
-  if(tab==='prehlad') renderPrehlad();
+  if(tab==='prehlad'){
+    // Klik na Prehľad vždy resetuje na úvodnú stránku (Týždeň) a scroll na vrch
+    prehSeg = 'tyzden';
+    var nowD = new Date();
+    prehMonth = nowD.getMonth();
+    prehYear = nowD.getFullYear();
+    ['tyzden','mesiac','stat'].forEach(function(k){
+      var el = document.getElementById('prehSeg'+k.charAt(0).toUpperCase()+k.slice(1));
+      if(el) el.className = 'preh-seg-btn'+(k==='tyzden'?' active':'');
+    });
+    renderPrehlad();
+    setTimeout(function(){ window.scrollTo({top:0,behavior:'instant'}); }, 0);
+  }
   if(tab==='sklad') switchSkTab(currentSkTab);
   if(tab==='stat')  renderStat();
   if(tab==='obchody') renderObchody();

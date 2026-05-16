@@ -1371,7 +1371,7 @@ var OBCHODY={"Filip":[{"id":"SK002284","n":"POT J-LM 053 MIX","m":"PARTIZANSKA L
 var API_URL = 'https://worker-summer-band-b0f5.fildoo-kubica.workers.dev';
 
 // ── APP VERZIA (musí sa zhodovať s CACHE_NAME v sw.js) ───────────
-var APP_VERSION = 'FKAPP-MARS-022';
+var APP_VERSION = 'FKAPP-MARS-024';
 var APP_TITLE = (function(){ var t=localStorage.getItem('app_title')||'Mars Management'; return t==='Time Management'?'Mars Management':t; })();
 var swRegistration = null;
 var updateWaiting = false;
@@ -1599,6 +1599,7 @@ function rebuildLegacyMaps(){
 var PINS = {};
 var USERS = [];
 var userColors = {};
+var userGoals = {};
 rebuildLegacyMaps();
 
 // Uloží USERS_DB do localStorage a backendu, prebuduje legacy mapy
@@ -1645,7 +1646,6 @@ var MONTHS = ['Január','Február','Marec','Apríl','Máj','Jún','Júl','August
 var DTYPES = {dovol:'Dovolenka',pn:'PN',meeting:'Meeting',cd:'CD'};
 var data={}, currentUser='', currentYear=new Date().getFullYear(), currentMonth=new Date().getMonth();
 var selectedDay=null, darkMode=false, pinInput='', pendingUser='';
-var userGoals={};
 var CIEL_P=8.5*60, CIEL_V=5*60, CIEL_N=11;
 var DEFAULT_PRODUKTY=[
   {ean:'4009900015974',nazov:'Orbit Spearmint'},

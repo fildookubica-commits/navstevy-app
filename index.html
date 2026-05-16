@@ -957,82 +957,8 @@ body.dark #appSplashGreet{color:#fff}
     <div class="user-content">
       <div class="user-greeting">Welcome</div>
       <div class="user-sub">Vyber profil pre pokračovanie do pracovného priestoru.</div>
-      <div class="user-cards">
-        <button class="user-card" onclick="startLogin('Filip')">
-          <div class="user-avatar-wrap">
-            <div class="user-avatar" id="avatarWrap-Filip">
-              <img id="avatarImg-Filip" src="" style="display:none" alt="Filip">
-              <span class="user-avatar-initials" style="background:#007AFF">F</span>
-            </div>
-            <div class="user-cam-btn" onclick="event.stopPropagation();triggerAvatarUpload('Filip')">📷</div>
-          </div>
-          <span class="user-card-name">Filip</span>
-          <div class="user-card-badges">
-            <span class="user-card-badge" id="faceBtn-Filip" style="display:none">🔒</span>
-            <span class="user-card-badge" id="remBtn-Filip" style="display:none">✅</span>
-          </div>
-          <span class="user-card-arrow">›</span>
-        </button>
-        <button class="user-card" onclick="startLogin('Mirka')">
-          <div class="user-avatar-wrap">
-            <div class="user-avatar" id="avatarWrap-Mirka">
-              <img id="avatarImg-Mirka" src="" style="display:none" alt="Mirka">
-              <span class="user-avatar-initials" style="background:#FF2D55">M</span>
-            </div>
-            <div class="user-cam-btn" onclick="event.stopPropagation();triggerAvatarUpload('Mirka')">📷</div>
-          </div>
-          <span class="user-card-name">Mirka</span>
-          <div class="user-card-badges">
-            <span class="user-card-badge" id="faceBtn-Mirka" style="display:none">🔒</span>
-            <span class="user-card-badge" id="remBtn-Mirka" style="display:none">✅</span>
-          </div>
-          <span class="user-card-arrow">›</span>
-        </button>
-        <button class="user-card" onclick="startLogin('Lubo')">
-          <div class="user-avatar-wrap">
-            <div class="user-avatar" id="avatarWrap-Lubo">
-              <img id="avatarImg-Lubo" src="" style="display:none" alt="Lubo">
-              <span class="user-avatar-initials" style="background:#FF9500">&#317;</span>
-            </div>
-            <div class="user-cam-btn" onclick="event.stopPropagation();triggerAvatarUpload('Lubo')">📷</div>
-          </div>
-          <span class="user-card-name">Ľubo</span>
-          <div class="user-card-badges">
-            <span class="user-card-badge" id="faceBtn-Lubo" style="display:none">🔒</span>
-            <span class="user-card-badge" id="remBtn-Lubo" style="display:none">✅</span>
-          </div>
-          <span class="user-card-arrow">›</span>
-        </button>
-        <button class="user-card" onclick="startLogin('Monika')">
-          <div class="user-avatar-wrap">
-            <div class="user-avatar" id="avatarWrap-Monika">
-              <img id="avatarImg-Monika" src="" style="display:none" alt="Monika">
-              <span class="user-avatar-initials" style="background:#AF52DE">M</span>
-            </div>
-            <div class="user-cam-btn" onclick="event.stopPropagation();triggerAvatarUpload('Monika')">📷</div>
-          </div>
-          <span class="user-card-name">Monika</span>
-          <div class="user-card-badges">
-            <span class="user-card-badge" id="faceBtn-Monika" style="display:none">🔒</span>
-            <span class="user-card-badge" id="remBtn-Monika" style="display:none">✅</span>
-          </div>
-          <span class="user-card-arrow">›</span>
-        </button>
-        <button class="user-card" onclick="startLogin('Ivana')">
-          <div class="user-avatar-wrap">
-            <div class="user-avatar" id="avatarWrap-Ivana">
-              <img id="avatarImg-Ivana" src="" style="display:none" alt="Ivana">
-              <span class="user-avatar-initials" style="background:#5AC8FA">I</span>
-            </div>
-            <div class="user-cam-btn" onclick="event.stopPropagation();triggerAvatarUpload('Ivana')">📷</div>
-          </div>
-          <span class="user-card-name">Ivana</span>
-          <div class="user-card-badges">
-            <span class="user-card-badge" id="faceBtn-Ivana" style="display:none">🔒</span>
-            <span class="user-card-badge" id="remBtn-Ivana" style="display:none">✅</span>
-          </div>
-          <span class="user-card-arrow">›</span>
-        </button>
+      <div class="user-cards" id="userCardsContainer">
+        <!-- User cards sa generujú dynamicky cez renderUserCards() z USERS_DB -->
       </div>
     </div>
   </div>
@@ -1596,68 +1522,130 @@ window.addEventListener('offline', function() {
 if (!navigator.onLine) document.getElementById('offlineBanner').classList.add('show');
 loadOfflineQueue();
 
-// ── CORE STATE ───────────────────────────────────────────────────
-var PINS_DEFAULT = {'Filip':'1234','Mirka':'3456','Lubo':'4567','Monika':'1212','Ivana':'1794'};
-var PINS = (function(){
+// ── USERS DB — CENTRÁLNY ZDROJ PRAVDY ────────────────────────────
+// Štruktúra: array objektov, každý user = {name, pin, color, role, kad_scope, druhotky_kategorie}
+// - role:               'admin' | 'user'
+// - kad_scope:          'team' (zdieľané memo) | 'self' (vlastné memo) | 'none' (iba čítanie tímového)
+// - druhotky_kategorie: array stringov, napr. ['PET'] alebo ['KPZ','COKO','GUM']
+//
+// Hlavný zdroj: backend kľúč 'users_v2' (JSON pole).
+// Pri prvom spustení (ak na backende nič nie je) sa použije USERS_DB_SEED a uloží sa.
+
+var USERS_DB_SEED = [
+  {name:'Filip',  pin:'1234', color:'#007AFF', role:'admin', kad_scope:'team', druhotky_kategorie:['KPZ','COKO','GUM']},
+  {name:'Mirka',  pin:'3456', color:'#FF2D55', role:'user',  kad_scope:'self', druhotky_kategorie:['PET']},
+  {name:'Lubo',   pin:'4567', color:'#FF9500', role:'user',  kad_scope:'none', druhotky_kategorie:['KPZ','COKO','GUM']},
+  {name:'Monika', pin:'1212', color:'#AF52DE', role:'user',  kad_scope:'none', druhotky_kategorie:['KPZ','COKO','GUM']},
+  {name:'Ivana',  pin:'1794', color:'#5AC8FA', role:'user',  kad_scope:'none', druhotky_kategorie:['KPZ','COKO','GUM']}
+];
+
+// USERS_DB — aktuálny stav (načítaný z localStorage, neskôr prepísaný z backendu)
+var USERS_DB = (function(){
   try {
-    var s = localStorage.getItem('pins_cache');
-    return s ? JSON.parse(s) : Object.assign({}, PINS_DEFAULT);
-  } catch(e) { return Object.assign({}, PINS_DEFAULT); }
-})();
-var USERS_DEFAULT = ['Filip','Mirka','Lubo','Monika','Ivana'];
-var USERS = (function(){
-  try {
-    var s = localStorage.getItem('users_list');
-    var arr = s ? JSON.parse(s) : null;
-    // Sanitácia: vyhoď staré mená a doplň aktuálne
-    var INVALID = ['Beny','Martin','TEST','Test','test'];
-    var needsReset = false;
-    if(!arr || !Array.isArray(arr)){
-      arr = USERS_DEFAULT.slice();
-      needsReset = true;
-    } else {
-      // Vyhoď neplatné mená
-      var origLen = arr.length;
-      arr = arr.filter(function(u){ return INVALID.indexOf(u) < 0; });
-      if(arr.length !== origLen) needsReset = true;
-      // Doplň chýbajúcich z defaults
-      USERS_DEFAULT.forEach(function(u){
-        if(arr.indexOf(u) < 0){ arr.push(u); needsReset = true; }
-      });
-      // Zachovaj poradie z defaults
-      var ordered = [];
-      USERS_DEFAULT.forEach(function(u){ if(arr.indexOf(u)>=0) ordered.push(u); });
-      arr.forEach(function(u){ if(ordered.indexOf(u)<0) ordered.push(u); });
-      arr = ordered;
+    var s = localStorage.getItem('users_v2');
+    if(s){
+      var arr = JSON.parse(s);
+      if(Array.isArray(arr) && arr.length > 0) return arr;
     }
-    if(needsReset){
-      try { localStorage.setItem('users_list', JSON.stringify(arr)); } catch(e){}
-    }
-    return arr;
-  } catch(e) { return USERS_DEFAULT.slice(); }
+  } catch(e){}
+  // Fallback: použij seed (a uložiť, aby to bolo k dispozícii hneď pre offline štart)
+  try { localStorage.setItem('users_v2', JSON.stringify(USERS_DB_SEED)); } catch(e){}
+  return USERS_DB_SEED.slice();
 })();
-var USER_COLORS_DEFAULT = {'Filip':'#007AFF','Mirka':'#FF2D55','Lubo':'#FF9500','Monika':'#AF52DE','Ivana':'#5AC8FA'};
-var userColors = (function(){
-  try {
-    var s = localStorage.getItem('user_colors');
-    var saved = s ? JSON.parse(s) : {};
-    var INVALID = ['Beny','Martin','TEST','Test','test'];
-    var clean = {};
-    Object.keys(saved||{}).forEach(function(k){
-      if(INVALID.indexOf(k) < 0) clean[k] = saved[k];
-    });
-    var merged = Object.assign({}, USER_COLORS_DEFAULT, clean);
-    // Uložím vyčistenú verziu späť
-    try { localStorage.setItem('user_colors', JSON.stringify(merged)); } catch(e){}
-    return merged;
-  } catch(e) { return Object.assign({}, USER_COLORS_DEFAULT); }
-})();
+
+// ── POMOCNÉ PRÍSTUPOVÉ FUNKCIE ───────────────────────────────────
+function getUserObj(name){
+  if(!name) return null;
+  for(var i=0;i<USERS_DB.length;i++){ if(USERS_DB[i].name===name) return USERS_DB[i]; }
+  return null;
+}
+function currentUserObj(){ return getUserObj(currentUser); }
+function isAdmin(){ var u=currentUserObj(); return !!(u && u.role==='admin'); }
+function isAdminUser(name){ var u=getUserObj(name); return !!(u && u.role==='admin'); }
+function getKadScope(){ var u=currentUserObj(); return (u && u.kad_scope) || 'none'; }
+function getDruhotkyKat(){
+  var u=currentUserObj();
+  if(u && Array.isArray(u.druhotky_kategorie) && u.druhotky_kategorie.length) return u.druhotky_kategorie.slice();
+  return ['KPZ','COKO','GUM'];
+}
+function getUserColor(name){
+  var u=getUserObj(name);
+  return (u && u.color) || '#34C759';
+}
+function getUserInitial(name){
+  if(!name) return '?';
+  // Špeciálne: 'Lubo' (bez diakritiky v dátach) → 'Ľ'
+  if(name==='Lubo' || name==='Ľubo') return 'Ľ';
+  return name.charAt(0).toUpperCase();
+}
+function hasShops(name){
+  var who = name || currentUser;
+  return !!(OBCHODY && OBCHODY[who] && OBCHODY[who].length > 0);
+}
+// Pre staré API kompatibilitu — niektoré funkcie ešte čítajú PINS/userColors/userGoals.
+// Tieto sa generujú "live" z USERS_DB:
+function rebuildLegacyMaps(){
+  PINS = {};
+  userColors = {};
+  USERS = [];
+  USERS_DB.forEach(function(u){
+    PINS[u.name] = u.pin;
+    userColors[u.name] = u.color;
+    USERS.push(u.name);
+    if(!userGoals[u.name]) userGoals[u.name] = {pracovna:8.5, navstevy:5, pocet:11};
+  });
+}
+
+var PINS = {};
+var USERS = [];
+var userColors = {};
+rebuildLegacyMaps();
+
+// Uloží USERS_DB do localStorage a backendu, prebuduje legacy mapy
+function saveUsersDB(){
+  rebuildLegacyMaps();
+  try { localStorage.setItem('users_v2', JSON.stringify(USERS_DB)); } catch(e){}
+  // Backend uloženie cez veľký POST (môže byť dlhšie)
+  if(typeof apiSetLarge === 'function'){
+    apiSetLarge('users_v2', JSON.stringify(USERS_DB));
+  } else if(typeof apiSet === 'function'){
+    apiSet('users_v2', JSON.stringify(USERS_DB));
+  }
+}
+
+// Načíta USERS_DB z backendu (volá sa pri štarte, po prihlásení)
+function loadUsersDBFromBackend(cb){
+  if(typeof apiGet !== 'function'){ if(cb) cb(false); return; }
+  fetch(API_URL + '?key=users_v2')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d && d.value){
+        try {
+          var arr = JSON.parse(d.value);
+          if(Array.isArray(arr) && arr.length > 0){
+            USERS_DB = arr;
+            rebuildLegacyMaps();
+            try { localStorage.setItem('users_v2', JSON.stringify(USERS_DB)); } catch(e){}
+            if(cb) cb(true);
+            return;
+          }
+        } catch(e){}
+      }
+      // Backend prázdny → seed prvý raz
+      USERS_DB = USERS_DB_SEED.slice();
+      rebuildLegacyMaps();
+      saveUsersDB();
+      if(cb) cb(true);
+    })
+    .catch(function(){ if(cb) cb(false); });
+}
+
 var MASTER = '1234';
 var MONTHS = ['Január','Február','Marec','Apríl','Máj','Jún','Júl','August','September','Október','November','December'];
 var DTYPES = {dovol:'Dovolenka',pn:'PN',meeting:'Meeting',cd:'CD'};
 var data={}, currentUser='', currentYear=new Date().getFullYear(), currentMonth=new Date().getMonth();
 var selectedDay=null, darkMode=false, pinInput='', pendingUser='';
-var userGoals={Filip:{pracovna:8.5,navstevy:5,pocet:11},Mirka:{pracovna:8.5,navstevy:5,pocet:11}};
+var userGoals={};
 var CIEL_P=8.5*60, CIEL_V=5*60, CIEL_N=11;
 var DEFAULT_PRODUKTY=[
   {ean:'4009900015974',nazov:'Orbit Spearmint'},
@@ -1726,7 +1714,7 @@ function allDarkBtns(){ ['darkBtn','darkBtn2','darkBtn3','darkBtn4','darkBtn5','
 function faceIdKey(user){ return 'faceid_cred_'+user; }
 function isFaceIdRegistered(user){ return !!localStorage.getItem(faceIdKey(user)); }
 function updateFaceIdBtns(){
-  ['Filip','Mirka','Lubo','Monika','Ivana'].forEach(function(u){
+  USERS.forEach(function(u){
     var fb=document.getElementById('faceBtn-'+u);
     var rb=document.getElementById('remBtn-'+u);
     var gb=document.getElementById('forgetBtn-'+u);
@@ -1734,6 +1722,44 @@ function updateFaceIdBtns(){
     if(rb) rb.style.display=isRemembered(u)?'inline':'none';
     if(gb) gb.style.display=isRemembered(u)?'block':'none';
   });
+}
+
+// ── DYNAMICKÝ RENDER USER CARDS NA ÚVODNEJ OBRAZOVKE ─────────────
+// Vykresľuje karty z USERS_DB. Volaj po každej zmene (pridanie/zmazanie usera, zmena farby).
+function renderUserCards(){
+  var container = document.getElementById('userCardsContainer');
+  if(!container) return;
+  if(!USERS_DB || USERS_DB.length === 0){
+    container.innerHTML = '<div style="padding:24px;text-align:center;color:#8e8e93">Žiadni používatelia. Kontaktuj administrátora.</div>';
+    return;
+  }
+  var html = '';
+  USERS_DB.forEach(function(u){
+    var name = u.name;
+    var color = u.color || '#34C759';
+    var initial = getUserInitial(name);
+    // Escape pre onclick atribúty
+    var nEsc = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    html += ''
+      + '<button class="user-card" onclick="startLogin(\''+nEsc+'\')">'
+      +   '<div class="user-avatar-wrap">'
+      +     '<div class="user-avatar" id="avatarWrap-'+name+'">'
+      +       '<img id="avatarImg-'+name+'" src="" style="display:none" alt="'+name+'">'
+      +       '<span class="user-avatar-initials" style="background:'+color+'">'+initial+'</span>'
+      +     '</div>'
+      +     '<div class="user-cam-btn" onclick="event.stopPropagation();triggerAvatarUpload(\''+nEsc+'\')">📷</div>'
+      +   '</div>'
+      +   '<span class="user-card-name">'+name+'</span>'
+      +   '<div class="user-card-badges">'
+      +     '<span class="user-card-badge" id="faceBtn-'+name+'" style="display:none">🔒</span>'
+      +     '<span class="user-card-badge" id="remBtn-'+name+'" style="display:none">✅</span>'
+      +   '</div>'
+      +   '<span class="user-card-arrow">›</span>'
+      + '</button>';
+  });
+  container.innerHTML = html;
+  if(typeof loadAvatars === 'function') loadAvatars();
+  if(typeof updateFaceIdBtns === 'function') updateFaceIdBtns();
 }
 function forgetUser(user){
   clearRememberMe(user);
@@ -1778,7 +1804,7 @@ async function doFaceId(){
 function saveRememberMe(user){ localStorage.setItem('remember_'+user,'1'); localStorage.setItem('rememberUntil_'+user,Date.now()+365*24*60*60*1000); }
 function clearRememberMe(user){ if(user){ localStorage.removeItem('remember_'+user); localStorage.removeItem('rememberUntil_'+user); } }
 function isRemembered(user){ var v=localStorage.getItem('remember_'+user),t=parseInt(localStorage.getItem('rememberUntil_'+user)||'0'); return v==='1'&&Date.now()<t; }
-function checkRememberMe(){ var users=['Filip','Mirka','Lubo','Monika','Ivana']; for(var i=0;i<users.length;i++){ if(isRemembered(users[i])) return users[i]; } return null; }
+function checkRememberMe(){ for(var i=0;i<USERS.length;i++){ if(isRemembered(USERS[i])) return USERS[i]; } return null; }
 
 // ── PIN ──────────────────────────────────────────────────────────
 function startLogin(user){
@@ -1836,8 +1862,6 @@ function completeLogin(name){
 
 // ── USER ─────────────────────────────────────────────────────────
 function updateHeaderAvatarInHeader(user) {
-  var colors = {Filip:'#007AFF',Mirka:'#FF2D55',Lubo:'#FF9500',Monika:'#AF52DE',Ivana:'#5AC8FA'};
-  var letters = {Filip:'F',Mirka:'M',Lubo:'L',Monika:'M',Ivana:'I'};
   var saved = localStorage.getItem('avatar_' + user);
   // Update vo všetkých headeroch (Dochádzka + Prehľad)
   ['','P','S'].forEach(function(suffix){
@@ -1845,8 +1869,8 @@ function updateHeaderAvatarInHeader(user) {
     var img = document.getElementById('headerAvatarImg'+suffix);
     var wrap = document.getElementById('headerAvatarWrap'+suffix);
     if (!wrap) return;
-    wrap.style.background = colors[user] || '#717786';
-    if (initials) { initials.textContent = letters[user] || user.charAt(0); }
+    wrap.style.background = getUserColor(user);
+    if (initials) { initials.textContent = getUserInitial(user); }
     if (saved && img) {
       img.src = saved; img.style.display = 'block';
       if (initials) initials.style.display = 'none';
@@ -1858,8 +1882,6 @@ function updateHeaderAvatarInHeader(user) {
 }
 
 function showAppSplash(name){
-  var colors = {Filip:'#007AFF',Mirka:'#FF2D55',Lubo:'#FF9500',Monika:'#AF52DE',Ivana:'#5AC8FA'};
-  var letters = {Filip:'F',Mirka:'M',Lubo:'L',Monika:'M',Ivana:'I'};
   var splash = document.getElementById('appSplash');
   var av = document.getElementById('appSplashAvatar');
   var gr = document.getElementById('appSplashGreet');
@@ -1873,8 +1895,8 @@ function showAppSplash(name){
     av.style.background = '#fff';
     av.innerHTML = '<img src="'+saved+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
   } else {
-    av.style.background = colors[name] || '#717786';
-    av.innerHTML = letters[name] || name.charAt(0);
+    av.style.background = getUserColor(name);
+    av.innerHTML = getUserInitial(name);
   }
   gr.textContent = greet+', '+name;
   splash.style.display = 'flex';
@@ -1903,7 +1925,7 @@ function setUser(name){
   var vi=document.getElementById('verInfo'); if(vi) vi.textContent='Verzia: '+APP_VERSION;
   // Admin LIVE button - viditeľné len pre Filipa
   var adminBtn = document.getElementById('adminLiveBtnDoch');
-  if(adminBtn) adminBtn.style.display = (name === 'Filip') ? 'flex' : 'none';
+  if(adminBtn) adminBtn.style.display = isAdminUser(name) ? 'flex' : 'none';
   // Akcie tab - skrytý pre Mirku
   var akcieTab = document.getElementById('mtab-akcie');
   if(akcieTab) akcieTab.style.display = 'flex';  // Všetci vidia tab (Mirka má svoje memo, Filip pre tím)
@@ -1953,6 +1975,17 @@ function loadData(){
         else if(k.startsWith('historia_')){ var h=JSON.parse(val); h._key=k; historia.push(h); }
         else if(k==='settings_dark'){ darkMode=result[k]==='1'; document.body.classList.toggle('dark',darkMode); allDarkBtns(); }
         else if(k==='goals_'+currentUser){ userGoals[currentUser]=JSON.parse(val); applyGoals(); }
+        else if(k==='users_v2'){
+          try {
+            var arr = JSON.parse(val);
+            if(Array.isArray(arr) && arr.length > 0){
+              USERS_DB = arr;
+              rebuildLegacyMaps();
+              try { localStorage.setItem('users_v2', JSON.stringify(USERS_DB)); } catch(e){}
+              if(typeof renderUserCards === 'function') renderUserCards();
+            }
+          } catch(e){}
+        }
         else if(k==='obchody_overrides_'+currentUser){
           try { applyShopOverrides(JSON.parse(val)); } catch(e){}
         }
@@ -2020,7 +2053,7 @@ function loadData(){
     if(avatarsUpdated) loadAvatars();
     // Pre KV backend načítame avatary osobitne ak sú skryté v GET all
     if(API_URL.includes('workers.dev')){
-      ['Filip','Mirka','Lubo','Monika','Ivana'].forEach(function(u){
+      USERS.forEach(function(u){
         var key = 'avatar_' + u;
         if(!localStorage.getItem(key)){
           fetch(API_URL + '?key=' + key)
@@ -2259,7 +2292,7 @@ function renderSummary(){
   var sumEl = document.getElementById('summary');
   if(!sumEl) return;
   sumEl.innerHTML=''
-    +(currentUser==='Filip'?'<div style="font-size:11px;color:#8e8e93;padding:4px 16px 8px;text-align:center">'+debugInfo+'</div>':'')
+    +(isAdmin()?'<div style="font-size:11px;color:#8e8e93;padding:4px 16px 8px;text-align:center">'+debugInfo+'</div>':'')
     +'<div class="ring-grid-wrap">'
       +rc(ring(wPct,'#007AFF','#e8f0fd'),wPct,'Pracovný čas',wH2,wSub,wSC,avgWHDec)
       +rc(ring(vPct,'#34C759','#e2f7ee'),vPct,'Čas u zákazníka',vH2,vSub,vSC,avgVMH)
@@ -2329,8 +2362,8 @@ function renderDetail(){
   var typeBtns=Object.keys(DTYPES).map(function(t){return '<div class="dtype-btn'+(dd.type===t?' active-'+t:'')+'" onclick="setType(\''+t+'\')">'+DTYPES[t]+'</div>';}).join('');
   var visits=dd.visits.map(function(v,i){
     var row1 = '<div class="visit-row"><div class="vnum">'+(i+1)+'.</div><input type="number" min="1" max="999" value="'+(v.mins||'')+'" placeholder="min" onchange="updateVisit('+i+',this.value)" onkeydown="if(event.key===\'Enter\'){updateVisit('+i+',this.value);this.blur();}"><button class="del-v" onclick="removeVisit('+i+')">×</button></div>';
-    // Shop picker iba pre Filipa (zatiaľ)
-    if(currentUser !== 'Filip') return row1;
+    // Shop picker iba ak má user priradené obchody
+    if(!hasShops()) return row1;
     var shopBtn;
     if(v.obchodId){
       var shop = findShop(v.obchodId);
@@ -2399,7 +2432,7 @@ var _shopPickerSearch = '';
 var _shopPickerFilter = 'all';
 
 function openShopPicker(visitIdx){
-  if(currentUser !== 'Filip'){ return; }  // Zatiaľ iba pre Filipa
+  if(!hasShops()){ return; }  // Iba ak má user priradené obchody
   _shopPickerVisitIdx = visitIdx;
   _shopPickerSearch = '';
   _shopPickerFilter = 'all';
@@ -2574,7 +2607,7 @@ function closeDetail(){ document.getElementById('dayDetail').innerHTML=''; selec
 function changeMonth(dir){ currentMonth+=dir; if(currentMonth>11){currentMonth=0;currentYear++;} if(currentMonth<0){currentMonth=11;currentYear--;} closeDetail(); renderCalendar(); document.getElementById('monthTitle').textContent=MONTHS[currentMonth]+' '+currentYear; }
 function showSettings(){
   var g=userGoals[currentUser]||{pracovna:8.5,navstevy:5,pocet:11};
-  var adminSection = currentUser==='Filip' ? ''
+  var adminSection = isAdmin() ? ''
     +'<div style="margin:16px 0 10px;border-top:1px solid #e5e5ea;padding-top:16px;">'
       +'<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#FF9500;margin-bottom:12px;">⚙️ Admin — správca</div>'
     +'</div>'
@@ -2587,7 +2620,7 @@ function showSettings(){
     +'<div class="modal-field" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;">'
       +'<div><div class="modal-label">Používateľ</div>'
         +'<select class="modal-input" id="gAdminUser" style="padding:8px;">'
-          +['Filip','Mirka','Lubo','Monika','Ivana'].map(function(u){ return '<option value="'+u+'"'+(u===currentUser?' selected':'')+'>'+u+'</option>'; }).join('')
+          +USERS.map(function(u){ return '<option value="'+u+'"'+(u===currentUser?' selected':'')+'>'+u+'</option>'; }).join('')
         +'</select></div>'
       +'<div><div class="modal-label">Prac. doba (h)</div>'
         +'<input type="number" class="modal-input" id="gAdminH" value="8.5" step="0.5"></div>'
@@ -2710,6 +2743,27 @@ function adminOpenLive(){
           +'<div><div style="font-size:12px;color:#8e8e93;margin-bottom:4px">Farba</div>'
             +'<input type="color" id="alNewUserColor" value="#34C759" style="border:1px solid #e5e5ea;border-radius:10px;padding:4px;height:38px;width:100%;background:#f2f2f7;cursor:pointer"></div>'
         +'</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
+          +'<div><div style="font-size:12px;color:#8e8e93;margin-bottom:4px">Rola</div>'
+            +'<select id="alNewUserRole" style="border:1px solid #e5e5ea;border-radius:10px;padding:9px 12px;font-size:14px;width:100%;background:#f2f2f7;color:#1c1c1e">'
+              +'<option value="user">Užívateľ</option>'
+              +'<option value="admin">Admin</option>'
+            +'</select></div>'
+          +'<div><div style="font-size:12px;color:#8e8e93;margin-bottom:4px">KAD memo</div>'
+            +'<select id="alNewUserKad" style="border:1px solid #e5e5ea;border-radius:10px;padding:9px 12px;font-size:14px;width:100%;background:#f2f2f7;color:#1c1c1e">'
+              +'<option value="none">Iba čítanie</option>'
+              +'<option value="self">Vlastné memo</option>'
+              +'<option value="team">Tímové memo (uploader)</option>'
+            +'</select></div>'
+        +'</div>'
+        +'<div style="margin-bottom:10px"><div style="font-size:12px;color:#8e8e93;margin-bottom:6px">Druhotky kategórie</div>'
+          +'<div style="display:flex;gap:14px;flex-wrap:wrap;padding:6px 0">'
+            +'<label style="display:flex;align-items:center;gap:5px;font-size:13px;color:#1c1c1e;cursor:pointer"><input type="checkbox" id="alNewUserKat-KPZ" checked> KPZ</label>'
+            +'<label style="display:flex;align-items:center;gap:5px;font-size:13px;color:#1c1c1e;cursor:pointer"><input type="checkbox" id="alNewUserKat-COKO" checked> ČOKO</label>'
+            +'<label style="display:flex;align-items:center;gap:5px;font-size:13px;color:#1c1c1e;cursor:pointer"><input type="checkbox" id="alNewUserKat-GUM" checked> GUM</label>'
+            +'<label style="display:flex;align-items:center;gap:5px;font-size:13px;color:#1c1c1e;cursor:pointer"><input type="checkbox" id="alNewUserKat-PET"> PET</label>'
+          +'</div>'
+        +'</div>'
         +'<button onclick="adminAddUser()" style="width:100%;padding:11px;background:#30D158;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">✓ Vytvoriť užívateľa</button>'
         +'<div style="font-size:11px;color:#8e8e93;margin-top:8px;text-align:center">Master PIN 1234 bude fungovať pre všetkých automaticky</div>'
       +'</div>'
@@ -2792,8 +2846,8 @@ function adminLiveRefresh(){
     .then(function(kv){
       var dateStr = yr + '-' + String(mo+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
       var html = '';
-      // FIXNÝ zoznam — nezávislý od localStorage/KV cache (chráni proti starým záznamom Beny/Martin/TEST)
-      var LIVE_USERS = ['Filip','Mirka','Lubo','Monika','Ivana'];
+      // Zoznam užívateľov z USERS_DB (centrálny zdroj pravdy)
+      var LIVE_USERS = USERS.slice();
       LIVE_USERS.forEach(function(u){
         // Hľadaj záznam pre tento deň
         var keyShort = u + '_' + dateStr;
@@ -2899,8 +2953,8 @@ function adminExportCSV(){
   var mo = currentMonth, yr = currentYear;
   var EXCL=['dovol','pn'], SKIP=['cd','meeting'];
   var lines = [['Meno','Dátum','Začiatok','Koniec','Prac. čas (min)','Návštevy','Čas návštev (min)','Typ'].join(';')];
-  // FIXNÝ zoznam (chráni proti starým záznamom)
-  var EXPORT_USERS = ['Filip','Mirka','Lubo','Monika','Ivana'];
+  // Zoznam používateľov z USERS_DB
+  var EXPORT_USERS = USERS.slice();
   EXPORT_USERS.forEach(function(u){
     var cached = null;
     try{ var c=JSON.parse(localStorage.getItem('cache_'+u)||'null'); if(c) cached=c.data; }catch(e){}
@@ -3033,40 +3087,45 @@ function adminDelUser(){
   if(!sel){ setStatus('⚠️ Formulár nie je otvorený'); return; }
   var name = (sel.value || '').trim();
   if(!name){ setStatus('⚠️ Vyber užívateľa zo zoznamu'); return; }
-  if(name === 'Filip'){ setStatus('⚠️ Admin sa nemôže vymazať'); return; }
-  if(!USERS.includes(name)){ setStatus('⚠️ Užívateľ '+name+' neexistuje'); return; }
+  if(isAdminUser(name)){
+    // Spočítaj koľko adminov ostane
+    var remainingAdmins = USERS_DB.filter(function(u){ return u.role==='admin' && u.name !== name; }).length;
+    if(remainingAdmins === 0){ setStatus('⚠️ Posledného admina nemožno zmazať'); return; }
+  }
+  if(!getUserObj(name)){ setStatus('⚠️ Užívateľ '+name+' neexistuje'); return; }
   if(!confirm('Naozaj trvalo vymazať užívateľa "'+name+'"?\n\n'
-    + 'Odstráni sa z prihlasovacích kariet, vyčistia sa lokálne preferencie a serverové údaje (PIN, ciele, avatar, Face ID).\n\n'
+    + 'Odstráni sa z prihlasovacích kariet, vyčistia sa lokálne preferencie a serverové údaje (avatar, Face ID).\n\n'
     + 'Záznamy dochádzky a obchody zostanú v databáze (pre prípad obnovy).\n\n'
     + 'Túto akciu nemožno cez UI vrátiť späť.')) return;
-  // 1) Odstráň zo zoznamu USERS
-  USERS = USERS.filter(function(u){ return u !== name; });
-  // 2) Vymaž lokálne preferencie
-  delete userColors[name];
+  // 1) Odstráň z USERS_DB
+  USERS_DB = USERS_DB.filter(function(u){ return u.name !== name; });
+  // 2) Vymaž lokálne odvozené stavy a cache
   delete userGoals[name];
-  delete PINS[name];
   try {
-    localStorage.setItem('users_list', JSON.stringify(USERS));
-    localStorage.setItem('user_colors', JSON.stringify(userColors));
-    localStorage.setItem('pins_cache', JSON.stringify(PINS));
     localStorage.removeItem('cache_'+name);
     localStorage.removeItem('faceid_cred_'+name);
+    localStorage.removeItem('avatar_'+name);
+    localStorage.removeItem('remember_'+name);
+    localStorage.removeItem('rememberUntil_'+name);
   } catch(e){}
-  // 3) Vyčisti serverové dáta (KV) - PIN, goals, avatar
-  apiSet('pin_'+name, '');
+  // 3) Ulož USERS_DB na backend + prebuduj legacy mapy (PINS, USERS, userColors)
+  saveUsersDB();
+  // 4) Vyčisti serverové dáta (KV) - goals, avatar, druhotky
   apiSet('goals_'+name, '');
   apiSet('avatar_'+name, '');
   apiSet('druhotky_'+name, '');
-  setStatus('✅ Užívateľ '+name+' bol vymazaný — reload o 2s');
+
+  setStatus('✅ Užívateľ '+name+' bol vymazaný');
   // Reset form
   sel.value = '';
   var form = document.getElementById('alDelUserForm');
   if(form) form.style.display = 'none';
   var btn = document.getElementById('alToggleDelBtn');
   if(btn) btn.textContent = '🗑️ Vymazať užívateľa';
-  // Obnov LIVE a po chvíli reload pre úplné prečistenie UI
+  // Okamžite prekresli karty na úvodnej obrazovke
+  if(typeof renderUserCards === 'function') renderUserCards();
+  // Obnov LIVE ak je otvorené
   if(typeof adminLiveRefresh === 'function') adminLiveRefresh();
-  setTimeout(function(){ location.reload(); }, 2000);
 }
 
 function adminGenPin(){
@@ -3097,7 +3156,9 @@ function adminAddUser(){
   var nameEl = document.getElementById('alNewUserName');
   var pinEl = document.getElementById('alNewUserPin');
   var colorEl = document.getElementById('alNewUserColor');
-  // Fallback na pôvodné IDs (ak by sa volalo z iného miesta)
+  var roleEl = document.getElementById('alNewUserRole');
+  var kadEl = document.getElementById('alNewUserKad');
+  // Fallback na pôvodné IDs
   if(!nameEl) nameEl = document.getElementById('gNewUserName');
   if(!pinEl) pinEl = document.getElementById('gNewUserPin');
   if(!colorEl) colorEl = document.getElementById('gNewUserColor');
@@ -3105,39 +3166,55 @@ function adminAddUser(){
   var name=(nameEl.value||'').trim();
   var pin=String(pinEl.value||'').trim();
   var color=colorEl.value||'#34C759';
+  var role=(roleEl && roleEl.value) || 'user';
+  var kadScope=(kadEl && kadEl.value) || 'none';
+  // Druhotky kategórie — z checkboxov
+  var katChecked = [];
+  ['KPZ','COKO','GUM','PET'].forEach(function(k){
+    var cb = document.getElementById('alNewUserKat-'+k);
+    if(cb && cb.checked) katChecked.push(k);
+  });
+  if(katChecked.length === 0) katChecked = ['KPZ','COKO','GUM']; // default
+
   if(!name||name.length<2){setStatus('⚠️ Zadaj meno (min. 2 znaky)');return;}
   if(pin.length!==4||isNaN(Number(pin))){setStatus('⚠️ PIN musia byť 4 číslice');return;}
-  if(USERS.includes(name)){setStatus('⚠️ Používateľ '+name+' už existuje');return;}
-  USERS.push(name);
-  userColors[name]=color;
-  userGoals[name]={pracovna:8.5,navstevy:5,pocet:11};
-  PINS[name]=pin;
-  apiSet('pin_'+name,pin);
-  apiSet('goals_'+name,JSON.stringify(userGoals[name]));
-  try{
-    localStorage.setItem('users_list',JSON.stringify(USERS));
-    localStorage.setItem('user_colors',JSON.stringify(userColors));
-    localStorage.setItem('pins_cache',JSON.stringify(PINS));
-  }catch(e){}
+  if(getUserObj(name)){setStatus('⚠️ Používateľ '+name+' už existuje');return;}
+
+  // Pridaj nového usera do USERS_DB
+  USERS_DB.push({
+    name: name,
+    pin: pin,
+    color: color,
+    role: role,
+    kad_scope: kadScope,
+    druhotky_kategorie: katChecked
+  });
+  if(!userGoals[name]) userGoals[name] = {pracovna:8.5,navstevy:5,pocet:11};
+  saveUsersDB();
+
+  // Pre kompatibilitu so starým kódom (kým bude všetko prepísané na USERS_DB)
+  apiSet('goals_'+name, JSON.stringify(userGoals[name]));
+
   setStatus('✅ Užívateľ '+name+' bol pridaný!');
-  // Ak sme v LIVE dashboarde - len ho obnov, inak zatvor Settings a reload
+  // Okamžitý render — bez reloadu
+  if(typeof renderUserCards === 'function') renderUserCards();
+  // Vyčisti formulár
+  if(nameEl) nameEl.value = '';
+  if(pinEl) pinEl.value = '';
+  if(colorEl) colorEl.value = '#34C759';
+  if(roleEl) roleEl.value = 'user';
+  if(kadEl) kadEl.value = 'none';
+  ['KPZ','COKO','GUM','PET'].forEach(function(k){
+    var cb = document.getElementById('alNewUserKat-'+k);
+    if(cb) cb.checked = (k==='KPZ'||k==='COKO'||k==='GUM');
+  });
+  var form = document.getElementById('alAddUserForm');
+  if(form) form.style.display = 'none';
+  // Obnov LIVE alebo zatvor Settings
   if(document.getElementById('adminLiveOverlay') && document.getElementById('adminLiveOverlay').style.display !== 'none'){
-    // Vyčisti polia
-    if(nameEl) nameEl.value = '';
-    if(pinEl) pinEl.value = '';
-    if(colorEl) colorEl.value = '#34C759';
-    // Skry formulár ak je otvorený
-    var form = document.getElementById('alAddUserForm');
-    if(form) form.style.display = 'none';
-    // Obnov LIVE
-    adminLiveRefresh();
-    setTimeout(function(){
-      setStatus('✅ '+name+' pridaná — reload pre úplné načítanie');
-      setTimeout(function(){location.reload();},1500);
-    },300);
+    if(typeof adminLiveRefresh === 'function') adminLiveRefresh();
   } else {
-    closeSettings();
-    setTimeout(function(){location.reload();},1200);
+    if(typeof closeSettings === 'function') closeSettings();
   }
 }
 
@@ -3244,8 +3321,8 @@ function buildLastVisitMap(){
 }
 
 function renderFrequencyStats(){
-  // Iba pre Filipa - on jediný má kategórie v databáze
-  if(currentUser !== 'Filip') return '';
+  // Iba ak má user priradené obchody s kategóriami
+  if(!hasShops()) return '';
   var shops = (OBCHODY && OBCHODY[currentUser]) ? OBCHODY[currentUser] : [];
   if(!shops.length) return '';
   // Skupiny podľa kategórie
@@ -3379,7 +3456,7 @@ function getCategoryPeriodLabel(cat, today){
 }
 
 function renderNeverVisited(){
-  if(currentUser !== 'Filip') return '';
+  if(!hasShops()) return '';
   var shops = (OBCHODY && OBCHODY[currentUser]) ? OBCHODY[currentUser] : [];
   if(!shops.length) return '';
   var lvMap = buildLastVisitMap();
@@ -3732,11 +3809,11 @@ function setPoznFilter(f){ poznFilter=f; document.getElementById('pfAll').classN
 function toggleImpInput(){ poznImportant=!poznImportant; var btn=document.getElementById('poznImpToggle'); if(btn) btn.className='pozn-important-toggle'+(poznImportant?' on':''); }
 function renderPoznamky(){
   poznLoad(function(notes){
-    var dotColor=currentUser==='Filip'?'dot-filip':(currentUser==='Lubo'?'dot-lubo':(currentUser==='Monika'?'dot-monika':(currentUser==='Ivana'?'dot-ivana':'dot-mirka')));
+    var dotColor = getUserColor(currentUser);
     var filtered=poznFilter==='important'?notes.filter(function(n){return n.important;}):notes;
     var html='';
     if(filtered.length===0){html='<div class="pozn-empty">'+(poznFilter==='important'?'Žiadne dôležité ⭐':'Žiadne poznámky 📝')+'</div>';}
-    else{filtered.forEach(function(n){var origIdx=notes.indexOf(n),safe=n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');html+='<div class="pozn-card'+(n.important?' important':'')+'"><div class="pozn-card-header"><div class="pozn-card-meta"><div class="user-dot '+dotColor+'" style="width:22px;height:22px;font-size:10px;">'+currentUser[0]+'</div>'+(n.important?'<span class="pozn-imp-badge">⭐ Dôležité</span>':'')+'<div class="pozn-date">'+n.datum+'</div></div><button class="pozn-del" onclick="deletePoznamka('+origIdx+')">×</button></div><div class="pozn-text">'+safe+'</div></div>';});}
+    else{filtered.forEach(function(n){var origIdx=notes.indexOf(n),safe=n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');html+='<div class="pozn-card'+(n.important?' important':'')+'"><div class="pozn-card-header"><div class="pozn-card-meta"><div class="user-dot" style="width:22px;height:22px;font-size:10px;background:'+dotColor+'">'+currentUser[0]+'</div>'+(n.important?'<span class="pozn-imp-badge">⭐ Dôležité</span>':'')+'<div class="pozn-date">'+n.datum+'</div></div><button class="pozn-del" onclick="deletePoznamka('+origIdx+')">×</button></div><div class="pozn-text">'+safe+'</div></div>';});}
     document.getElementById('poznList').innerHTML=html;
   });
 }
@@ -3971,11 +4048,12 @@ function druhSave(){
         var b=document.getElementById('dkat-'+x);
         if(b) b.className='druh-kat-btn';
       });
-      // Pre Mirku znova nastav PET ako predvolenú
-      if(currentUser === 'Mirka'){
-        druhSelKatVal = 'PET';
-        var petBtn = document.getElementById('dkat-PET');
-        if(petBtn) petBtn.className = 'druh-kat-btn sel-PET';
+      // Predvolená kategória — prvá z konfigurácie usera (pre Mirku PET, ostatní KPZ)
+      var defaultKat = getDruhotkyKat()[0];
+      if(defaultKat){
+        druhSelKatVal = defaultKat;
+        var firstBtn = document.getElementById('dkat-'+defaultKat);
+        if(firstBtn) firstBtn.className = 'druh-kat-btn sel-'+defaultKat;
       }
       document.getElementById('druhObchod').value='';
       document.getElementById('druhKs').value='';
@@ -4010,20 +4088,26 @@ function druhSetYear(d){
 }
 
 function renderDruhotky(){
-  // Pre Mirku nastav kategórie na PET
+  // Kategórie z konfigurácie usera (USERS_DB.druhotky_kategorie)
+  var katList = getDruhotkyKat();
+  var katLabels = {KPZ:'KPZ', COKO:'ČOKO', GUM:'GUM', PET:'PET'};
   var katGrid = document.getElementById('druhKatGrid');
   if(katGrid){
-    if(currentUser === 'Mirka'){
-      katGrid.innerHTML = '<button class="druh-kat-btn sel-PET" id="dkat-PET" onclick="druhSelKat(this.dataset.k)" data-k="PET">PET</button>';
-      katGrid.style.gridTemplateColumns = '1fr';
-      if(!druhSelKatVal || druhSelKatVal !== 'PET') { druhSelKatVal = 'PET'; }
-    } else {
-      if(katGrid.innerHTML.indexOf('dkat-KPZ') < 0){
-        katGrid.innerHTML =
-          '<button class="druh-kat-btn" id="dkat-KPZ" onclick="druhSelKat(this.dataset.k)" data-k="KPZ">KPZ</button>' +
-          '<button class="druh-kat-btn" id="dkat-COKO" onclick="druhSelKat(this.dataset.k)" data-k="COKO">ČOKO</button>' +
-          '<button class="druh-kat-btn" id="dkat-GUM" onclick="druhSelKat(this.dataset.k)" data-k="GUM">GUM</button>';
-        katGrid.style.gridTemplateColumns = 'repeat(3,1fr)';
+    // Skontroluj či už máme správny set kategórií (aby sme zbytočne neprekresľovali)
+    var currentKats = Array.prototype.slice.call(katGrid.querySelectorAll('[data-k]')).map(function(el){ return el.dataset.k; }).join(',');
+    var wantedKats = katList.join(',');
+    if(currentKats !== wantedKats){
+      katGrid.innerHTML = katList.map(function(k){
+        return '<button class="druh-kat-btn" id="dkat-'+k+'" onclick="druhSelKat(this.dataset.k)" data-k="'+k+'">'+(katLabels[k]||k)+'</button>';
+      }).join('');
+      katGrid.style.gridTemplateColumns = katList.length === 1 ? '1fr' : 'repeat('+Math.min(katList.length,3)+',1fr)';
+    }
+    // Ak nemáme platnú vybranú kategóriu, vyber prvú
+    if(!druhSelKatVal || katList.indexOf(druhSelKatVal) < 0){
+      druhSelKatVal = katList[0] || '';
+      if(druhSelKatVal){
+        var b = document.getElementById('dkat-'+druhSelKatVal);
+        if(b) b.className = 'druh-kat-btn sel-'+druhSelKatVal;
       }
     }
   }
@@ -4044,19 +4128,17 @@ function renderDruhotky(){
       return r.rok===druhQYear && months.indexOf(r.mesiac)>=0;
     });
 
-    // Štatistiky
-    // Kategórie podľa usera
-    var katList = (currentUser === 'Mirka') ? ['PET'] : ['KPZ','COKO','GUM'];
+    // Štatistiky — všetky možné kategórie nastavíme na 0, potom napočítame
     var stats={KPZ:0, COKO:0, GUM:0, PET:0};
     filtered.forEach(function(r){ if(stats[r.kat]!==undefined) stats[r.kat]+=r.ks; });
     var colors={KPZ:'#007AFF',COKO:'#FF9500',GUM:'#34C759',PET:'#AF52DE'};
     var statCards=katList.map(function(k){
-      return '<div class="druh-stat-card"><div class="druh-stat-label">'+k+'</div><div class="druh-stat-val" style="color:'+colors[k]+'">'+stats[k]+'</div></div>';
+      return '<div class="druh-stat-card"><div class="druh-stat-label">'+(katLabels[k]||k)+'</div><div class="druh-stat-val" style="color:'+(colors[k]||'#717786')+'">'+(stats[k]||0)+'</div></div>';
     }).join('');
     // CSS grid podľa počtu kategórií
     var statEl=document.getElementById('druhStatCards');
     if(statEl){
-      statEl.style.gridTemplateColumns = katList.length === 1 ? '1fr' : 'repeat(3,1fr)';
+      statEl.style.gridTemplateColumns = katList.length === 1 ? '1fr' : 'repeat('+Math.min(katList.length,3)+',1fr)';
       statEl.innerHTML=statCards;
     }
 
@@ -4173,7 +4255,7 @@ function saveShopOverrides(){
 }
 
 function obchDelete(shopId){
-  if(currentUser !== 'Filip'){ setStatus('⚠️ Iba Filip môže upravovať obchody'); return; }
+  if(!isAdmin()){ setStatus('⚠️ Iba admin môže upravovať obchody'); return; }
   var shop = findShop(shopId);
   if(!shop) return;
   if(!confirm('Naozaj vymazať obchod "'+shop.n+'"?\n\nObchod sa odstráni zo zoznamu.')) return;
@@ -4194,7 +4276,7 @@ function obchDelete(shopId){
 }
 
 function obchOpenEditor(shopId){
-  if(currentUser !== 'Filip'){ setStatus('⚠️ Iba Filip môže upravovať obchody'); return; }
+  if(!isAdmin()){ setStatus('⚠️ Iba admin môže upravovať obchody'); return; }
   var shop = shopId ? findShop(shopId) : null;
   var isNew = !shop;
   var existing = document.getElementById('obchEditModal');
@@ -4339,8 +4421,8 @@ function obchRenderDetail(shop){
   var body=document.getElementById('obchDetailBody');
   if(!body) return;
   body.innerHTML='';
-  // Edit tlačidlo (iba Filip)
-  if(currentUser === 'Filip'){
+  // Edit tlačidlo (iba admin)
+  if(isAdmin()){
     var editBtn = document.createElement('button');
     editBtn.style.cssText = 'width:100%;padding:10px;border-radius:10px;border:1px solid #d6d4dd;background:#f2f2f7;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px';
     editBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px">edit</span> Upraviť obchod';
@@ -4499,9 +4581,9 @@ function obchDeleteNote(shopId,idx){
   obchRenderDetail(obchCurrentShop);
 }
 function renderObchody(){
-  // Show add button only for Filip
+  // Show add button only for admin
   var addBtn = document.getElementById('obchAddBtn');
-  if(addBtn) addBtn.style.display = (currentUser==='Filip') ? 'block' : 'none';
+  if(addBtn) addBtn.style.display = isAdmin() ? 'block' : 'none';
   obchRender();
 }
 
@@ -4564,7 +4646,7 @@ function applyAvatar(user, src) {
 }
 
 function loadAvatars() {
-  ['Filip','Mirka','Lubo','Monika','Ivana'].forEach(function(user) {
+  USERS.forEach(function(user) {
     var src = localStorage.getItem('avatar_' + user);
     if (src) applyAvatar(user, src);
   });
@@ -4591,12 +4673,21 @@ var kadFilterChain = 'all';
 var kadFilterPeriod = 'all';
 var kadFilterStatus = 'all';
 
-// Mirka má svoje vlastné memo, ostatní (Filip/Lubo/Monika/Ivana) zdieľajú Filipove
+// KAD scope per-user:
+//   'team' — uploaduje do zdieľaného 'kad_memo_data' (vidia všetci s scope != 'self')
+//   'self' — uploaduje do 'kad_memo_data_{name}' (osobné memo)
+//   'none' — iba čítanie tímového memo, nemôže uploadovať
 function kadStorageKey(){
-  return (currentUser === 'Mirka') ? 'kad_memo_data_Mirka' : 'kad_memo_data';
+  return (getKadScope() === 'self') ? ('kad_memo_data_' + currentUser) : 'kad_memo_data';
 }
 function kadCanUpload(){
-  return currentUser === 'Filip' || currentUser === 'Mirka';
+  var s = getKadScope();
+  return s === 'team' || s === 'self';
+}
+// Kto je tímový uploader (pre zobrazovacie hlášky "Ešte nenahral KAD memo")
+function kadTeamUploaderName(){
+  for(var i=0;i<USERS_DB.length;i++){ if(USERS_DB[i].kad_scope==='team') return USERS_DB[i].name; }
+  return 'admin';
 }
 
 function kadParseExcelDate(v){
@@ -4663,7 +4754,7 @@ function kadHandleUpload(ev){
   var file = ev.target.files && ev.target.files[0];
   if(!file) return;
   if(!kadCanUpload()){
-    setStatus('⚠️ KAD memo môže nahrávať iba Filip (pre tím) alebo Mirka (svoje)');
+    setStatus('⚠️ Pre nahrávanie KAD memo nemáš oprávnenie (kontaktuj admina)');
     return;
   }
   if(typeof XLSX === 'undefined'){
@@ -4825,7 +4916,7 @@ function kadHandleUpload(ev){
       kadBuildChainFilter();
       kadRender();
       var withDates = arr.filter(function(x){return x.akciaOd && x.akciaDo;}).length;
-      var audience = currentUser === 'Mirka' ? 'pre teba' : 'pre tím (Filip+Lubo+Monika+Ivana)';
+      var audience = getKadScope() === 'self' ? 'pre teba' : 'pre tím';
       setStatus('⏳ '+arr.length+' akcií parsovaných • ukladám na server ('+sizeKB+' KB)...');
       // Server cez POST (obíde URL limit ~16 KB)
       apiSetLarge(kadKey, payload, function(res){
@@ -4884,7 +4975,7 @@ function kadUpdateInfo(){
   if(!val || !meta) return;
   if(!KAD_META || !KAD_DATA.length){
     val.textContent = 'Žiadne dáta';
-    meta.textContent = kadCanUpload() ? 'Klikni na 📤 Nahrať pre import .xlsx' : 'Filip ešte nenahral KAD memo';
+    meta.textContent = kadCanUpload() ? 'Klikni na 📤 Nahrať pre import .xlsx' : (kadTeamUploaderName()+' ešte nenahral KAD memo');
     return;
   }
   var w = KAD_META.weekNumber ? 'Týždeň '+KAD_META.weekNumber : (KAD_META.fileName || 'KAD memo');
@@ -4896,7 +4987,7 @@ function kadUpdateInfo(){
   }
   val.textContent = w + validity + ' • ' + KAD_DATA.length + ' akcií';
   var d = KAD_META.uploadedAt ? new Date(KAD_META.uploadedAt) : null;
-  var who = KAD_META.uploadedBy || 'Filip';
+  var who = KAD_META.uploadedBy || kadTeamUploaderName();
   meta.textContent = d ? ('Nahral '+who+' '+kadFmtDate(new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())))+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')) : '';
 }
 
@@ -4954,7 +5045,7 @@ function kadRender(){
     if(canUp){
       emptyMsg = 'Zatiaľ neboli nahrané žiadne KAD akcie.<br>Klikni na <strong>📤 Nahrať</strong> a vyber .xlsx súbor.';
     } else {
-      emptyMsg = 'Filip ešte nenahral KAD memo pre tím.<br>Skús neskôr.';
+      emptyMsg = kadTeamUploaderName()+' ešte nenahral KAD memo pre tím.<br>Skús neskôr.';
     }
     list.innerHTML = '<div class="akcie-empty"><div class="akcie-empty-emoji">📅</div>'+emptyMsg+'</div>';
     if(count) count.textContent = '';
@@ -5135,10 +5226,10 @@ function kadCloseDetail(){
 
 function kadDeleteMemo(){
   if(!kadCanUpload()){
-    setStatus('⚠️ KAD memo môže mazať iba Filip alebo Mirka');
+    setStatus('⚠️ Pre mazanie KAD memo nemáš oprávnenie');
     return;
   }
-  var who = currentUser === 'Mirka' ? 'tvoje' : 'tímové';
+  var who = getKadScope() === 'self' ? 'tvoje' : 'tímové';
   if(!confirm('Naozaj zmazať '+who+' KAD memo?\n\nVymaže sa zo servera aj z tvojho zariadenia.')) return;
   setStatus('⏳ Mažem KAD memo...');
   var kadKey = kadStorageKey();
@@ -5232,9 +5323,9 @@ function isDayCompleted(d){
   if(!d) return false;
   var s = getDayStats(d), t = d.type||'';
   if(t==='dovol'||t==='pn') return false;
-  // Pre Filipa: musí mať aj prac. čas aj návštevy
-  // Pre Mirku a ostatných (bez start/end): stačí splnenie cieľa návštev a času u zákazníka
-  if(currentUser==='Filip'){
+  // Užívatelia s priradenými obchodmi: musí mať aj prac. čas aj počet návštev
+  // Ostatní (bez priradených obchodov): stačí splnenie cieľa návštev a času u zákazníka
+  if(hasShops()){
     return s.tw>=CIEL_P && s.vc>=CIEL_N;
   }
   return s.vc>=CIEL_N && s.vm>=CIEL_V;
@@ -5253,7 +5344,7 @@ function renderPrehlad(){
   if(subEl) subEl.textContent = dows[now.getDay()]+', '+now.getDate()+'. '+mns[now.getMonth()];
   // Admin LIVE button
   var adminBtnP = document.getElementById('adminLiveBtnPreh');
-  if(adminBtnP) adminBtnP.style.display = (currentUser==='Filip') ? 'flex' : 'none';
+  if(adminBtnP) adminBtnP.style.display = isAdmin() ? 'flex' : 'none';
   // Update avatar v prehlad headeri (mirror z hlavného avatara)
   var srcImg = document.getElementById('headerAvatarImg');
   var dstImg = document.getElementById('headerAvatarImgP');
@@ -5654,9 +5745,9 @@ function prehShowAddVisit(){
   // Otvorí vlastný modal (prompt() nefunguje spoľahlivo v iOS PWA fullscreen)
   var existing = document.getElementById('prehAddVisitModal');
   if(existing) existing.remove();
-  var color = (userColors && userColors[currentUser]) || '#007AFF';
-  var hasShops = currentUser === 'Filip' && OBCHODY && OBCHODY['Filip'] && OBCHODY['Filip'].length > 0;
-  var shopBtnHTML = hasShops
+  var color = getUserColor(currentUser);
+  var userHasShops = hasShops();
+  var shopBtnHTML = userHasShops
     ? '<button id="prehAvShopBtn" class="preh-cta preh-cta-secondary" style="width:100%;margin-top:8px" onclick="prehAvOpenShop()"><span class="material-symbols-outlined" style="font-size:18px">storefront</span> <span id="prehAvShopLbl">Priradiť obchod (voliteľné)</span></button>'
     : '';
   var html = '<div class="preh-av-overlay" id="prehAddVisitModal" onclick="if(event.target===this)prehAvClose()">'
@@ -5962,9 +6053,9 @@ function renderPrehladStat(){
       tipHTML = '<div class="preh-tip"><span class="material-symbols-outlined" style="font-size:18px;flex-shrink:0">lightbulb</span><div>Pri tempe mesiaca skončíš na <b>'+proj+'</b>, cieľ <b>'+monthGoal+'</b> — výborné tempo.</div></div>';
     }
   }
-  // Admin debug (iba Filip)
+  // Admin debug (iba admin)
   var debugHTML = '';
-  if(currentUser === 'Filip'){
+  if(isAdmin()){
     var debugInfo = 'Dni: '+timeDays+' | Práca: '+Math.floor(totalW/60)+'h'+(totalW%60)+'m'
       +' | Cieľ/deň: '+Math.floor(CIEL_P/60)+'h'+(CIEL_P%60)+'m'
       +' | Celk. cieľ: '+Math.floor(wG/60)+'h'+(wG%60)+'m';
@@ -6073,8 +6164,19 @@ function switchSkTab(tab){ currentSkTab=tab; ['sklad','prijem','vydaj','historia
 
 // ── INIT ─────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', function(){
+  // 1) Hneď vykresli karty z lokálnej USERS_DB (rýchla odozva)
+  renderUserCards();
   updateFaceIdBtns();
-  // Auto-login: ak je práve 1 zapamätaný user -> prihlás ho
+  // 2) Pokús sa stiahnuť aktuálny USERS_DB z backendu — keď príde, prerendujem karty
+  if(typeof loadUsersDBFromBackend === 'function'){
+    loadUsersDBFromBackend(function(ok){
+      if(ok){
+        renderUserCards();
+        updateFaceIdBtns();
+      }
+    });
+  }
+  // 3) Auto-login: ak je práve 1 zapamätaný user → prihlás ho
   var remembered=checkRememberMe();
   if(remembered){
     document.getElementById('userScreen').style.display='none';
